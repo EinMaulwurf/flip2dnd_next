@@ -194,7 +194,7 @@ class SettingsRepositoryImpl @Inject constructor(
 			?.map { it.toInt() }?.toSet() ?: setOf(1, 2, 3, 4, 5, 6, 7)
 	)
 
-	private val autoStartEnabled = MutableStateFlow(prefs.getBoolean(KEY_AUTO_START, false))
+	private val autoStartEnabled = MutableStateFlow(prefs.getBoolean(KEY_AUTO_START, true))
 
 	private val activationMode = MutableStateFlow(
 		ActivationMode.valueOf(

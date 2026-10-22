@@ -171,67 +171,35 @@ class DndService(
         context.startActivity(intent)
     }
 
-    fun toggleDnd() {
+    suspend fun toggleDnd() {
         try {
-            val isCurrentlyActivated = runBlocking { dndRepository.isActivated().first() }
-            val willBeActivated = !isCurrentlyActivated
+            val willBeActivated = !dndRepository.isActivated().first()
+            val totalSilence = willBeActivated &&
+                settingsRepository.getActivationMode().first() == dev.robin.flip_2_dnd.core.ActivationMode.DND &&
+                settingsRepository.getDndMode().first() == dev.robin.flip_2_dnd.core.DndMode.TOTAL_SILENCE
 
-            // Play feedback BEFORE setting the filter/ringer
-            playSound(willBeActivated)
-
-            // Get the appropriate vibration pattern from settings
-            runBlocking {
-                val pattern = if (willBeActivated) {
-                    settingsRepository.getDndOnVibration().first()
-                } else {
-                    settingsRepository.getDndOffVibration().first()
+            fun feedback() {
+                playSound(willBeActivated)
+                val pattern = runBlocking {
+                    if (willBeActivated) settingsRepository.getDndOnVibration().first()
+                    else settingsRepository.getDndOffVibration().first()
                 }
-                
-                val timings = if (pattern == VibrationPattern.NONE) {
-                    longArrayOf()
-                } else {
-                    pattern.pattern
-                }
-                
-                if (timings.isNotEmpty()) {
-                    vibrate(timings)
-                }
+                if (pattern != VibrationPattern.NONE) vibrate(pattern.pattern)
             }
 
-            // Get the appropriate flashlight pattern from settings
-            runBlocking {
-                val flashlightPattern = if (willBeActivated) {
-                    settingsRepository.getDndOnFlashlightPattern().first()
-                } else {
-                    settingsRepository.getDndOffFlashlightPattern().first()
-                }
-                flashFlashlight(flashlightPattern)
-            }
-
-            // Handle delay for Total Silence DND if applicable
-            val activationMode = runBlocking { settingsRepository.getActivationMode().first() }
-            val dndMode = runBlocking { settingsRepository.getDndMode().first() }
-            
-            if (willBeActivated && 
-                activationMode == dev.robin.flip_2_dnd.core.ActivationMode.DND && 
-                dndMode == dev.robin.flip_2_dnd.core.DndMode.TOTAL_SILENCE) {
-                runBlocking {
-                    Log.d(TAG, "Waiting 2 seconds before setting Total Silence DND")
-                    delay(2000)
-                }
-            }
-
-            // Now set the activation state in the repository
-            runBlocking {
-                dndRepository.setActivated(willBeActivated)
-            }
-
-            // Update local state flows for UI sync
-            _isDndEnabled.value = willBeActivated
-            _isAppEnabledDnd.value = willBeActivated
-
+            dev.robin.flip_2_dnd.core.ActivationFeedback.transition(
+                totalSilence = totalSilence,
+                applyState = {
+                    dndRepository.setActivated(willBeActivated)
+                    _isDndEnabled.value = willBeActivated
+                    _isAppEnabledDnd.value = willBeActivated
+                },
+                playFeedback = { feedback() },
+            )
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
-            Log.e(TAG, "Error toggling activation state: ${e.message}", e)
+            Log.e(TAG, "Error toggling activation state", e)
         }
     }
 

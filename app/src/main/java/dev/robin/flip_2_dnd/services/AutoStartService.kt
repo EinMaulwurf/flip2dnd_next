@@ -12,7 +12,7 @@ class AutoStartService : BroadcastReceiver() {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED &&
             intent.action != Intent.ACTION_MY_PACKAGE_REPLACED) return
         val prefs = context.getSharedPreferences("flip_2_dnd_settings", Context.MODE_PRIVATE)
-        if (!prefs.getBoolean("auto_start", false)) return
+        if (!prefs.getBoolean("auto_start", true)) return
         val notifications = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (!notifications.isNotificationPolicyAccessGranted) return
         try {

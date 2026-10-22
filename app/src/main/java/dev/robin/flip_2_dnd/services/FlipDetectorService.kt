@@ -300,7 +300,7 @@ class FlipDetectorService : Service() {
         }
     }
 
-    private fun handleOrientationChange(orientation: PhoneOrientation, screenOff: Boolean) {
+    private suspend fun handleOrientationChange(orientation: PhoneOrientation, screenOff: Boolean) {
         try {
             Log.d(TAG, "Screen state: ${if (screenOff) "OFF" else "ON"}, Only when screen off: $onlyWhenScreenOff")
             Log.d(TAG, "Handling orientation change: $orientation")
@@ -368,6 +368,10 @@ class FlipDetectorService : Service() {
                                 Log.d(TAG, "Proximity uncovered during delay - Cancelling DND toggle")
                                 return@launch
                             }
+                            // Filters can change while the activation delay is running.
+                            if (flashlightDetectionEnabled && dndService.isFlashlightOn ||
+                                mediaPlaybackDetectionEnabled && detectionManager.isMediaPlaying() ||
+                                headphoneDetectionEnabled && detectionManager.areHeadphonesConnected()) return@launch
                             if (sensorService.orientation.value == PhoneOrientation.FACE_DOWN) {
                                 Log.d(TAG, "$activationDelaySeconds-second delay completed, phone still face down - Enabling DND")
                                 dndService.toggleDnd()
@@ -505,7 +509,7 @@ class FlipDetectorService : Service() {
             val notification = NotificationCompat.Builder(this@FlipDetectorService, FLIP_CHANNEL_ID)
                 .setContentTitle(getString(R.string.notification_flip_detected_title))
                 .setContentText(notificationText)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_stat_flip)
                 .setAutoCancel(true)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setSilent(true) // Make notification silent
@@ -529,7 +533,7 @@ class FlipDetectorService : Service() {
             val notification = NotificationCompat.Builder(this@FlipDetectorService, FLIP_CHANNEL_ID)
                 .setContentTitle(getString(R.string.notification_dnd_state_changed_title))
                 .setContentText(if (enabled) getString(R.string.notification_dnd_activated) else getString(R.string.notification_dnd_deactivated))
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_stat_flip)
                 .setAutoCancel(true)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setSilent(true) // Make notification silent
@@ -565,7 +569,7 @@ class FlipDetectorService : Service() {
         return NotificationCompat.Builder(this, SERVICE_CHANNEL_ID)
             .setContentTitle(getString(R.string.app_name))
             .setContentText(getString(R.string.notification_monitoring_text))
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_stat_flip)
             .setContentIntent(pendingIntent)
             .build()
     }

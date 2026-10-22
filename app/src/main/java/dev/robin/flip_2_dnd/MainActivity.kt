@@ -138,9 +138,7 @@ class MainActivity : ComponentActivity() {
 
     setContent {
         var showOnboardingState by remember { mutableStateOf(showOnboarding) }
-        var showChangelog by remember {
-            mutableStateOf(!showOnboarding && currentVersionCode > lastSeenVersion)
-        }
+
 
       Flip_2_DNDTheme {
         val isDarkTheme = isSystemInDarkTheme()
@@ -177,17 +175,6 @@ class MainActivity : ComponentActivity() {
           )
         } else {
           AppNavigation()
-
-          if (showChangelog) {
-            ChangelogBottomSheet(
-              onDismiss = {
-                showChangelog = false
-                prefs.edit().putLong(LAST_SEEN_VERSION, currentVersionCode).apply()
-              }
-            )
-          }
-
-
         }
 
         if (!showOnboardingState && isPermissionMissing) {

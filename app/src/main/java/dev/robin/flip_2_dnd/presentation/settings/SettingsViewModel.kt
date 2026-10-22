@@ -756,6 +756,19 @@ class SettingsViewModel @Inject constructor(
 		_hasSecureSettingsPermission.value = isGranted
 	}
 
+    fun selectCustomSound(uri: String, isDndOn: Boolean) {
+        viewModelScope.launch {
+            if (isDndOn) {
+                settingsRepository.setDndOnCustomSoundUri(uri)
+                settingsRepository.setDndOnSound(Sound.CUSTOM)
+            } else {
+                settingsRepository.setDndOffCustomSoundUri(uri)
+                settingsRepository.setDndOffSound(Sound.CUSTOM)
+            }
+            soundController.previewSound(Sound.CUSTOM, uri, customVolume.value, useCustomVolume.value)
+        }
+    }
+
 	fun setDndOnCustomSoundUri(uri: String?) {
 		viewModelScope.launch {
 			settingsRepository.setDndOnCustomSoundUri(uri)

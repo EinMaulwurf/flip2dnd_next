@@ -67,6 +67,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -123,9 +124,26 @@ fun SettingsContent(
         val sensors = context.getSystemService(Context.SENSOR_SERVICE) as android.hardware.SensorManager
         sensors.getDefaultSensor(android.hardware.Sensor.TYPE_PROXIMITY) != null
     }
-    val adbCommand = "adb shell pm grant ${context.packageName} android.permission.WRITE_SECURE_SETTINGS"
-    val rootCommand = "su -c /system/bin/pm grant ${context.packageName} android.permission.WRITE_SECURE_SETTINGS"
-    val clipboard = LocalClipboard.current
+    fun acceptSound(uri: Uri?, isDndOn: Boolean) {
+        if (uri == null) return
+        try {
+            context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            context.contentResolver.openAssetFileDescriptor(uri, "r")?.use {
+                viewModel.selectCustomSound(uri.toString(), isDndOn)
+            } ?: throw java.io.IOException("No file descriptor")
+        } catch (e: Exception) {
+            Toast.makeText(context, R.string.error_sound_not_accessible, Toast.LENGTH_LONG).show()
+        }
+    }
+    val onSoundPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
+        acceptSound(it, true)
+    }
+    val offSoundPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
+        acceptSound(it, false)
+    }
+    var previewDndOn by rememberSaveable { mutableStateOf(true) }
+    val previewOnPattern by viewModel.dndOnVibration.collectAsState()
+    val previewOffPattern by viewModel.dndOffVibration.collectAsState()
     val packageInfo =
         remember {
             try {
@@ -143,8 +161,6 @@ fun SettingsContent(
                 null
             }
         }
-
-    // Credits dialog removed to recover compile correctness
 
     val versionName = packageInfo?.versionName ?: stringResource(id = R.string.unknown)
     val versionCode =
@@ -175,7 +191,6 @@ fun SettingsContent(
     val customVolume by viewModel.customVolume.collectAsState()
     val useCustomVibration by viewModel.useCustomVibration.collectAsState()
     val customVibrationStrength by viewModel.customVibrationStrength.collectAsState()
-    val hasSecureSettingsPermission by viewModel.hasSecureSettingsPermission.collectAsState()
     val headphoneDetectionEnabled by viewModel.headphoneDetectionEnabled.collectAsState()
     val proximityDetectionEnabled by viewModel.proximityDetectionEnabled.collectAsState()
 
@@ -194,40 +209,15 @@ fun SettingsContent(
     val vibrationScheduleEndTime by viewModel.vibrationScheduleEndTime.collectAsState()
     val vibrationScheduleDays by viewModel.vibrationScheduleDays.collectAsState()
 
-    val flashlightFeedbackEnabled by viewModel.flashlightFeedbackEnabled.collectAsState()
-    val dndOnFlashlightPattern by viewModel.dndOnFlashlightPattern.collectAsState()
-    val dndOffFlashlightPattern by viewModel.dndOffFlashlightPattern.collectAsState()
 
-    val flashlightScheduleEnabled by viewModel.flashlightScheduleEnabled.collectAsState()
-    val flashlightScheduleStartTime by viewModel.flashlightScheduleStartTime.collectAsState()
-    val flashlightScheduleEndTime by viewModel.flashlightScheduleEndTime.collectAsState()
-    val flashlightScheduleDays by viewModel.flashlightScheduleDays.collectAsState()
-    val flashlightIntensity by viewModel.flashlightIntensity.collectAsState()
 
-    val highSensitivityScheduleEnabled by viewModel.highSensitivityScheduleEnabled.collectAsState()
-    val highSensitivityScheduleStartTime by viewModel.highSensitivityScheduleStartTime.collectAsState()
-    val highSensitivityScheduleEndTime by viewModel.highSensitivityScheduleEndTime.collectAsState()
-    val highSensitivityScheduleDays by viewModel.highSensitivityScheduleDays.collectAsState()
 
     val activationMode by viewModel.activationMode.collectAsState()
     val dndModeSetting by viewModel.dndMode.collectAsState()
     val ringerModeSetting by viewModel.ringerMode.collectAsState()
     val notificationsEnabled by viewModel.notificationsEnabled.collectAsState()
 
-    var showAdbDialog by remember { mutableStateOf(false) }
     var showUpgradeDialog by remember { mutableStateOf(false) }
-    var showSupportDialog by remember { mutableStateOf(false) }
-    var showUpdateCheckDialog by remember { mutableStateOf(false) }
-    var showChangelogSheet by remember { mutableStateOf(false) }
-    var showCreditsDialog by remember { mutableStateOf(false) }
-    val changelogSheetState = rememberModalBottomSheetState()
-
-    val updateState by viewModel.updateState.collectAsState()
-    var showUpdateSheet by remember { mutableStateOf(false) }
-    val updateSheetState = rememberModalBottomSheetState()
-
-    // Track if the check was initiated manually from this screen
-    var isManualCheck by remember { mutableStateOf(false) }
 
     val accessibilityPermissionLauncher =
         rememberLauncherForActivityResult(
@@ -238,573 +228,8 @@ fun SettingsContent(
             }
         }
 
-    LaunchedEffect(updateState) {
-        when (updateState) {
-            is UpdateState.Checking -> {
-                if (isManualCheck) {
-                    showUpdateSheet = true
-                }
-            }
-
-            is UpdateState.Available -> {
-                // Always show if update is available, regardless of manual/auto
-                showUpdateSheet = true
-            }
-
-            is UpdateState.None, is UpdateState.Error -> {
-                if (isManualCheck) {
-                    showUpdateSheet = true
-                }
-            }
-
-            else -> {
-                // Idle state, do nothing
-            }
-        }
-    }
-
-    if (showUpdateSheet) {
-        ModalBottomSheet(
-            onDismissRequest = {
-                showUpdateSheet = false
-                isManualCheck = false
-            },
-            sheetState = updateSheetState,
-            containerColor = MaterialTheme.colorScheme.surface,
-            tonalElevation = 8.dp,
-        ) {
-            Column(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp)
-                        .padding(bottom = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                when (val state = updateState) {
-                    is UpdateState.Checking -> {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(48.dp),
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "Checking for updates...",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                    }
-
-                    is UpdateState.Available -> {
-                        Text(
-                            text = "New Version Available",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "Version: ${state.update.versionName}\n\nA new version of Flip 2 DND Pro is available.",
-                            style = MaterialTheme.typography.bodyLarge,
-                            textAlign = TextAlign.Center,
-                        )
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Button(
-                            onClick = {
-                                showUpdateSheet = false
-                                viewModel.downloadAndInstall(context, state.update)
-                            },
-                            modifier = Modifier.fillMaxWidth().height(56.dp),
-                            shape = RoundedCornerShape(16.dp),
-                        ) {
-                            Text("Download & Install")
-                        }
-                    }
-
-                    is UpdateState.None -> {
-                        Text(
-                            text = "No Updates Available",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "You are using the latest version.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-
-                    is UpdateState.Error -> {
-                        Icon(
-                            imageVector = Icons.Default.Info,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.size(48.dp),
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "Error Checking for Updates",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.error,
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = state.message,
-                            style = MaterialTheme.typography.bodyMedium,
-                            textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-
-                    else -> {}
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-        }
-    }
-
     if (showUpgradeDialog) {
         UpgradeDialog(onDismiss = { showUpgradeDialog = false })
-    }
-
-    if (showChangelogSheet) {
-        ModalBottomSheet(
-            onDismissRequest = { showChangelogSheet = false },
-            sheetState = changelogSheetState,
-            containerColor = MaterialTheme.colorScheme.surface,
-            tonalElevation = 8.dp,
-        ) {
-            Column(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.changelog),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                // Render Kotlin-based changelog using the accordion UI
-                ChangelogAccordion(entries = changelogEntries)
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-        }
-    }
-
-    if (showSupportDialog) {
-        ModalBottomSheet(
-            onDismissRequest = { showSupportDialog = false },
-            containerColor = MaterialTheme.colorScheme.surface,
-            tonalElevation = 8.dp,
-        ) {
-            Column(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp)
-                        .padding(bottom = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = stringResource(R.string.support_dialog_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(bottom = 16.dp),
-                )
-                Text(
-                    text = stringResource(R.string.support_dialog_message),
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(bottom = 24.dp),
-                )
-                Button(
-                    onClick = {
-                        showSupportDialog = false
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://patreon.com/AbulKalamRobin369"))
-                        try {
-                            context.startActivity(intent)
-                        } catch (e: ActivityNotFoundException) {
-                            Toast.makeText(context, context.getString(R.string.error_no_app_found), Toast.LENGTH_SHORT).show()
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors =
-                        ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                        ),
-                ) {
-                    Icon(Icons.Default.Favorite, contentDescription = null)
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.patreon), style = MaterialTheme.typography.titleMedium)
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-                OutlinedButton(
-                    onClick = {
-                        showSupportDialog = false
-                        onDonateClick()
-                    },
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
-                ) {
-                    Text(stringResource(R.string.crypto), style = MaterialTheme.typography.titleMedium)
-                }
-            }
-        }
-    }
-
-    if (showAdbDialog) {
-        ModalBottomSheet(
-            onDismissRequest = { showAdbDialog = false },
-            containerColor = MaterialTheme.colorScheme.surface,
-            tonalElevation = 8.dp,
-        ) {
-            Column(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp)
-                        .padding(bottom = 24.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.adb_permission_dialog_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(bottom = 16.dp),
-                )
-                Text(
-                    text = stringResource(R.string.adb_permission_dialog_message),
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(bottom = 16.dp),
-                )
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = stringResource(R.string.adb_permission_code),
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = adbCommand,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "For Root Users:",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(bottom = 8.dp),
-                )
-
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "Root Command",
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = rootCommand,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
-                }
-
-                Button(
-                    onClick = {
-                        showAdbDialog = false
-                        val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        clipboardManager.setPrimaryClip(ClipData.newPlainText("Root Command", rootCommand))
-                        Toast.makeText(context, context.getString(R.string.command_copied), Toast.LENGTH_SHORT).show()
-                    },
-                    modifier = Modifier.fillMaxWidth().height(48.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                ) {
-                    Icon(Icons.Default.ContentCopy, contentDescription = null)
-                    Spacer(Modifier.width(8.dp))
-                    Text("Copy Root Command", style = MaterialTheme.typography.titleMedium)
-                }
-                Spacer(modifier = Modifier.height(24.dp))
-                Button(
-                    onClick = {
-                        showAdbDialog = false
-                        val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        clipboardManager.setPrimaryClip(ClipData.newPlainText("ADB Command", adbCommand))
-                        Toast.makeText(context, context.getString(R.string.command_copied), Toast.LENGTH_SHORT).show()
-                    },
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors =
-                        ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                        ),
-                ) {
-                    Icon(Icons.Default.ContentCopy, contentDescription = null)
-                    Spacer(Modifier.width(8.dp))
-                    Text("Copy ADB Command", style = MaterialTheme.typography.titleMedium)
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-                TextButton(
-                    onClick = { showAdbDialog = false },
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                ) {
-                    Text(stringResource(R.string.close), style = MaterialTheme.typography.titleMedium)
-                }
-            }
-        }
-    }
-
-    if (showUpdateCheckDialog) {
-        ModalBottomSheet(
-            onDismissRequest = { showUpdateCheckDialog = false },
-            containerColor = MaterialTheme.colorScheme.surface,
-            tonalElevation = 8.dp,
-        ) {
-            Column(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp)
-                        .padding(bottom = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = stringResource(R.string.update_check_dialog_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(bottom = 16.dp),
-                )
-                Text(
-                    text = stringResource(R.string.update_check_dialog_message),
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(bottom = 24.dp),
-                )
-                Button(
-                    onClick = {
-                        showUpdateCheckDialog = false
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.patreon.com/posts/flip-2-dnd-150924870"))
-                        context.startActivity(intent)
-                    },
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
-                ) {
-                    Text(stringResource(R.string.patreon), style = MaterialTheme.typography.titleMedium)
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-                OutlinedButton(
-                    onClick = {
-                        showUpdateCheckDialog = false
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://robinsrk.netlify.app/buyflip2dnd"))
-                        context.startActivity(intent)
-                    },
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
-                ) {
-                    Text(stringResource(R.string.gumroad), style = MaterialTheme.typography.titleMedium)
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-                TextButton(
-                    onClick = { showUpdateCheckDialog = false },
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                ) {
-                    Text(stringResource(R.string.cancel), style = MaterialTheme.typography.titleMedium)
-                }
-            }
-        }
-    }
-
-    if (showCreditsDialog) {
-        ModalBottomSheet(
-            onDismissRequest = { showCreditsDialog = false },
-            containerColor = MaterialTheme.colorScheme.surface,
-            tonalElevation = 8.dp,
-        ) {
-            Column(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .padding(top = 8.dp, bottom = 32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                // Heart Icon
-                Icon(
-                    imageVector = Icons.Default.Favorite,
-                    contentDescription = null,
-                    tint = Color(0xFFFF4081), // Premium pink/heart color
-                    modifier =
-                        Modifier
-                            .size(48.dp)
-                            .padding(bottom = 16.dp),
-                )
-
-                Text(
-                    text = "Special Thanks",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(bottom = 8.dp),
-                )
-
-                Text(
-                    text = "This project is made possible by the incredible support of our community. A huge thank you to everyone who believes in this app!",
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 24.dp),
-                )
-
-                if (true) { // Always show since we have names
-                    Text(
-                        text = "Patreon Supporters",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.padding(bottom = 12.dp),
-                    )
-
-                    Surface(
-                        shape = RoundedCornerShape(16.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(
-                            text = "Martin Buckley\nMichael W Erdely",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Medium,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(20.dp),
-                            lineHeight = 32.sp,
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Text(
-                    text = "Author",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.padding(bottom = 12.dp),
-                )
-
-                Surface(
-                    shape = RoundedCornerShape(16.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Row(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/robinsrk"))
-                                    context.startActivity(intent)
-                                }.padding(20.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_github),
-                            contentDescription = "GitHub",
-                            modifier = Modifier.size(28.dp),
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = "Robin",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Medium,
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Text(
-                    text = "Contributors",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.padding(bottom = 12.dp),
-                )
-
-                Surface(
-                    shape = RoundedCornerShape(16.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Row(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/ryosoftware"))
-                                    context.startActivity(intent)
-                                }.padding(20.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_github),
-                            contentDescription = "GitHub",
-                            modifier = Modifier.size(28.dp),
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = "ryosoftware",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Medium,
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                Button(
-                    onClick = { showCreditsDialog = false },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                ) {
-                    Text(
-                        text = "Close",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(vertical = 4.dp),
-                    )
-                }
-            }
-        }
     }
 
     LazyColumn(
@@ -990,7 +415,7 @@ fun SettingsContent(
                     SettingsSliderItem(
                         title = stringResource(id = R.string.activation_delay),
                         description = stringResource(id = R.string.activation_delay_description),
-                        isPro = true,
+                        isPro = false,
                         sliderContent = {
                             val activationDelay by viewModel.activationDelay.collectAsState()
                             var sliderPosition by remember { mutableStateOf(activationDelay.toFloat()) }
@@ -1094,7 +519,7 @@ fun SettingsContent(
                             } else {
                                 0.5f
                             },
-                        isPro = true,
+                        isPro = false,
                     )
                 }
             }
@@ -1187,9 +612,7 @@ fun SettingsContent(
                                                                 .getFeatureManager(context)
                                                                 .customSoundEnabled()
                                                         ) {
-                                                            ServiceLocator
-                                                                .getSoundPicker(context)
-                                                                .launchPicker(context, true)
+                                                            onSoundPicker.launch(arrayOf("audio/*"))
                                                         } else {
                                                             showUpgradeDialog = true
                                                         }
@@ -1260,9 +683,7 @@ fun SettingsContent(
                                                                 .getFeatureManager(context)
                                                                 .customSoundEnabled()
                                                         ) {
-                                                            ServiceLocator
-                                                                .getSoundPicker(context)
-                                                                .launchPicker(context, false)
+                                                            offSoundPicker.launch(arrayOf("audio/*"))
                                                         } else {
                                                             showUpgradeDialog = true
                                                         }
@@ -1398,6 +819,7 @@ fun SettingsContent(
                                                     }
                                                 },
                                                 onClick = {
+                                                    previewDndOn = true
                                                     viewModel.setDndOnVibration(pattern)
                                                     viewModel.playSelectedVibration(pattern)
                                                     dndOnVibrationExpanded = false
@@ -1448,6 +870,7 @@ fun SettingsContent(
                                                     }
                                                 },
                                                 onClick = {
+                                                    previewDndOn = false
                                                     viewModel.setDndOffVibration(pattern)
                                                     viewModel.playSelectedVibration(pattern)
                                                     dndOffVibrationExpanded = false
@@ -1474,6 +897,14 @@ fun SettingsContent(
                                         LaunchedEffect(customVibrationStrength) {
                                             sliderPosition = customVibrationStrength
                                         }
+                                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            androidx.compose.material3.FilterChip(selected = previewDndOn,
+                                                onClick = { previewDndOn = true; viewModel.playSelectedVibration(previewOnPattern, sliderPosition) },
+                                                label = { Text(stringResource(R.string.dnd_on)) })
+                                            androidx.compose.material3.FilterChip(selected = !previewDndOn,
+                                                onClick = { previewDndOn = false; viewModel.playSelectedVibration(previewOffPattern, sliderPosition) },
+                                                label = { Text(stringResource(R.string.dnd_off)) })
+                                        }
                                         Text(stringResource(R.string.vibration_strength_percent, (sliderPosition * 100).toInt()),
                                             style = MaterialTheme.typography.bodySmall)
                                         Slider(
@@ -1483,7 +914,7 @@ fun SettingsContent(
                                             },
                                             onValueChangeFinished = {
                                                 viewModel.setCustomVibrationStrength(sliderPosition)
-                                                viewModel.playSelectedVibration(VibrationPattern.SINGLE_PULSE, sliderPosition)
+                                                viewModel.playSelectedVibration(if (previewDndOn) previewOnPattern else previewOffPattern, sliderPosition)
                                             },
                                             modifier = Modifier.fillMaxWidth(),
                                             valueRange = 0f..1f,
@@ -1525,183 +956,7 @@ fun SettingsContent(
                         }
                     }
 
-                    // Flashlight Subsection
-                    SettingsSubsectionHeader(
-                        title = stringResource(id = R.string.flashlight_feedback),
-                        expanded = flashlightFeedbackEnabled,
-                        onExpandedChange = {
-                            if (ServiceLocator
-                                    .getFeatureManager(context)
-                                    .flashlightFeedbackEnabled()
-                            ) {
-                                viewModel.setFlashlightFeedbackEnabled(it)
-                            } else {
-                                showUpgradeDialog = true
-                            }
-                        },
-                    )
 
-                    AnimatedVisibility(visible = flashlightFeedbackEnabled) {
-                        Column {
-                            val feedbackWithFlashlightOn by viewModel.feedbackWithFlashlightOn.collectAsState()
-
-                            SettingsSwitchItem(
-                                title = stringResource(id = R.string.feedback_with_flashlight_on),
-                                description = "",
-                                checked = feedbackWithFlashlightOn,
-                                onCheckedChange = { viewModel.setFeedbackWithFlashlightOn(it) },
-                            )
-
-                            var dndOnFlashlightExpanded by remember { mutableStateOf(false) }
-                            var dndOffFlashlightExpanded by remember { mutableStateOf(false) }
-                            val flashlightSheetState = rememberModalBottomSheetState()
-
-                            SettingsClickableItem(
-                                title = stringResource(id = R.string.dnd_on_flashlight_pattern),
-                                description = stringResource(dndOnFlashlightPattern.stringResId),
-                                trailingIcon = {
-                                    Icon(Icons.Default.ArrowDropDown, stringResource(R.string.select_flashlight_pattern))
-                                },
-                                onClick = { dndOnFlashlightExpanded = true },
-                            )
-
-                            if (dndOnFlashlightExpanded) {
-                                ModalBottomSheet(
-                                    onDismissRequest = { dndOnFlashlightExpanded = false },
-                                    sheetState = flashlightSheetState,
-                                ) {
-                                    Column {
-                                        viewModel.availableFlashlightPatterns.forEach { pattern ->
-                                            SettingsClickableItem(
-                                                title = stringResource(pattern.stringResId),
-                                                trailingIcon = {
-                                                    if (pattern == dndOnFlashlightPattern) {
-                                                        Icon(
-                                                            painter = painterResource(id = R.drawable.ic_radio_button_checked),
-                                                            contentDescription = stringResource(R.string.selected),
-                                                            tint = MaterialTheme.colorScheme.primary,
-                                                        )
-                                                    } else {
-                                                        Icon(
-                                                            painter = painterResource(id = R.drawable.ic_radio_button_unchecked),
-                                                            contentDescription = stringResource(R.string.not_selected),
-                                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                        )
-                                                    }
-                                                },
-                                                onClick = {
-                                                    viewModel.setDndOnFlashlightPattern(pattern)
-                                                    viewModel.playSelectedFlashlightPattern(pattern)
-                                                    dndOnFlashlightExpanded = false
-                                                },
-                                            )
-                                        }
-                                    }
-                                    Spacer(modifier = Modifier.height(20.dp))
-                                }
-                            }
-
-                            SettingsClickableItem(
-                                title = stringResource(id = R.string.dnd_off_flashlight_pattern),
-                                description = stringResource(dndOffFlashlightPattern.stringResId),
-                                trailingIcon = {
-                                    Icon(Icons.Default.ArrowDropDown, stringResource(R.string.select_flashlight_pattern))
-                                },
-                                onClick = { dndOffFlashlightExpanded = true },
-                            )
-
-                            if (dndOffFlashlightExpanded) {
-                                ModalBottomSheet(
-                                    onDismissRequest = { dndOffFlashlightExpanded = false },
-                                    sheetState = flashlightSheetState,
-                                ) {
-                                    Column {
-                                        viewModel.availableFlashlightPatterns.forEach { pattern ->
-                                            SettingsClickableItem(
-                                                title = stringResource(pattern.stringResId),
-                                                trailingIcon = {
-                                                    if (pattern == dndOffFlashlightPattern) {
-                                                        Icon(
-                                                            painter = painterResource(id = R.drawable.ic_radio_button_checked),
-                                                            contentDescription = stringResource(R.string.selected),
-                                                            tint = MaterialTheme.colorScheme.primary,
-                                                        )
-                                                    } else {
-                                                        Icon(
-                                                            painter = painterResource(id = R.drawable.ic_radio_button_unchecked),
-                                                            contentDescription = stringResource(R.string.not_selected),
-                                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                        )
-                                                    }
-                                                },
-                                                onClick = {
-                                                    viewModel.setDndOffFlashlightPattern(pattern)
-                                                    viewModel.playSelectedFlashlightPattern(pattern)
-                                                    dndOffFlashlightExpanded = false
-                                                },
-                                            )
-                                        }
-                                    }
-                                    Spacer(modifier = Modifier.height(20.dp))
-                                }
-                            }
-
-                            AnimatedVisibility(visible = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                SettingsSliderItem(
-                                    title = stringResource(id = R.string.flashlight_intensity),
-                                    description = stringResource(id = R.string.flashlight_intensity_description),
-                                    sliderContent = {
-                                        var sliderPosition by remember { mutableStateOf(flashlightIntensity.toFloat()) }
-                                        LaunchedEffect(flashlightIntensity) {
-                                            sliderPosition = flashlightIntensity.toFloat()
-                                        }
-                                        Slider(
-                                            value = sliderPosition,
-                                            onValueChange = { sliderPosition = it },
-                                            onValueChangeFinished = {
-                                                viewModel.setFlashlightIntensity(sliderPosition.toInt())
-                                                viewModel.playSelectedFlashlightPattern(dndOnFlashlightPattern)
-                                            },
-                                            valueRange = 1f..10f,
-                                            steps = 8,
-                                            modifier = Modifier.fillMaxWidth(),
-                                        )
-                                    },
-                                )
-                            }
-
-                            ScheduleSection(
-                                title = null,
-                                enabled = flashlightScheduleEnabled,
-                                onEnabledChange = {
-                                    if (ServiceLocator
-                                            .getFeatureManager(context)
-                                            .scheduleEnabled()
-                                    ) {
-                                        viewModel.setFlashlightScheduleEnabled(it)
-                                    } else {
-                                        showUpgradeDialog = true
-                                    }
-                                },
-                                description = stringResource(id = R.string.flashlight_schedule_description),
-                                startTime = flashlightScheduleStartTime,
-                                onStartTimeChange = { viewModel.setFlashlightScheduleStartTime(it) },
-                                endTime = flashlightScheduleEndTime,
-                                onEndTimeChange = { viewModel.setFlashlightScheduleEndTime(it) },
-                                selectedDays = flashlightScheduleDays,
-                                onDaysChange = { viewModel.setFlashlightScheduleDays(it) },
-                                alpha =
-                                    if (ServiceLocator
-                                            .getFeatureManager(context)
-                                            .scheduleEnabled()
-                                    ) {
-                                        1f
-                                    } else {
-                                        0.5f
-                                    },
-                            )
-                        }
-                    }
                 }
             }
         }
@@ -1741,7 +996,7 @@ fun SettingsContent(
                             } else {
                                 0.5f
                             },
-                        isPro = true,
+                        isPro = false,
                     )
 
                     val mediaPlaybackDetectionEnabled by viewModel.mediaPlaybackDetectionEnabled.collectAsState()
@@ -1768,7 +1023,7 @@ fun SettingsContent(
                             } else {
                                 0.5f
                             },
-                        isPro = true,
+                        isPro = false,
                     )
 
                     val headphoneDetectionEnabled by viewModel.headphoneDetectionEnabled.collectAsState()
@@ -1795,7 +1050,7 @@ fun SettingsContent(
                             } else {
                                 0.5f
                             },
-                        isPro = true,
+                        isPro = false,
                     )
 
                     SettingsSwitchItem(
@@ -1874,38 +1129,6 @@ fun SettingsContent(
                     }
 
 
-                    val batterySaverOnFlipEnabled by viewModel.batterySaverOnFlipEnabled.collectAsState()
-                    SettingsSwitchItem(
-                        title = stringResource(id = R.string.battery_saver),
-                        description = stringResource(id = R.string.battery_saver_description),
-                        checked = batterySaverOnFlipEnabled,
-                        onCheckedChange = {
-                            if (ServiceLocator
-                                    .getFeatureManager(context)
-                                    .batterySaverSyncEnabled()
-                            ) {
-                                viewModel.checkSecureSettingsPermission()
-                                if (hasSecureSettingsPermission) {
-                                    viewModel.setBatterySaverOnFlipEnabled(it)
-                                } else {
-                                    showAdbDialog = true
-                                }
-                            } else {
-                                showUpgradeDialog = true
-                            }
-                        },
-                        alpha =
-                            if (ServiceLocator
-                                    .getFeatureManager(context)
-                                    .batterySaverSyncEnabled() && hasSecureSettingsPermission
-                            ) {
-                                1f
-                            } else {
-                                0.5f
-                            },
-                        isPro = true,
-                    )
-
                     // High sensitivity feature removed from display. Always-on by default.
 
                     SettingsClickableItem(
@@ -1965,92 +1188,30 @@ fun SettingsContent(
                     )
 
                     SettingsClickableItem(
-                        title = stringResource(id = R.string.join_telegram),
-                        description = stringResource(id = R.string.join_telegram_description),
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.telegram),
-                                contentDescription = stringResource(R.string.telegram_icon),
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.width(24.dp),
-                            )
-                        },
+                        title = "GitHub",
+                        description = "robinsrk/Flip_2_DND",
+                        leadingIcon = { Icon(painterResource(R.drawable.ic_github), contentDescription = null) },
                         onClick = {
-                            if (ServiceLocator
-                                    .getFeatureManager(context)
-                                    .telegramSupportEnabled()
-                            ) {
-                                val telegramUrl = "https://t.me/robins_dev_hub"
-                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(telegramUrl))
-                                try {
-                                    context.startActivity(intent)
-                                } catch (e: ActivityNotFoundException) {
-                                    Toast.makeText(context, context.getString(R.string.error_no_app_found), Toast.LENGTH_SHORT).show()
-                                }
-                            } else {
-                                showUpgradeDialog = true
+                            try {
+                                context.startActivity(Intent(Intent.ACTION_VIEW,
+                                    Uri.parse("https://github.com/robinsrk/Flip_2_DND")))
+                            } catch (e: ActivityNotFoundException) {
+                                Toast.makeText(context, R.string.error_no_app_found, Toast.LENGTH_SHORT).show()
                             }
                         },
-                        alpha =
-                            if (ServiceLocator
-                                    .getFeatureManager(context)
-                                    .telegramSupportEnabled()
-                            ) {
-                                1f
-                            } else {
-                                0.5f
-                            },
-                        isPro = true,
                     )
 
-                    SettingsClickableItem(
-                        title = stringResource(id = R.string.support_developer),
-                        description = stringResource(id = R.string.support_developer_description),
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_coin),
-                                contentDescription = stringResource(R.string.support_icon),
-                                tint = MaterialTheme.colorScheme.primary,
-                            )
-                        },
-                        onClick = { showSupportDialog = true },
-                    )
-
-                    SettingsClickableItem(
-                        title = stringResource(R.string.version),
-                        description = "$versionName ($versionCode)",
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = stringResource(R.string.version_icon),
-                                tint = MaterialTheme.colorScheme.primary,
-                            )
-                        },
-                        onClick = { showChangelogSheet = true },
-                    )
+                    Column(Modifier.padding(16.dp)) {
+                        Text(stringResource(R.string.version), style = MaterialTheme.typography.labelMedium)
+                        Text("$versionName ($versionCode)", style = MaterialTheme.typography.bodyMedium)
+                    }
 
 
                 }
             }
         }
 
-        // Credits
-        if (section == 4) {
-            item {
-                SettingsClickableItem(
-                    title = "Credits",
-                    description = "A special thanks to our amazing supporters",
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Favorite,
-                            contentDescription = null,
-                            tint = Color(0xFFFF4081),
-                        )
-                    },
-                    onClick = { showCreditsDialog = true },
-                )
-            }
-        }
+
     }
 }
 
