@@ -70,3 +70,19 @@ Phone acceptance checks:
 The generated APK is copied to `artifacts/Flip-2-DND-Personal.apk`, with its SHA-256
 in the adjacent `.sha256` file. Build artifacts and signing keys are not committed.
 Physical-device testing is still required for boot/update, proximity and haptics.
+
+Validation for `12.1.1-personal.2` (1213), 2026-10-22:
+
+- Docker `:core:testDebugUnitTest :app:lintDebug :app:assembleDebug` completed.
+- 13 unit tests passed: 4 vibration scaling, 6 schedule-window, 3 transition-feedback
+  timing/cancellation tests. No failures, errors or skipped tests.
+- APK signature verification passed. The certificate matches Personal version 1,
+  so this APK can update that installation while preserving settings.
+- Verified package ID, version, English/German launcher labels and arm64-v8a support.
+- Lint is not clean: 50 errors (25 older-Android API checks, 14 extra translations,
+  11 missing translations), 229 warnings and 6 hints. The inherited build config
+  does not abort on lint errors. These error categories match the first Personal
+  build; the new controllers and feedback coordinator have no lint errors.
+- Launcher artwork was rendered and inspected. Notification resources were checked
+  for transparent backgrounds; their appearance and Xiaomi system haptics still
+  need the physical-device acceptance checks above.
