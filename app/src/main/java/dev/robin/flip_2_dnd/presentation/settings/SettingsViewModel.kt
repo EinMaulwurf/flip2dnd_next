@@ -838,7 +838,7 @@ class SettingsViewModel @Inject constructor(
 		}
 	}
 
-	fun playSelectedVibration(pattern: VibrationPattern) {
+	fun playSelectedVibration(pattern: VibrationPattern, strengthOverride: Float? = null) {
 		val vibrator = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
 			val vibratorManager =
 				getApplication<Application>().getSystemService(android.content.Context.VIBRATOR_MANAGER_SERVICE) as android.os.VibratorManager
@@ -850,7 +850,7 @@ class SettingsViewModel @Inject constructor(
 
 		try {
 			val useCustomVibration = useCustomVibration.value
-			val customStrength = if (useCustomVibration) {
+			val customStrength = strengthOverride ?: if (useCustomVibration) {
 				customVibrationStrength.value
 			} else {
 				1.0f

@@ -1483,7 +1483,7 @@ fun SettingsContent(
                                             },
                                             onValueChangeFinished = {
                                                 viewModel.setCustomVibrationStrength(sliderPosition)
-                                                viewModel.playSelectedVibration(VibrationPattern.SINGLE_PULSE)
+                                                viewModel.playSelectedVibration(VibrationPattern.SINGLE_PULSE, sliderPosition)
                                             },
                                             modifier = Modifier.fillMaxWidth(),
                                             valueRange = 0f..1f,
