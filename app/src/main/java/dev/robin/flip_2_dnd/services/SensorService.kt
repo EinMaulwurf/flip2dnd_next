@@ -5,193 +5,148 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.PowerManager
+import android.os.SystemClock
 import android.util.Log
+import dev.robin.flip_2_dnd.core.FlipOrientationDetector
 import dev.robin.flip_2_dnd.core.PhoneOrientation
+import dev.robin.flip_2_dnd.core.SensorMonitoringSession
 import dev.robin.flip_2_dnd.core.SettingsRepository
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.asStateFlow
 import kotlin.math.abs
+import kotlin.math.exp
+import kotlin.math.sqrt
 
 private const val TAG = "SensorService"
 
-class SensorService(
-  private val context: Context,
-  private val settingsRepository: SettingsRepository
-) {
-  private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-  private val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-  private val gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
-
-  private val _orientation = MutableStateFlow(PhoneOrientation.FACE_UP)
-  val orientation: StateFlow<PhoneOrientation> = _orientation
-
-  private val _accelerometerData = MutableStateFlow(FloatArray(3) { 0f })
-  val accelerometerData: StateFlow<FloatArray> = _accelerometerData
-
-  private val _gyroscopeData = MutableStateFlow(FloatArray(3) { 0f })
-  val gyroscopeData: StateFlow<FloatArray> = _gyroscopeData
-
-  private var lastAccelReading = FloatArray(3)
-  private var lastGyroReading = FloatArray(3)
-  private var filteredAccel = FloatArray(3)
-  private val alpha = 0.15f // Smoothing factor for low-pass filter
-  private var isProcessing = false
-  private var _isRegistered = false
-  val isRegistered: Boolean get() = _isRegistered
-  private var sensitivity = 0.5f
-  private var highSensitivityMode = false
-  private var highSensitivityScheduleEnabled = false
-  private var highSensitivityScheduleStartTime = "22:00"
-  private var highSensitivityScheduleEndTime = "07:00"
-  private var highSensitivityScheduleDays = setOf(1, 2, 3, 4, 5, 6, 7)
-
-  // Scope to observe settings changes from SettingsRepository
-  private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-
-  init {
-    scope.launch { settingsRepository.getFlipSensitivity().collect { sensitivity = it.coerceIn(0f, 1f) } }
-    // Bind high-sensitivity-related settings to local vars
-    scope.launch { settingsRepository.getHighSensitivityModeEnabled().collect { highSensitivityMode = it } }
-    scope.launch {
-      settingsRepository.getHighSensitivityScheduleEnabled().collect { highSensitivityScheduleEnabled = it }
+class SensorService(context: Context, settingsRepository: SettingsRepository) {
+    private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+    private val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+    private val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+    private val wakeAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER, true)
+    // Tilt is an Android-defined special-trigger sensor, exposed by string type on some
+    // devices. No hidden APIs or vendor-specific sensor numbers are needed to use it.
+    private val tilt = sensorManager.getSensorList(Sensor.TYPE_ALL).firstOrNull {
+        it.stringType == "android.sensor.tilt_detector" && it.isWakeUpSensor &&
+            it.reportingMode == Sensor.REPORTING_MODE_SPECIAL_TRIGGER
     }
-    scope.launch {
-      settingsRepository.getHighSensitivityScheduleStartTime().collect { highSensitivityScheduleStartTime = it }
-    }
-    scope.launch {
-      settingsRepository.getHighSensitivityScheduleEndTime().collect { highSensitivityScheduleEndTime = it }
-    }
-    scope.launch { settingsRepository.getHighSensitivityScheduleDays().collect { highSensitivityScheduleDays = it } }
-  }
+    private val wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Flip2DND::Sensors")
+        .apply { setReferenceCounted(false) }
+    private val deliveryWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Flip2DND::SensorDelivery")
+        .apply { setReferenceCounted(false) }
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private val detector = FlipOrientationDetector()
+    private val filtered = FloatArray(3)
+    private var previousTimestamp = 0L
+    private var registeredAtNs = 0L
+    private var registeredAcceleration: Sensor? = null
+    private var sensitivity = 0.5f
+    private val _orientation = MutableStateFlow(PhoneOrientation.UNKNOWN)
+    val orientation = _orientation.asStateFlow()
 
-  private val sensorListener = object : SensorEventListener {
-    override fun onSensorChanged(event: SensorEvent) {
-      when (event.sensor.type) {
-        Sensor.TYPE_ACCELEROMETER -> {
-          val currentAccel = event.values
-          for (i in 0..2) {
-            filteredAccel[i] = alpha * currentAccel[i] + (1 - alpha) * filteredAccel[i]
-          }
-          lastAccelReading = filteredAccel.clone()
-          _accelerometerData.value = filteredAccel.clone()
-          processOrientation()
+    private val listener: SensorEventListener = object : SensorEventListener {
+        override fun onSensorChanged(event: SensorEvent) {
+            if (event.sensor == tilt) {
+                session.onTilt()
+                return
+            }
+            if (event.sensor != registeredAcceleration || event.values.size < 3 ||
+                event.timestamp < registeredAtNs) return
+            // Sensor time, rather than delivery time, is essential when a batch arrives.
+            val now = event.timestamp / 1_000_000L
+            if (previousTimestamp != 0L && now <= previousTimestamp) return
+            val dt = (now - previousTimestamp).coerceAtLeast(0)
+            val alpha = if (previousTimestamp == 0L) 1f else (1 - exp(-dt / 120.0)).toFloat()
+            previousTimestamp = now
+            var differenceSquared = 0f
+            var magnitudeSquared = 0f
+            for (i in 0..2) {
+                filtered[i] += alpha * (event.values[i] - filtered[i])
+                val difference = event.values[i] - filtered[i]
+                differenceSquared += difference * difference
+                magnitudeSquared += event.values[i] * event.values[i]
+            }
+            // Acceleration and direction must settle; a continuously running gyro is unnecessary.
+            val stable = abs(sqrt(magnitudeSquared) - SensorManager.GRAVITY_EARTH) < 1.5f &&
+                differenceSquared < 1.5f
+            val next = detector.update(filtered[0], filtered[1], filtered[2], stable, sensitivity, now)
+            if (next != _orientation.value) {
+                // Hand the wake-up event to the coroutine that owns the longer transition lease.
+                if (!powerManager.isInteractive) deliveryWakeLock.acquire(2000)
+                _orientation.value = next
+            }
         }
 
-        Sensor.TYPE_GYROSCOPE -> {
-          lastGyroReading = event.values.clone()
-          _gyroscopeData.value = event.values.clone()
-//					Log.d(TAG, "Gyroscope data: ${lastGyroReading.contentToString()}")
+        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
+    }
+
+    private val session: SensorMonitoringSession = SensorMonitoringSession(scope, object : SensorMonitoringSession.Hardware {
+        override fun armTilt(): Boolean = register(tilt, SensorManager.SENSOR_DELAY_NORMAL, 0)
+        override fun disarmTilt() { tilt?.let { sensorManager.unregisterListener(listener, it) } }
+
+        override fun startAcceleration(wakeUp: Boolean, batch: Boolean): Boolean {
+            val sensor = if (wakeUp) wakeAccelerometer else accelerometer
+            if (sensor == null) return false
+            if (registeredAcceleration == sensor) return true
+            stopAcceleration()
+            previousTimestamp = 0L
+            registeredAtNs = SystemClock.elapsedRealtimeNanos()
+            filtered.fill(0f)
+            val success = register(sensor, if (batch) 500_000 else SensorManager.SENSOR_DELAY_NORMAL,
+                if (batch) 1_000_000 else 0)
+            if (success) registeredAcceleration = sensor
+            return success
         }
-      }
+
+        override fun stopAcceleration() {
+            registeredAcceleration?.let { sensorManager.unregisterListener(listener, it) }
+            registeredAcceleration = null
+        }
+
+        override fun acquireWakeLock(timeoutMs: Long) { wakeLock.acquire(timeoutMs) }
+        override fun releaseWakeLock() { if (wakeLock.isHeld) wakeLock.release() }
+    })
+    val monitoringMode = session.mode
+    // A tilt listener is still monitoring even when its accelerometer snapshot has ended.
+    val isRegistered: Boolean get() = monitoringMode.value != SensorMonitoringSession.Mode.STOPPED
+
+    init {
+        scope.launch { settingsRepository.getFlipSensitivity().collect { sensitivity = it.coerceIn(0f, 1f) } }
     }
 
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-      Log.d(TAG, "Sensor accuracy changed: ${sensor?.name}, accuracy: $accuracy")
-    }
-  }
-
-  fun startMonitoring() {
-    if (_isRegistered) {
-      Log.d(TAG, "Sensors already registered")
-      return
-    }
-
-    if (accelerometer == null || gyroscope == null) {
-      Log.e(
-        TAG,
-        "Required sensors not available - Accelerometer: ${accelerometer != null}, Gyroscope: ${gyroscope != null}"
-      )
-      return
+    private fun register(sensor: Sensor?, periodUs: Int, latencyUs: Int): Boolean {
+        if (sensor == null) return false
+        return try {
+            sensorManager.registerListener(listener, sensor, periodUs, latencyUs)
+        } catch (e: RuntimeException) {
+            Log.w(TAG, "Cannot register ${sensor.name}; trying another monitoring strategy", e)
+            false
+        }
     }
 
-    var success = true
-
-    success = success && sensorManager.registerListener(
-      sensorListener,
-      accelerometer,
-      SensorManager.SENSOR_DELAY_UI
-    )
-    if (!success) {
-      Log.e(TAG, "Failed to register accelerometer")
-      return
+    fun startMonitoring() {
+        if (!isRegistered) {
+            detector.reset()
+            _orientation.value = PhoneOrientation.UNKNOWN
+        }
+        session.start(screenOff = !powerManager.isInteractive)
     }
 
-    success = success && sensorManager.registerListener(
-      sensorListener,
-      gyroscope,
-      SensorManager.SENSOR_DELAY_UI
-    )
-    if (!success) {
-      Log.e(TAG, "Failed to register gyroscope")
-      sensorManager.unregisterListener(sensorListener)
-      return
+    suspend fun <T> confirm(block: suspend () -> T): T = session.confirm(block)
+
+    fun setScreenOff(screenOff: Boolean) = session.setScreenOff(screenOff)
+
+    fun stopMonitoring() {
+        session.stop()
+        if (deliveryWakeLock.isHeld) deliveryWakeLock.release()
+        detector.reset()
+        _orientation.value = PhoneOrientation.UNKNOWN
     }
 
-    _isRegistered = true
-    Log.d(TAG, "Successfully registered sensor listeners")
-  }
-
-  fun stopMonitoring() {
-    if (!_isRegistered) {
-      Log.d(TAG, "Sensors not registered")
-      return
+    fun cleanup() {
+        stopMonitoring()
+        scope.cancel()
     }
-    sensorManager.unregisterListener(sensorListener)
-    _isRegistered = false
-    Log.d(TAG, "Unregistered sensor listeners")
-  }
-
-  private fun processOrientation() {
-    if (isProcessing) return
-    isProcessing = true
-
-    val x = lastAccelReading[0]
-    val y = lastAccelReading[1]
-    val z = lastAccelReading[2]
-
-    // Adjust thresholds based on sensitivity
-    val sensorManagerPro = dev.robin.flip_2_dnd.core.ServiceLocator.getSensorManagerPro(context)
-
-    // High sensitivity is always ON now; thresholds use high sensitivity values directly
-    val thresholds = sensorManagerPro.getOrientationThresholds(sensitivity)
-
-    // Check if the phone is relatively stable (not in motion)
-    val isStable = abs(lastGyroReading[0]) < thresholds.gyro &&
-            abs(lastGyroReading[1]) < thresholds.gyro &&
-            abs(lastGyroReading[2]) < thresholds.gyro
-
-    // For true face-down, we also want X and Y to be near zero
-    val isFlat = abs(x) < 2.5f && abs(y) < 2.5f
-
-    // For face down, check stability. For other orientations, update immediately
-    val orientation = when {
-      abs(z) >= thresholds.accel && z < 0 && isFlat -> {
-        // Only check stability for face down
-        if (isStable) PhoneOrientation.FACE_DOWN else _orientation.value
-      }
-      abs(z) >= thresholds.accel && z > 0 -> {
-        PhoneOrientation.FACE_UP
-      }
-      else -> {
-        // High sensitivity is always on by default; any other orientation defaults to FACE_UP
-        PhoneOrientation.FACE_UP
-      }
-    }
-
-    if (orientation != _orientation.value) {
-      _orientation.value = orientation
-    }
-
-    isProcessing = false
-  }
-
-  private fun isWithinSchedule(startTime: String, endTime: String, days: Set<Int>): Boolean {
-    return dev.robin.flip_2_dnd.core.ServiceLocator.getScheduleManager(context)
-      .isWithinSchedule(startTime, endTime, days)
-  }
 }

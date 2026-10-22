@@ -82,9 +82,12 @@ class MainViewModel @Inject constructor(
 
     private fun observeOrientation() {
         viewModelScope.launch {
-            getOrientationUseCase().collect { orientation ->
-                Log.d("MainViewModel", "New orientation: $orientation")
-                _state.update { it.copy(orientation = orientation) }
+            screenStateRepository.isScreenOff().collectLatest { screenOff ->
+                if (!screenOff) {
+                    getOrientationUseCase().collect { orientation ->
+                        _state.update { it.copy(orientation = orientation) }
+                    }
+                }
             }
         }
     }

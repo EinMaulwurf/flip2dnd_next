@@ -5,10 +5,18 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
-import android.os.SystemClock
-import android.provider.Settings
+import android.os.Handler
+import android.os.Looper
+import android.media.AudioManager
+import android.media.AudioDeviceCallback
+import android.media.AudioDeviceInfo
+import android.media.AudioPlaybackConfiguration
+import java.util.Calendar
+import dev.robin.flip_2_dnd.core.ScheduleWindow
+import dev.robin.flip_2_dnd.core.SensorMonitoringSession
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import dagger.hilt.android.AndroidEntryPoint
@@ -27,6 +35,7 @@ private const val FLIP_NOTIFICATION_ID = 2
 private const val DND_NOTIFICATION_ID = 3
 private const val SERVICE_CHANNEL_ID = "FlipDetectorChannel"
 private const val FLIP_CHANNEL_ID = "FlipStateChannel"
+private const val ACTION_REEVALUATE = "dev.robin.flip_2_dnd.REEVALUATE"
 
 @AndroidEntryPoint
 class FlipDetectorService : Service() {
@@ -34,7 +43,20 @@ class FlipDetectorService : Service() {
         private set
     private lateinit var dndService: DndService
     private lateinit var powerManager: PowerManager
-    private lateinit var wakeLock: PowerManager.WakeLock
+    private lateinit var alarmManager: AlarmManager
+    private lateinit var audioManager: AudioManager
+    private var screenReceiverRegistered = false
+    private val reevaluations = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    private val scheduleIntent by lazy {
+        PendingIntent.getService(this, 10, Intent(this, FlipDetectorService::class.java).setAction(ACTION_REEVALUATE),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+    }
+    private val audioDevices = object : AudioDeviceCallback() {
+        override fun onAudioDevicesAdded(added: Array<out AudioDeviceInfo>) { requestReevaluation() }
+        override fun onAudioDevicesRemoved(removed: Array<out AudioDeviceInfo>) { requestReevaluation() }
+    }
+    private var playbackCallback: AudioManager.AudioPlaybackCallback? = null
+    private var legacyMediaRetry: Job? = null
     
     @Inject
     lateinit var settingsRepository: SettingsRepository
@@ -42,7 +64,15 @@ class FlipDetectorService : Service() {
     @Inject
     lateinit var dndRepository: DndRepository
     
-    private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private val initialSettings = mutableListOf<CompletableDeferred<Unit>>()
+
+    private fun observeSetting(block: suspend (CompletableDeferred<Unit>) -> Unit) {
+        val ready = CompletableDeferred<Unit>()
+        initialSettings += ready
+        serviceScope.launch { block(ready) }
+    }
+
+    private val serviceScope = CoroutineScope(Dispatchers.Main.immediate + SupervisorJob())
     
     private val _isScreenOff = MutableStateFlow(false)
     private val isScreenOff = _isScreenOff.asStateFlow()
@@ -51,7 +81,10 @@ class FlipDetectorService : Service() {
     private var onlyWhenScreenOff = false
     private var turnScreenOff = false
     private var activationDelaySeconds = 0
-    private var orientationJob: Job? = null
+    private var activatedDuringFaceDown = false
+    private val pendingActivation = dev.robin.flip_2_dnd.core.PendingActivation(serviceScope) { action ->
+        withTransitionWakeLock(this) { sensorService.confirm(action) }
+    }
 
     // DND Activation Schedule settings
     private var dndScheduleEnabled = false
@@ -65,7 +98,6 @@ class FlipDetectorService : Service() {
     private var headphoneDetectionEnabled = false
     private var proximityDetectionEnabled = false
 
-    private lateinit var cameraManager: android.hardware.camera2.CameraManager
 
 
     private val screenStateReceiver = object : BroadcastReceiver() {
@@ -74,8 +106,7 @@ class FlipDetectorService : Service() {
                 Intent.ACTION_SCREEN_OFF -> {
                     Log.d(TAG, "Screen turned OFF")
                     _isScreenOff.value = true
-                    // Ensure wake lock is held when screen is off
-                    acquireWakeLock()
+                    sensorService.setScreenOff(true)
                     
                     // Ensure sensors are monitoring when screen is off
                     if (!sensorService.isRegistered) {
@@ -86,63 +117,47 @@ class FlipDetectorService : Service() {
                 Intent.ACTION_SCREEN_ON -> {
                     Log.d(TAG, "Screen turned ON")
                     _isScreenOff.value = false
-                    // Release wake lock when screen is on to save battery
-                    releaseWakeLock()
+                    sensorService.setScreenOff(false)
                     
                     // Optimization: if 'Only when screen off' is enabled, stop sensors when screen is on
-                    if (onlyWhenScreenOff) {
+                    if (onlyWhenScreenOff && !dndService.isAppEnabledDnd.value) {
                         Log.d(TAG, "Stopping sensor monitoring because screen is ON and 'onlyWhenScreenOff' is enabled")
                         sensorService.stopMonitoring()
                     }
                 }
+                Intent.ACTION_TIME_CHANGED, Intent.ACTION_TIMEZONE_CHANGED -> requestReevaluation()
                 Intent.ACTION_SHUTDOWN -> {
                     Log.d(TAG, "System shutdown - Stopping sensor monitoring")
                     sensorService.stopMonitoring()
-                    releaseWakeLock()
                 }
                 Intent.ACTION_REBOOT -> {
                     Log.d(TAG, "System reboot - Stopping sensor monitoring")
                     sensorService.stopMonitoring()
-                    releaseWakeLock()
                 }
             }
         }
     }
 
-    private fun acquireWakeLock() {
-        try {
-            if (!::wakeLock.isInitialized) {
-                wakeLock = powerManager.newWakeLock(
-                    PowerManager.PARTIAL_WAKE_LOCK,
-                    "Flip2DND::ServiceWakeLock"
-                ).apply {
-                    setReferenceCounted(false)
-                }
-            }
-            if (!wakeLock.isHeld) {
-                wakeLock.acquire(10*60*1000L) // 10 minutes timeout
-                Log.d(TAG, "Wake lock acquired")
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error acquiring wake lock: ${e.message}")
-        }
+    private fun requestReevaluation() {
+        reevaluations.tryEmit(Unit)
+        scheduleNextCheck()
     }
 
-    private fun releaseWakeLock() {
-        try {
-            if (::wakeLock.isInitialized && wakeLock.isHeld) {
-                wakeLock.release()
-                Log.d(TAG, "Wake lock released")
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error releasing wake lock: ${e.message}")
-        }
+    private fun scheduleNextCheck() {
+        if (!::alarmManager.isInitialized) return
+        alarmManager.cancel(scheduleIntent)
+        if (!dndScheduleEnabled) return
+        val next = ScheduleWindow.nextChange(dndScheduleStartTime, dndScheduleEndTime, dndScheduleDays,
+            Calendar.getInstance()) ?: return
+        // At most actual schedule boundaries wake the CPU; no per-second timer or exact-alarm permission.
+        alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, next, scheduleIntent)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG, "onStartCommand: Starting FlipDetectorService")
         val notification = createServiceNotification()
         startForeground(SERVICE_NOTIFICATION_ID, notification)
+        if (intent?.action == ACTION_REEVALUATE) requestReevaluation()
         return START_STICKY
     }
 
@@ -151,18 +166,26 @@ class FlipDetectorService : Service() {
         Log.d(TAG, "onCreate: Initializing FlipDetectorService")
         
         try {
+            createNotificationChannels()
+            startForeground(SERVICE_NOTIFICATION_ID, createServiceNotification())
             sensorService = SensorService(this, settingsRepository)
             dndService = DndService(this, settingsRepository, dndRepository)
             // settingsRepository is now injected by Hilt
             powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-            cameraManager = getSystemService(Context.CAMERA_SERVICE) as android.hardware.camera2.CameraManager
+            alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            audioManager.registerAudioDeviceCallback(audioDevices, Handler(Looper.getMainLooper()))
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                playbackCallback = object : AudioManager.AudioPlaybackCallback() {
+                    override fun onPlaybackConfigChanged(configs: MutableList<AudioPlaybackConfiguration>?) {
+                        requestReevaluation()
+                    }
+                }.also { audioManager.registerAudioPlaybackCallback(it, Handler(Looper.getMainLooper())) }
+            }
             
             // Initialize screen state
             _isScreenOff.value = !powerManager.isInteractive
             Log.d(TAG, "Initial screen state: ${if (_isScreenOff.value) "OFF" else "ON"}")
-            
-            // Create notification channels
-            createNotificationChannels()
             
             // Register screen state receiver
             val filter = IntentFilter().apply {
@@ -170,22 +193,23 @@ class FlipDetectorService : Service() {
                 addAction(Intent.ACTION_SCREEN_OFF)
                 addAction(Intent.ACTION_SHUTDOWN)
                 addAction(Intent.ACTION_REBOOT)
+                addAction(Intent.ACTION_TIME_CHANGED)
+                addAction(Intent.ACTION_TIMEZONE_CHANGED)
             }
             registerReceiver(screenStateReceiver, filter)
+            screenReceiverRegistered = true
             
             // Start sensor monitoring regardless of screen state
             Log.d(TAG, "Starting initial sensor monitoring")
             sensorService.startMonitoring()
             
-            // Initial wake lock acquisition
-            if (_isScreenOff.value) {
-                acquireWakeLock()
-            }
             
             // Observe proximity setting
-            serviceScope.launch {
+            observeSetting { ready ->
                 settingsRepository.getProximityDetectionEnabled().collect { enabled ->
                     proximityDetectionEnabled = enabled
+                    ready.complete(Unit)
+                    requestReevaluation()
                     Log.d(TAG, "Settings updated - Proximity detection: $enabled")
                     
                     val detectionManager = dev.robin.flip_2_dnd.core.ServiceLocator.getDetectionManager(this@FlipDetectorService)
@@ -201,12 +225,14 @@ class FlipDetectorService : Service() {
             }
             
             // Observe settings changes
-            serviceScope.launch {
+            observeSetting { ready ->
                 settingsRepository.getScreenOffOnlyEnabled().collect { enabled ->
                     onlyWhenScreenOff = enabled
+                    ready.complete(Unit)
+                    requestReevaluation()
                     Log.d(TAG, "Settings updated - Only when screen off: $enabled")
                     
-                    if (enabled && !isScreenOff.value) {
+                    if (enabled && !isScreenOff.value && !dndService.isAppEnabledDnd.value) {
                         Log.d(TAG, "Stopping sensors because screen is ON and 'onlyWhenScreenOff' was just enabled")
                         sensorService.stopMonitoring()
                     } else if (!enabled && !sensorService.isRegistered) {
@@ -216,82 +242,114 @@ class FlipDetectorService : Service() {
                 }
             }
 
-            serviceScope.launch {
+            observeSetting { ready ->
                 settingsRepository.getTurnScreenOffEnabled().collect { enabled ->
                     turnScreenOff = enabled
+                    ready.complete(Unit)
+                    requestReevaluation()
                     Log.d(TAG, "Settings updated - Turn screen off: $enabled")
                 }
             }
 
-            serviceScope.launch {
+            observeSetting { ready ->
                 settingsRepository.getActivationDelay().collect { delay ->
                     activationDelaySeconds = delay
+                    ready.complete(Unit)
+                    requestReevaluation()
                     Log.d(TAG, "Settings updated - Activation delay: $delay seconds")
                 }
             }
             
             // Observe detection settings
-            serviceScope.launch {
+            observeSetting { ready ->
                 settingsRepository.getFlashlightDetectionEnabled().collect { enabled ->
                     flashlightDetectionEnabled = enabled
+                    ready.complete(Unit)
+                    requestReevaluation()
                     Log.d(TAG, "Settings updated - Flashlight detection: $enabled")
                 }
             }
 
-            serviceScope.launch {
+            observeSetting { ready ->
                 settingsRepository.getMediaPlaybackDetectionEnabled().collect { enabled ->
                     mediaPlaybackDetectionEnabled = enabled
+                    ready.complete(Unit)
+                    requestReevaluation()
                     Log.d(TAG, "Settings updated - Media playback detection: $enabled")
                 }
             }
 
-            serviceScope.launch {
+            observeSetting { ready ->
                 settingsRepository.getHeadphoneDetectionEnabled().collect { enabled ->
                     headphoneDetectionEnabled = enabled
+                    ready.complete(Unit)
+                    requestReevaluation()
                     Log.d(TAG, "Settings updated - Headphone detection: $enabled")
                 }
             }
 
 
             // Observe DND activation schedule settings
-            serviceScope.launch {
+            observeSetting { ready ->
                 settingsRepository.getDndScheduleEnabled().collect { enabled ->
                     dndScheduleEnabled = enabled
+                    ready.complete(Unit)
+                    requestReevaluation()
                     Log.d(TAG, "Settings updated - DND Schedule enabled: $enabled")
                 }
             }
 
-            serviceScope.launch {
+            observeSetting { ready ->
                 settingsRepository.getDndScheduleStartTime().collect { time ->
                     dndScheduleStartTime = time
+                    ready.complete(Unit)
+                    requestReevaluation()
                     Log.d(TAG, "Settings updated - DND Schedule start time: $time")
                 }
             }
 
-            serviceScope.launch {
+            observeSetting { ready ->
                 settingsRepository.getDndScheduleEndTime().collect { time ->
                     dndScheduleEndTime = time
+                    ready.complete(Unit)
+                    requestReevaluation()
                     Log.d(TAG, "Settings updated - DND Schedule end time: $time")
                 }
             }
 
-            serviceScope.launch {
+            observeSetting { ready ->
                 settingsRepository.getDndScheduleDays().collect { days ->
                     dndScheduleDays = days
+                    ready.complete(Unit)
+                    requestReevaluation()
                     Log.d(TAG, "Settings updated - DND Schedule days: $days")
                 }
             }
 
-            // Observe orientation changes
+            // Observe orientation changes after all persisted eligibility settings are loaded.
             serviceScope.launch {
-                combine(
-                    sensorService.orientation,
-                    isScreenOff,
-                    isProximityCovered
-                ) { orientation, screenOff, _ ->
-                    Pair(orientation, screenOff)
-                }.collect { (orientation, screenOff) ->
-                    handleOrientationChange(orientation, screenOff)
+                initialSettings.forEach { it.await() }
+                merge(
+                    sensorService.orientation.map { Unit },
+                    isScreenOff.map { Unit },
+                    isProximityCovered.map { Unit },
+                    dndRepository.isActivated().map { Unit },
+                    dndService.flashlightOn.map { Unit },
+                    reevaluations,
+                ).conflate().collect {
+                    try {
+                        withTransitionWakeLock(this@FlipDetectorService) {
+                            handleOrientationChange(sensorService.orientation.value, isScreenOff.value)
+                        }
+                    } catch (e: TimeoutCancellationException) {
+                        Log.e(TAG, "Flip processing exceeded its wake-lock deadline", e)
+                    }
+                }
+            }
+            serviceScope.launch {
+                sensorService.monitoringMode.collect {
+                    val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                    notificationManager.notify(SERVICE_NOTIFICATION_ID, createServiceNotification())
                 }
             }
         } catch (e: Exception) {
@@ -300,161 +358,109 @@ class FlipDetectorService : Service() {
         }
     }
 
+    private fun canActivate(screenOff: Boolean): Boolean {
+        if (onlyWhenScreenOff && !screenOff) return false
+        if (dndScheduleEnabled && !isWithinDndSchedule()) return false
+        if (flashlightDetectionEnabled && dndService.isFlashlightOn) return false
+        val detection = dev.robin.flip_2_dnd.core.ServiceLocator.getDetectionManager(this)
+        if (mediaPlaybackDetectionEnabled && detection.isMediaPlaying()) return false
+        if (headphoneDetectionEnabled && detection.areHeadphonesConnected()) return false
+        if (proximityDetectionEnabled && !isProximityCovered.value) return false
+        return true
+    }
+
     private suspend fun handleOrientationChange(orientation: PhoneOrientation, screenOff: Boolean) {
         try {
-            Log.d(TAG, "Screen state: ${if (screenOff) "OFF" else "ON"}, Only when screen off: $onlyWhenScreenOff")
-            Log.d(TAG, "Handling orientation change: $orientation")
-
-            // Cancel any existing orientation job
-            orientationJob?.cancel()
-
-            // Update DND status before making any changes
             dndService.updateDndStatus()
-            val currentDndState = dndService.isDndEnabled.value
-            val isAppEnabled = dndService.isAppEnabledDnd.value
-            Log.d(TAG, "Current DND state: enabled=$currentDndState, appEnabled=$isAppEnabled")
-
-            when (orientation) {
-                PhoneOrientation.FACE_DOWN -> {
-                    // Check DND schedule if enabled
-                    if (dndScheduleEnabled) {
-                        val scheduleManager = dev.robin.flip_2_dnd.core.ServiceLocator.getScheduleManager(this@FlipDetectorService)
-                        if (!scheduleManager.isWithinSchedule(dndScheduleStartTime, dndScheduleEndTime, dndScheduleDays)) {
-                            Log.d(TAG, "Current time is outside DND schedule - Ignoring face down")
-                            return
-                        }
-                    }
-
-                    if (!currentDndState) {
-                        // Only check screen off and stability when turning ON DND
-                        if (onlyWhenScreenOff && !screenOff) {
-                            Log.d(TAG, "Screen is ON and 'Only when screen off' is enabled - Ignoring face down")
-                            return
-                        }
-                        
-                         // Check Detection Settings
-                        if (flashlightDetectionEnabled && dndService.isFlashlightOn) {
-                            Log.d(TAG, "Flashlight is ON - Ignoring face down")
-                            return
-                        }
-
-                        val detectionManager = dev.robin.flip_2_dnd.core.ServiceLocator.getDetectionManager(this@FlipDetectorService)
-
-                        if (mediaPlaybackDetectionEnabled && detectionManager.isMediaPlaying()) {
-                            Log.d(TAG, "Media is playing - Ignoring face down")
-                            return
-                        }
-
-                        if (headphoneDetectionEnabled && detectionManager.areHeadphonesConnected()) {
-                            Log.d(TAG, "Headphones are connected - Ignoring face down")
-                            return
-                        }
-
-                        if (proximityDetectionEnabled && !detectionManager.isProximityCovered()) {
-                            Log.d(TAG, "Proximity is NOT covered - Ignoring face down")
-                            return
-                        }
-
-                        Log.d(TAG, "Phone is face down and DND is OFF - Starting $activationDelaySeconds-second delay")
-                        showFlipDetectedNotification()
-                        orientationJob = serviceScope.launch {
-                            delay(activationDelaySeconds * 1000L)
-                            // Double check screen state and orientation after delay
-                            if (onlyWhenScreenOff && !isScreenOff.value) {
-                                Log.d(TAG, "Screen turned ON during delay - Cancelling DND toggle")
-                                return@launch
-                            }
-                            if (proximityDetectionEnabled && !_isProximityCovered.value) {
-                                Log.d(TAG, "Proximity uncovered during delay - Cancelling DND toggle")
-                                return@launch
-                            }
-                            // Filters can change while the activation delay is running.
-                            if (flashlightDetectionEnabled && dndService.isFlashlightOn ||
-                                mediaPlaybackDetectionEnabled && detectionManager.isMediaPlaying() ||
-                                headphoneDetectionEnabled && detectionManager.areHeadphonesConnected()) return@launch
-                            if (sensorService.orientation.value == PhoneOrientation.FACE_DOWN) {
-                                Log.d(TAG, "$activationDelaySeconds-second delay completed, phone still face down - Enabling DND")
-                                dndService.toggleDnd()
-                                showDndStateNotification(true)
-                                if (!isScreenOff.value && turnScreenOff) {
-                                    TurnScreenOffService.turnScreenOff(this@FlipDetectorService)
-                                }
-
-                                // Handle Battery Saver
-                                try {
-                                    val enableBatterySaver = settingsRepository.getBatterySaverOnFlipEnabled().first()
-                                    if (enableBatterySaver) {
-                                        dev.robin.flip_2_dnd.core.ServiceLocator.getPowerController(this@FlipDetectorService)
-                                            .setBatterySaverEnabled(true)
-                                    }
-                                } catch (e: Exception) {
-                                    Log.e(TAG, "Error handling battery saver: ${e.message}", e)
-                                }
-                            } else {
-                                Log.d(TAG, "Phone orientation changed during delay - Cancelling DND toggle")
-                            }
-                        }
-                    } else {
-                        Log.d(TAG, "Phone is face down but DND is already ON - No action needed")
-                    }
-                }
-                else -> {
-                    Log.d(TAG, "Phone is not face down: currentDndState=$currentDndState, isAppEnabled=$isAppEnabled")
-                    if (currentDndState && isAppEnabled) {
-                        Log.d(TAG, "Phone is not face down ($orientation) and DND was enabled by app - Disabling DND")
-                        dndService.toggleDnd()
-                        showDndStateNotification(false)
-
-                        // Disable battery saver when flipping back up
-                        serviceScope.launch {
-                            try {
-                                val enableBatterySaver = settingsRepository.getBatterySaverOnFlipEnabled().first()
-                                if (enableBatterySaver) {
-                                    dev.robin.flip_2_dnd.core.ServiceLocator.getPowerController(this@FlipDetectorService)
-                                        .setBatterySaverEnabled(false)
-                                }
-                            } catch (e: Exception) {
-                                Log.e(TAG, "Error disabling battery saver: ${e.message}", e)
-                            }
-                        }
-                    } else if (currentDndState) {
-                        Log.d(TAG, "Phone is not face down ($orientation) but DND was enabled by user - No action needed")
-                    } else {
-                        Log.d(TAG, "Phone is not face down ($orientation) and DND is already OFF - No action needed")
-                    }
-                }
+            if (orientation == PhoneOrientation.UNKNOWN) {
+                activatedDuringFaceDown = false
+                pendingActivation.cancel()
+                return
             }
+            if (orientation == PhoneOrientation.FACE_DOWN) {
+                if (dndService.isDndEnabled.value) {
+                    activatedDuringFaceDown = true
+                    return
+                }
+                // Respect a manual DND-off change until the next physical flip.
+                if (activatedDuringFaceDown) return
+                if (!canActivate(screenOff)) {
+                    pendingActivation.cancel()
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && mediaPlaybackDetectionEnabled &&
+                        dev.robin.flip_2_dnd.core.ServiceLocator.getDetectionManager(this).isMediaPlaying() &&
+                        legacyMediaRetry?.isActive != true) {
+                        legacyMediaRetry = serviceScope.launch {
+                            delay(5000)
+                            legacyMediaRetry = null
+                            requestReevaluation()
+                        }
+                    }
+                    return
+                }
+                // Repeated screen/proximity events and filter checks must not restart the delay
+                // or cancel feedback for a transition that has already completed.
+                pendingActivation.startIfIdle(
+                    activationDelaySeconds.coerceAtLeast(0) * 1000L,
+                    onStarted = { showFlipDetectedNotification() }
+                ) {
+                    if (sensorService.orientation.value != PhoneOrientation.FACE_DOWN ||
+                        !canActivate(isScreenOff.value)) return@startIfIdle
+                    if (dndService.setActivated(true)) {
+                        activatedDuringFaceDown = true
+                        showDndStateNotification(true)
+                        if (!isScreenOff.value && turnScreenOff) {
+                            TurnScreenOffService.turnScreenOff(this@FlipDetectorService)
+                        }
+                        updateBatterySaver(true)
+                    }
+                }
+            } else {
+                activatedDuringFaceDown = false
+                legacyMediaRetry?.cancel()
+                pendingActivation.cancel()
+                if (dndService.isDndEnabled.value && dndService.isAppEnabledDnd.value) {
+                    if (dndService.setActivated(false)) {
+                        showDndStateNotification(false)
+                        updateBatterySaver(false)
+                    }
+                }
+                if (onlyWhenScreenOff && !screenOff) sensorService.stopMonitoring()
+            }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
-            Log.e(TAG, "Error handling orientation change: ${e.localizedMessage}", e)
+            Log.e(TAG, "Error handling orientation change", e)
+        }
+    }
+
+    private suspend fun updateBatterySaver(enabled: Boolean) {
+        try {
+            if (settingsRepository.getBatterySaverOnFlipEnabled().first()) {
+                dev.robin.flip_2_dnd.core.ServiceLocator.getPowerController(this)
+                    .setBatterySaverEnabled(enabled)
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e(TAG, "Error changing battery saver", e)
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         Log.d(TAG, "onDestroy: Cleaning up FlipDetectorService")
-        try {
-            // Unregister screen state receiver
-            unregisterReceiver(screenStateReceiver)
-            
-             // Unregister torch callback and cleanup DndService
-            if (::dndService.isInitialized) {
-                dndService.cleanup()
+        serviceScope.cancel()
+        if (::alarmManager.isInitialized) alarmManager.cancel(scheduleIntent)
+        if (screenReceiverRegistered) unregisterReceiver(screenStateReceiver)
+        if (::audioManager.isInitialized) {
+            audioManager.unregisterAudioDeviceCallback(audioDevices)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                playbackCallback?.let { audioManager.unregisterAudioPlaybackCallback(it) }
             }
-            
-            // Stop sensor monitoring
-            sensorService.stopMonitoring()
-            dev.robin.flip_2_dnd.core.ServiceLocator.getDetectionManager(this).unregisterProximityListener()
-            
-            // Cancel any pending orientation job
-            orientationJob?.cancel()
-            
-            // Cancel all coroutines
-            serviceScope.cancel()
-            
-            Log.d(TAG, "Service cleanup completed successfully")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error during service cleanup: ${e.localizedMessage}", e)
         }
+        if (::dndService.isInitialized) dndService.cleanup()
+        if (::sensorService.isInitialized) sensorService.cleanup()
+        dev.robin.flip_2_dnd.core.ServiceLocator.getDetectionManager(this).unregisterProximityListener()
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -465,6 +471,7 @@ class FlipDetectorService : Service() {
     }
 
     private fun createNotificationChannels() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         // Service channel
@@ -492,7 +499,6 @@ class FlipDetectorService : Service() {
     }
 
     private fun showFlipDetectedNotification() {
-        // Use runBlocking to get the current notification preference synchronously
         serviceScope.launch {
             val notificationsEnabled = settingsRepository.getNotificationsEnabled().first()
             if (!notificationsEnabled) {
@@ -521,7 +527,6 @@ class FlipDetectorService : Service() {
     }
 
     private fun showDndStateNotification(enabled: Boolean) {
-        // Use runBlocking to get the current notification preference synchronously
         serviceScope.launch {
             val notificationsEnabled = settingsRepository.getNotificationsEnabled().first()
             if (!notificationsEnabled) {
@@ -547,18 +552,6 @@ class FlipDetectorService : Service() {
     // Moved to PowerController
 
     private fun createServiceNotification(): Notification {
-        val channelName = getString(R.string.notification_service_channel_name)
-        val channel = NotificationChannel(
-            SERVICE_CHANNEL_ID,
-            channelName,
-            NotificationManager.IMPORTANCE_LOW
-        ).apply {
-            description = getString(R.string.notification_service_channel_desc)
-        }
-
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.createNotificationChannel(channel)
-
         val pendingIntent = Intent(this, MainActivity::class.java).let { notificationIntent ->
             PendingIntent.getActivity(
                 this, 0, notificationIntent,
@@ -568,7 +561,13 @@ class FlipDetectorService : Service() {
 
         return NotificationCompat.Builder(this, SERVICE_CHANNEL_ID)
             .setContentTitle(getString(R.string.app_name))
-            .setContentText(getString(R.string.notification_monitoring_text))
+            .setContentText(getString(when {
+                !::sensorService.isInitialized -> R.string.notification_monitoring_text
+                sensorService.monitoringMode.value == SensorMonitoringSession.Mode.LEGACY -> R.string.notification_monitoring_higher_power
+                sensorService.monitoringMode.value == SensorMonitoringSession.Mode.TILT ||
+                    sensorService.monitoringMode.value == SensorMonitoringSession.Mode.WAKE_UP_ACCELEROMETER -> R.string.notification_monitoring_battery_saving
+                else -> R.string.notification_monitoring_text
+            }))
             .setSmallIcon(R.drawable.ic_stat_flip)
             .setContentIntent(pendingIntent)
             .build()

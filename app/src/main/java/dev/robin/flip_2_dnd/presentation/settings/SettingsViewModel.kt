@@ -873,9 +873,9 @@ class SettingsViewModel @Inject constructor(
 				val baseAmplitude = dev.robin.flip_2_dnd.core.VibrationFeedback.amplitude(customStrength)
 				if (baseAmplitude == 0 || pattern.pattern.isEmpty()) return
 				val amplitudes = IntArray(pattern.pattern.size) { index ->
-					if (index % 2 == 0) 0 else baseAmplitude
+					if (index % 2 == 0) 0 else if (vibrator.hasAmplitudeControl()) baseAmplitude else android.os.VibrationEffect.DEFAULT_AMPLITUDE
 				}
-				val adjustedPattern = dev.robin.flip_2_dnd.core.VibrationFeedback.timings(pattern.pattern, customStrength)
+				val adjustedPattern = dev.robin.flip_2_dnd.core.VibrationFeedback.timings(pattern.pattern, customStrength, vibrator.hasAmplitudeControl())
 				vibrator.vibrate(android.os.VibrationEffect.createWaveform(adjustedPattern, amplitudes, -1))
 			} else {
 				@Suppress("DEPRECATION")

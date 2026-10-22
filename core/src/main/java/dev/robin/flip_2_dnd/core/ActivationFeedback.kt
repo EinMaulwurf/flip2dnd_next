@@ -7,7 +7,7 @@ object ActivationFeedback {
     suspend fun transition(
         totalSilence: Boolean,
         applyState: suspend () -> Unit,
-        playFeedback: () -> Unit,
+        playFeedback: suspend () -> Unit,
     ) {
         if (totalSilence) {
             playFeedback()

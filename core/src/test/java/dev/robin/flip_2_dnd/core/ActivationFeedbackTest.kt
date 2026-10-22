@@ -31,6 +31,16 @@ class ActivationFeedbackTest {
         assertEquals(listOf("feedback", "mute"), events)
         assertEquals(2000, testScheduler.currentTime)
     }
+    @Test fun pickupDuringTotalSilenceFeedbackCancelsActivation() = runTest {
+        var activated = false
+        val job = launch { ActivationFeedback.transition(true, { activated = true }, {}) }
+        runCurrent()
+        advanceTimeBy(500)
+        job.cancel()
+        advanceUntilIdle()
+        assertFalse(activated)
+    }
+
     @Test fun cancelledTransitionsDoNotPlayStaleFeedback() = runTest {
         var played = false
         val job = launch { ActivationFeedback.transition(false, {}, { played = true }) }

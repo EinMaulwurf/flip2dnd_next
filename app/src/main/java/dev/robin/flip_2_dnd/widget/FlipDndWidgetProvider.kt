@@ -7,6 +7,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
+import androidx.core.content.ContextCompat
 import dev.robin.flip_2_dnd.R
 import dev.robin.flip_2_dnd.services.FlipDetectorService
 
@@ -43,7 +44,7 @@ class FlipDndWidgetProvider : AppWidgetProvider() {
             if (isServiceRunning) {
                 context.stopService(serviceIntent)
             } else {
-                context.startForegroundService(serviceIntent)
+                ContextCompat.startForegroundService(context, serviceIntent)
             }
 
             // Update all widgets after toggling the service

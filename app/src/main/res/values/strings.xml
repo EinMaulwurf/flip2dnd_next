@@ -299,4 +299,6 @@
     <string name="vibration_strength_percent">%1$d%% · Lower values give softer, shorter pulses</string>
     <string name="proximity_unavailable">This device does not report a proximity sensor. Leave this off to keep flip detection working.</string>
     <string name="xiaomi_autostart_hint">On Xiaomi, also allow this app in Settings → Apps → Permissions → Background autostart. If detection stops in the background, check the app battery settings.</string>
+    <string name="notification_monitoring_battery_saving" translatable="false">Monitoring flips · Battery-saving mode</string>
+    <string name="notification_monitoring_higher_power" translatable="false">Monitoring flips · Higher battery use on this device</string>
 </resources>

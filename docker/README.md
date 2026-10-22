@@ -86,3 +86,14 @@ Validation for `12.1.1-personal.2` (1213), 2026-10-22:
 - Launcher artwork was rendered and inspected. Notification resources were checked
   for transparent backgrounds; their appearance and Xiaomi system haptics still
   need the physical-device acceptance checks above.
+
+
+## Personal v3 battery and reliability update
+
+Validation for `12.1.1-personal.3` (1214), 2026-10-22:
+
+- All 38 core unit tests pass, including simulated multi-hour idle and wake-lock cancellation tests.
+- `:app:assembleDebug` succeeds. `:app:lintDebug` completes with 25 existing translation errors and no API-level errors.
+- APK signature verification passes and its certificate matches Personal v2 for in-place upgrades.
+- Installable artifact: `artifacts/Flip-2-DND-Personal-v3.apk`, with an adjacent `.sha256` file.
+- Hardware battery use has not been measured. See [the monitoring strategies and device checklist](../docs/reliability-and-battery.md), especially the higher-power fallback for phones without usable wake-up sensors.

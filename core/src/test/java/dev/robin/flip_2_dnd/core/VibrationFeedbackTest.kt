@@ -22,6 +22,11 @@ class VibrationFeedbackTest {
             VibrationFeedback.timings(longArrayOf(0, 200, 100, 200, 400), 0.1f))
     }
 
+    @Test fun amplitudeControlPreservesRhythmAtLowStrength() {
+        val pattern = longArrayOf(0, 200, 100, 200, 400)
+        assertArrayEquals(pattern, VibrationFeedback.timings(pattern, 0.1f, amplitudeControl = true))
+    }
+
     @Test fun outOfRangeStrengthIsClamped() {
         assertEquals(0, VibrationFeedback.amplitude(-1f))
         assertEquals(255, VibrationFeedback.amplitude(2f))

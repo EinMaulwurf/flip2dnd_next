@@ -9,12 +9,14 @@ import android.os.Handler
 import android.os.Looper
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
+import androidx.annotation.RequiresApi
 import dev.robin.flip_2_dnd.R
 import dev.robin.flip_2_dnd.services.FlipDetectorService
 import dev.robin.flip_2_dnd.widget.FlipDndWidgetProvider
 
 private const val ACTION_TOGGLE_SERVICE = "dev.robin.flip_2_dnd.TOGGLE_SERVICE"
 
+@RequiresApi(Build.VERSION_CODES.N)
 class FlipQuickSettingsTileService : TileService() {
     override fun onTileAdded() {
         super.onTileAdded()
