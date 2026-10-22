@@ -1,89 +1,58 @@
 package dev.robin.flip_2_dnd.free
 
 import android.content.Context
+import android.media.AudioAttributes
 import android.media.MediaPlayer
+import android.media.RingtoneManager
 import android.net.Uri
 import android.util.Log
+import dev.robin.flip_2_dnd.core.Sound
 import dev.robin.flip_2_dnd.core.SoundController
 
-class FreeSoundController(private val context: android.content.Context) : SoundController {
-    private val TAG = "FreeSoundController"
+class FreeSoundController(context: Context) : SoundController {
+    private val context = context.applicationContext
     private var mediaPlayer: MediaPlayer? = null
 
-    override fun playSound(sound: dev.robin.flip_2_dnd.core.Sound, uri: String?, volume: Float, useCustomVolume: Boolean) {
-        if (sound == dev.robin.flip_2_dnd.core.Sound.NONE) return
-
-        if (sound == dev.robin.flip_2_dnd.core.Sound.CUSTOM) return // Free version does not support custom sounds
-
+    override fun playSound(sound: Sound, uri: String?, volume: Float, useCustomVolume: Boolean) {
+        stopSound()
+        if (sound == Sound.NONE || (sound == Sound.CUSTOM && uri.isNullOrBlank())) return
+        val player = MediaPlayer()
+        mediaPlayer = player
         try {
-            mediaPlayer?.release()
-        } catch (e: Exception) {
-            Log.e(TAG, "Error playing sound: ${e.message}")
-        }
-        finally {
-            mediaPlayer = null;
-        }
-
-        var player: MediaPlayer? = null
-        try {
-            // setUsage to Alarm to allow sound even if DND is active
-            val attributes = android.media.AudioAttributes.Builder()
-                .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                .setUsage(android.media.AudioAttributes.USAGE_ALARM)
-                .build()
-
-            player = MediaPlayer().apply {
-                setAudioAttributes(attributes)
-            }
-
+            player.setAudioAttributes(AudioAttributes.Builder()
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .setUsage(AudioAttributes.USAGE_ALARM).build())
             when (sound) {
-                dev.robin.flip_2_dnd.core.Sound.SYSTEM_DEFAULT -> {
-                    val notification = android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_NOTIFICATION)
-                    player.setDataSource(context, notification)
-                }
-                else -> {
-                    // Here we use AssetFileDescriptor to be able to apply the attributes before preparing...
-                    context.resources.openRawResourceFd(sound.soundResId).use { afd ->
-                        player.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
-                    }
+                Sound.CUSTOM -> player.setDataSource(context, Uri.parse(uri))
+                Sound.SYSTEM_DEFAULT -> player.setDataSource(context,
+                    RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                else -> context.resources.openRawResourceFd(sound.soundResId).use {
+                    player.setDataSource(it.fileDescriptor, it.startOffset, it.length)
                 }
             }
-
-            player.prepare()
-
-            if (useCustomVolume) {
-                player.setVolume(volume, volume)
-            }
-
-            player.setOnCompletionListener {
-                it.release()
-                if (mediaPlayer == it) mediaPlayer = null
-            }
-
-            player.start()
-
+            val level = if (useCustomVolume) volume.coerceIn(0f, 1f) else 1f
+            player.setVolume(level, level)
+            player.setOnPreparedListener { if (mediaPlayer === it) it.start() }
+            player.setOnCompletionListener { finish(it) }
+            player.setOnErrorListener { failed, _, _ -> finish(failed); true }
+            player.prepareAsync()
         } catch (e: Exception) {
-            Log.e(TAG, "Error playing sound: ${e.message}")
-            // It's good practice to release the player if something went wrong during the loading process...
-            player?.release()
-            player = null
-        }
-        finally {
-            mediaPlayer = player
+            finish(player)
+            Log.w("SoundController", "Cannot play selected sound (the file may have moved)", e)
         }
     }
 
-    override fun previewSound(sound: dev.robin.flip_2_dnd.core.Sound, uri: String?, volume: Float, useCustomVolume: Boolean) {
-        playSound(sound, uri, volume, useCustomVolume)
+    private fun finish(player: MediaPlayer) {
+        if (mediaPlayer === player) mediaPlayer = null
+        player.release()
     }
+
+    override fun previewSound(sound: Sound, uri: String?, volume: Float, useCustomVolume: Boolean) =
+        playSound(sound, uri, volume, useCustomVolume)
 
     override fun stopSound() {
-        mediaPlayer?.stop()
-        mediaPlayer?.release()
-        mediaPlayer = null
+        mediaPlayer?.let { mediaPlayer = null; it.release() }
     }
 
-    override fun release() {
-        stopSound()
-    }
+    override fun release() = stopSound()
 }

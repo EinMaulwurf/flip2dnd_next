@@ -11,12 +11,12 @@ import kotlinx.coroutines.flow.asStateFlow
 class FreeProFeatures(context: Context) : ProFeatureManager {
     override fun autoStartEnabled() = true
     override fun proximityDetectionEnabled() = true
-    override fun advancedSensitivityEnabled() = false
-    override fun delayCustomizationEnabled() = false
-    override fun scheduleEnabled() = false
-    override fun customSoundEnabled() = false
+    override fun advancedSensitivityEnabled() = true
+    override fun delayCustomizationEnabled() = true
+    override fun scheduleEnabled() = true
+    override fun customSoundEnabled() = true
     override fun batterySaverSyncEnabled() = false
-    override fun detectionFiltersEnabled() = false
+    override fun detectionFiltersEnabled() = true
     override fun telegramSupportEnabled() = false
     override fun flashlightFeedbackEnabled() = false
     override fun isPro() = false

@@ -54,6 +54,7 @@ class SensorService(
   private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
   init {
+    scope.launch { settingsRepository.getFlipSensitivity().collect { sensitivity = it.coerceIn(0f, 1f) } }
     // Bind high-sensitivity-related settings to local vars
     scope.launch { settingsRepository.getHighSensitivityModeEnabled().collect { highSensitivityMode = it } }
     scope.launch {

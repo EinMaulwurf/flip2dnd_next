@@ -2,6 +2,9 @@ package dev.robin.flip_2_dnd.free
 
 import android.content.Context
 import android.hardware.Sensor
+import android.media.AudioDeviceInfo
+import android.media.AudioManager
+import android.os.Build
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
@@ -13,8 +16,18 @@ class FreeDetectionManager(context: Context) : DetectionManager, SensorEventList
     private var callback: ((Boolean) -> Unit)? = null
     private var covered = false
 
-    override fun isMediaPlaying() = false
-    override fun areHeadphonesConnected() = false
+    private val audio = context.applicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    override fun isMediaPlaying() = audio.isMusicActive
+    override fun areHeadphonesConnected(): Boolean = audio.getDevices(AudioManager.GET_DEVICES_OUTPUTS).any {
+        when (it.type) {
+            AudioDeviceInfo.TYPE_WIRED_HEADSET, AudioDeviceInfo.TYPE_WIRED_HEADPHONES,
+            AudioDeviceInfo.TYPE_BLUETOOTH_A2DP, AudioDeviceInfo.TYPE_BLUETOOTH_SCO,
+            AudioDeviceInfo.TYPE_USB_DEVICE -> true
+            else -> (Build.VERSION.SDK_INT >= 26 && it.type == AudioDeviceInfo.TYPE_USB_HEADSET) ||
+                Build.VERSION.SDK_INT >= 31 &&
+                (it.type == AudioDeviceInfo.TYPE_BLE_HEADSET || it.type == AudioDeviceInfo.TYPE_BLE_SPEAKER)
+        }
+    }
     override fun isProximityCovered() = covered
 
     override fun registerProximityListener(callback: (Boolean) -> Unit) {
