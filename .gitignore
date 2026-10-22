@@ -18,3 +18,8 @@ app/release/app-release.aab
 .java-version
 .kotlin/errors
 .kotlin/sessions
+
+# Local container build caches and APK output
+.build-cache/
+app/build/
+artifacts/
