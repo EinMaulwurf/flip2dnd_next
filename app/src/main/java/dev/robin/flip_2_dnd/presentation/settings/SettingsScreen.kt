@@ -898,10 +898,10 @@ fun SettingsContent(
                                             sliderPosition = customVibrationStrength
                                         }
                                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                            androidx.compose.material3.FilterChip(selected = previewDndOn,
+                                            androidx.compose.material3.FilterChip(modifier = Modifier.weight(1f), selected = previewDndOn,
                                                 onClick = { previewDndOn = true; viewModel.playSelectedVibration(previewOnPattern, sliderPosition) },
                                                 label = { Text(stringResource(R.string.dnd_on)) })
-                                            androidx.compose.material3.FilterChip(selected = !previewDndOn,
+                                            androidx.compose.material3.FilterChip(modifier = Modifier.weight(1f), selected = !previewDndOn,
                                                 onClick = { previewDndOn = false; viewModel.playSelectedVibration(previewOffPattern, sliderPosition) },
                                                 label = { Text(stringResource(R.string.dnd_off)) })
                                         }
