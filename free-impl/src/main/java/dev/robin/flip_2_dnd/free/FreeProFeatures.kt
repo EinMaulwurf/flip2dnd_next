@@ -9,7 +9,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class FreeProFeatures(context: Context) : ProFeatureManager {
-    override fun autoStartEnabled() = false
+    override fun autoStartEnabled() = true
+    override fun proximityDetectionEnabled() = true
     override fun advancedSensitivityEnabled() = false
     override fun delayCustomizationEnabled() = false
     override fun scheduleEnabled() = false

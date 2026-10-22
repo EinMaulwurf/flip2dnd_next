@@ -286,8 +286,9 @@ class FlipDetectorService : Service() {
             serviceScope.launch {
                 combine(
                     sensorService.orientation,
-                    isScreenOff
-                ) { orientation, screenOff ->
+                    isScreenOff,
+                    isProximityCovered
+                ) { orientation, screenOff, _ ->
                     Pair(orientation, screenOff)
                 }.collect { (orientation, screenOff) ->
                     handleOrientationChange(orientation, screenOff)
@@ -438,6 +439,7 @@ class FlipDetectorService : Service() {
             
             // Stop sensor monitoring
             sensorService.stopMonitoring()
+            dev.robin.flip_2_dnd.core.ServiceLocator.getDetectionManager(this).unregisterProximityListener()
             
             // Cancel any pending orientation job
             orientationJob?.cancel()
