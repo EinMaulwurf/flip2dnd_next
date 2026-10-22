@@ -185,26 +185,26 @@ fun BottomNavigationSection(
     dndGranted: Boolean,
     batteryGranted: Boolean
 ) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(24.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+            .padding(horizontal = 20.dp, vertical = 12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         // Page Indicators
         Row(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             repeat(4) { index ->
                 val isSelected = pagerState.currentPage == index
-                val width = if (isSelected) 32.dp else 12.dp
+                val width = if (isSelected) 24.dp else 8.dp
                 val color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh
 
                 Box(
                     modifier = Modifier
-                        .height(12.dp)
+                        .height(8.dp)
                         .width(width)
                         .clip(CircleShape)
                         .background(color)
@@ -226,8 +226,8 @@ fun BottomNavigationSection(
             },
             enabled = if (isLastPage) true else canProceed,
             shape = MaterialTheme.shapes.large,
-            contentPadding = PaddingValues(horizontal = 32.dp, vertical = 16.dp),
-            modifier = Modifier.height(56.dp)
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
         ) {
             Text(
                 text = if (isLastPage) stringResource(id = R.string.onboarding_get_started) else stringResource(id = R.string.onboarding_next),

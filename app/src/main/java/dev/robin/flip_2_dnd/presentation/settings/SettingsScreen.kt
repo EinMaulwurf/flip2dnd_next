@@ -1801,7 +1801,7 @@ fun SettingsContent(
                     SettingsSwitchItem(
                         title = stringResource(id = R.string.proximity_detection),
                         description = stringResource(if (hasProximitySensor) R.string.proximity_detection_description else R.string.proximity_unavailable),
-                        enabled = hasProximitySensor,
+                        enabled = hasProximitySensor || proximityDetectionEnabled,
                         checked = proximityDetectionEnabled,
                         onCheckedChange = {
                             if (ServiceLocator
