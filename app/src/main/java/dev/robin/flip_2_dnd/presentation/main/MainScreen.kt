@@ -56,7 +56,7 @@ fun MainScreen(
                 ),
             ) {
                 Icon(
-                    Icons.Default.ScreenRotation,
+                    painterResource(R.drawable.ic_stat_flip),
                     stringResource(if (state.isServiceRunning) R.string.stop_service else R.string.start_service),
                     modifier = Modifier.size(64.dp),
                 )
