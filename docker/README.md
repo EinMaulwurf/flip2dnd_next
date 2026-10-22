@@ -45,3 +45,22 @@ Phone acceptance checks (requires an actual device):
    then cover it without moving the phone. DND should activate after the delay;
    uncovering during the delay should cancel activation. Turning face up restores
    the prior DND state as usual. Repeat with the screen off.
+
+Validation on 2026-10-22:
+
+- `:app:assembleDebug`: successful, Java 17 / SDK 36 in Docker.
+- `:core:testDebugUnitTest`: 4 tests passed, 0 failures or skips.
+- `apksigner verify`: successful (v1 and v2 signatures).
+- APK metadata: `dev.robin.flip_2_dnd.personal`, version `12.1.1-personal.1`
+  (1212), launcher label `Flip 2 DND Personal`, including German. Contains arm64-v8a.
+- `:app:lintDebug`: completed with 50 errors, 212 warnings, and 7 hints. The build
+  inherits `abortOnError = false`; this is not a clean lint result. Errors comprise
+  25 older-Android API checks, 14 extra translations, and 11 missing translations
+  (including English fallback for the three new messages outside German). No
+  remaining indentation findings. The API findings are in upstream code that
+  supports Android 6+; the new feature code is not flagged for API compatibility.
+- No physical device or emulator testing was performed. Boot/update behavior,
+  proximity sensor behavior, and perceived vibration strength require phone checks.
+
+The generated APK is copied to `artifacts/Flip-2-DND-Personal.apk`, with its SHA-256
+in the adjacent `.sha256` file. Build artifacts and signing keys are not committed.
