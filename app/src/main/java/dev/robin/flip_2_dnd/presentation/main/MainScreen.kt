@@ -73,7 +73,7 @@ fun MainScreen(
             Text(stringResource(R.string.onboarding_simple_desc),
                 style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
-            OutlinedButton(onClick = onSettingsClick) {
+            OutlinedButton(onClick = onSettingsClick, shape = MaterialTheme.shapes.large) {
                 Icon(Icons.Default.Settings, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.settings))
