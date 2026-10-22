@@ -8,6 +8,7 @@ interface ProFeatureManager {
     fun customSoundEnabled(): Boolean
     fun batterySaverSyncEnabled(): Boolean
     fun detectionFiltersEnabled(): Boolean
+    fun proximityDetectionEnabled(): Boolean = false
     fun telegramSupportEnabled(): Boolean
     fun flashlightFeedbackEnabled(): Boolean
     fun isPro(): Boolean

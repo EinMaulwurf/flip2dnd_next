@@ -857,19 +857,18 @@ class SettingsViewModel @Inject constructor(
 			}
 
 			if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-				val baseAmplitude = (255 * customStrength).toInt().coerceIn(1, 255)
-				val amplitudes = IntArray(pattern.pattern.size) { index ->
-					if (index % 2 == 0) 0 else baseAmplitude
-				}
-
-				val adjustedPattern = pattern.pattern.map { duration ->
-					duration.coerceAtLeast(50L)
-				}.toLongArray()
-
-				vibrator.vibrate(android.os.VibrationEffect.createWaveform(adjustedPattern, amplitudes, -1))
+				val baseAmplitude = dev.robin.flip_2_dnd.core.VibrationFeedback.amplitude(customStrength)
+                    if (baseAmplitude == 0 || pattern.pattern.isEmpty()) return
+                    val amplitudes = IntArray(pattern.pattern.size) { index ->
+                        if (index % 2 == 0) 0 else baseAmplitude
+                    }
+                    val adjustedPattern = dev.robin.flip_2_dnd.core.VibrationFeedback.timings(pattern.pattern, customStrength)
+                    vibrator.vibrate(android.os.VibrationEffect.createWaveform(adjustedPattern, amplitudes, -1))
 			} else {
 				@Suppress("DEPRECATION")
-				vibrator.vibrate(pattern.pattern, -1)
+				if (customStrength > 0f && pattern.pattern.isNotEmpty()) {
+                        vibrator.vibrate(dev.robin.flip_2_dnd.core.VibrationFeedback.timings(pattern.pattern, customStrength), -1)
+                    }
 			}
 		} catch (e: Exception) {
 			android.util.Log.e("SettingsViewModel", "Error during vibration: ${e.message}", e)

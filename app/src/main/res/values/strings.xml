@@ -296,4 +296,7 @@
 	<string name="turn_screen_off_description_disabled">Turn Screen Off is disabled when Screen Off Only is enabled</string>
 	<string name="accessibility_service_title">Accessibility service</string>
 	<string name="accessibility_service_description">Accessibility service is mandatory to allow the app to turn screen off on Android Pie (API 28) and higher.</string>
+    <string name="vibration_strength_percent">%1$d%% · Lower values give softer, shorter pulses</string>
+    <string name="proximity_unavailable">This device does not report a proximity sensor. Leave this off to keep flip detection working.</string>
+    <string name="xiaomi_autostart_hint">On Xiaomi, also allow this app in Settings → Apps → Permissions → Background autostart. If detection stops in the background, check the app battery settings.</string>
 </resources>

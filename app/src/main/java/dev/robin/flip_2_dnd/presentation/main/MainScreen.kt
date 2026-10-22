@@ -1,36 +1,20 @@
 package dev.robin.flip_2_dnd.presentation.main
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ScreenRotation
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.lerp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.util.lerp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import dev.robin.flip_2_dnd.R
-import dev.robin.flip_2_dnd.presentation.settings.SettingsContent
-import dev.robin.flip_2_dnd.presentation.settings.SettingsViewModel
-import dev.robin.flip_2_dnd.presentation.settings.UpgradeDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,203 +23,61 @@ fun MainScreen(
     onDonateClick: () -> Unit,
     onToggleService: () -> Unit,
     onHistoryClick: () -> Unit,
+    onSettingsClick: () -> Unit,
 ) {
-    val configuration = LocalConfiguration.current
-    val screenHeight = configuration.screenHeightDp.dp
-    val dynamicPeekHeight = screenHeight / 3
-
-    var showUpgradeDialog by remember { mutableStateOf(false) }
-
-    val sheetState =
-        rememberStandardBottomSheetState(
-            initialValue = SheetValue.PartiallyExpanded,
-        )
-    val scaffoldState =
-        rememberBottomSheetScaffoldState(
-            bottomSheetState = sheetState,
-        )
-
-    var sheetOffsetPx by remember { mutableFloatStateOf(Float.NaN) }
-
-    LaunchedEffect(sheetState) {
-        snapshotFlow { sheetState.requireOffset() }
-            .collect { offset ->
-                sheetOffsetPx = offset
-            }
-    }
-
-    val density = LocalDensity.current
-    val sheetOffset =
-        if (sheetOffsetPx.isNaN()) {
-            screenHeight - dynamicPeekHeight
-        } else {
-            with(density) { sheetOffsetPx.toDp() }
-        }
-    val maxOffset = screenHeight - dynamicPeekHeight
-    val animatedProgress = 1f - (sheetOffset / maxOffset).coerceIn(0f, 1f)
-
-    val availableHeight = screenHeight - dynamicPeekHeight - 180.dp
-    val maxCardSize = minOf(availableHeight * 0.8f, 280.dp)
-    val minCardSize = 20.dp
-
-    val cardSize = lerp(maxCardSize, minCardSize, animatedProgress)
-    val iconFraction = lerp(0.55f, 0.35f, animatedProgress)
-    val topPadding = lerp(dynamicPeekHeight * 0.2f, 32.dp, animatedProgress)
-
-    BottomSheetScaffold(
-        scaffoldState = scaffoldState,
-        modifier = Modifier,
-        sheetPeekHeight = dynamicPeekHeight,
-        sheetContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        sheetTonalElevation = 8.dp,
-        sheetSwipeEnabled = true,
+    Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(id = R.string.app_name),
-                        style = MaterialTheme.typography.headlineLarge,
-                        fontWeight = FontWeight.ExtraBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                },
+                title = { Text(stringResource(R.string.app_name)) },
                 actions = {
-                    val context = androidx.compose.ui.platform.LocalContext.current
-                    // Show Pro button only if not Pro
-                    if (!dev.robin.flip_2_dnd.core.ServiceLocator
-                            .getFeatureManager(context)
-                            .isPro()
-                    ) {
-                        IconButton(onClick = { showUpgradeDialog = true }) {
-                            Icon(
-                                imageVector = Icons.Default.Star,
-                                contentDescription = stringResource(id = R.string.upgrade_to_pro),
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(28.dp),
-                            )
-                        }
-                    }
-
                     IconButton(onClick = onHistoryClick) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_history),
-                            contentDescription = stringResource(id = R.string.history),
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(28.dp),
-                        )
+                        Icon(painterResource(R.drawable.ic_history), stringResource(R.string.history))
+                    }
+                    IconButton(onClick = onSettingsClick) {
+                        Icon(Icons.Default.Settings, stringResource(R.string.settings))
                     }
                 },
-                colors =
-                    TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.background,
-                    ),
             )
         },
-        sheetContent = {
-            val settingsViewModel: SettingsViewModel = hiltViewModel()
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight(0.7f)
-                        .padding(bottom = 24.dp),
-            ) {
-                SettingsContent(
-                    viewModel = settingsViewModel,
-                    onDonateClick = onDonateClick,
-                )
-            }
-        },
-    ) { paddingValues ->
+    ) { padding ->
         Column(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(horizontal = 24.dp)
-                    .padding(top = topPadding),
+            modifier = Modifier.fillMaxSize().padding(padding)
+                .verticalScroll(rememberScrollState()).padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top,
+            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
         ) {
-            Card(
-                modifier =
-                    Modifier
-                        .size(cardSize)
-                        .aspectRatio(1f),
-                shape = CircleShape,
-                colors =
-                    CardDefaults.cardColors(
-                        containerColor = if (state.isServiceRunning) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
-                    ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            FilledTonalIconButton(
                 onClick = onToggleService,
+                modifier = Modifier.size(144.dp),
+                shape = MaterialTheme.shapes.large,
+                colors = IconButtonDefaults.filledTonalIconButtonColors(
+                    containerColor = if (state.isServiceRunning) MaterialTheme.colorScheme.primaryContainer
+                        else MaterialTheme.colorScheme.surfaceContainerHighest,
+                ),
             ) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ScreenRotation,
-                        contentDescription =
-                            if (state.isServiceRunning) {
-                                stringResource(
-                                    id = R.string.stop_service,
-                                )
-                            } else {
-                                stringResource(id = R.string.start_service)
-                            },
-                        modifier = Modifier.fillMaxSize(iconFraction),
-                        tint = if (state.isServiceRunning) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(lerp(24.dp, 12.dp, animatedProgress)))
-
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(lerp(8.dp, 4.dp, animatedProgress)),
-            ) {
-                Text(
-                    text =
-                        if (state.isServiceRunning) {
-                            stringResource(
-                                id = R.string.service_running,
-                            ).uppercase()
-                        } else {
-                            stringResource(id = R.string.service_not_running).uppercase()
-                        },
-                    style =
-                        when {
-                            animatedProgress > 0.7f -> MaterialTheme.typography.titleLarge
-                            animatedProgress > 0.4f -> MaterialTheme.typography.headlineSmall
-                            else -> MaterialTheme.typography.headlineMedium
-                        },
-                    fontWeight = FontWeight.ExtraBold,
-                    color = if (state.isServiceRunning) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
+                Icon(
+                    Icons.Default.ScreenRotation,
+                    stringResource(if (state.isServiceRunning) R.string.stop_service else R.string.start_service),
+                    modifier = Modifier.size(64.dp),
                 )
-				
-                if (state.isServiceRunning) {
-                    Text(
-                        text = stringResource(id = state.dndMode),
-                        style =
-                            when {
-                                animatedProgress > 0.7f -> MaterialTheme.typography.bodyMedium
-                                animatedProgress > 0.4f -> MaterialTheme.typography.bodyLarge
-                                else -> MaterialTheme.typography.titleMedium
-                            },
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f),
-                        textAlign = TextAlign.Center,
-                    )
-                }
+            }
+            Text(
+                stringResource(if (state.isServiceRunning) R.string.service_running else R.string.service_not_running),
+                style = MaterialTheme.typography.titleLarge,
+                textAlign = TextAlign.Center,
+            )
+            if (state.isServiceRunning) {
+                Text(stringResource(state.dndMode), style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Text(stringResource(R.string.onboarding_simple_desc),
+                style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+            OutlinedButton(onClick = onSettingsClick) {
+                Icon(Icons.Default.Settings, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.settings))
             }
         }
-    }
-
-    if (showUpgradeDialog) {
-        UpgradeDialog(onDismiss = { showUpgradeDialog = false })
     }
 }

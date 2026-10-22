@@ -14,8 +14,8 @@ android {
 		applicationId = "dev.robin.flip_2_dnd"
 		minSdk = 23
 		targetSdk = 35
-		versionCode = 1211
-		versionName = "12.1.1"
+		versionCode = 1212
+		versionName = "12.1.1-personal.1"
 		vectorDrawables {
 			useSupportLibrary = true
 		}
@@ -37,6 +37,10 @@ android {
 	}
 
 	buildTypes {
+        debug {
+            applicationIdSuffix = ".personal"
+            resValue("string", "app_name", "Flip 2 DND Personal")
+        }
 		release {
 			isMinifyEnabled = true
 			isShrinkResources = true

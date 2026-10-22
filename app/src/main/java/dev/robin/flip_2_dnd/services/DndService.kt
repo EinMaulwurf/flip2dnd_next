@@ -122,24 +122,19 @@ class DndService(
 				}
 
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-					val baseAmplitude = (255 * customStrength).toInt().coerceIn(1, 255)
-					val amplitudes = IntArray(pattern.size) { index ->
-						// Ensure zero amplitude for timing intervals and full amplitude for vibration periods
-						if (index % 2 == 0) 0 else baseAmplitude
-					}
-					
-					// Adjust timing to ensure precise vibration pattern
-					val adjustedPattern = pattern.map { duration ->
-						// Ensure minimum duration for better perception
-						duration.coerceAtLeast(50L)
-					}.toLongArray()
-					
-					Log.d(TAG, "Creating waveform vibration with amplitude: $baseAmplitude and pattern: ${adjustedPattern.contentToString()}")
-					vibrator.vibrate(VibrationEffect.createWaveform(adjustedPattern, amplitudes, -1))
+					val baseAmplitude = dev.robin.flip_2_dnd.core.VibrationFeedback.amplitude(customStrength)
+                    if (baseAmplitude == 0 || pattern.isEmpty()) return@runBlocking
+                    val amplitudes = IntArray(pattern.size) { index ->
+                        if (index % 2 == 0) 0 else baseAmplitude
+                    }
+                    val adjustedPattern = dev.robin.flip_2_dnd.core.VibrationFeedback.timings(pattern, customStrength)
+                    vibrator.vibrate(VibrationEffect.createWaveform(adjustedPattern, amplitudes, -1))
 				} else {
 					Log.d(TAG, "Using deprecated vibration method")
 					@Suppress("DEPRECATION")
-					vibrator.vibrate(pattern, -1)
+					if (customStrength > 0f && pattern.isNotEmpty()) {
+                        vibrator.vibrate(dev.robin.flip_2_dnd.core.VibrationFeedback.timings(pattern, customStrength), -1)
+                    }
 				}
 			} catch (e: Exception) {
 				Log.e(TAG, "Error during vibration: ${e.message}", e)

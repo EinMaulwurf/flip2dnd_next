@@ -41,9 +41,16 @@ fun AppNavigation() {
 				state = state,
 				onDonateClick = { navController.navigate(Screen.Donation.route) },
 				onToggleService = { mainViewModel.toggleService() },
-				onHistoryClick = { navController.navigate(Screen.History.route) }
+				onHistoryClick = { navController.navigate(Screen.History.route) },
+                onSettingsClick = { navController.navigate("settings") }
 			)
 		}
+        composable("settings") {
+            dev.robin.flip_2_dnd.presentation.settings.SettingsScreenRoute(
+                onBack = { navController.popBackStack() },
+                onDonateClick = { navController.navigate(Screen.Donation.route) },
+            )
+        }
 		composable(Screen.History.route) {
 			val historyViewModel: HistoryViewModel = hiltViewModel()
 			val state by historyViewModel.state.collectAsState()

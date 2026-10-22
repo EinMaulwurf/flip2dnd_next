@@ -15,6 +15,8 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -223,7 +225,7 @@ fun BottomNavigationSection(
                 if (isLastPage) onComplete() else onNext()
             },
             enabled = if (isLastPage) true else canProceed,
-            shape = RoundedCornerShape(28.dp),
+            shape = MaterialTheme.shapes.large,
             contentPadding = PaddingValues(horizontal = 32.dp, vertical = 16.dp),
             modifier = Modifier.height(56.dp)
         ) {
@@ -254,15 +256,16 @@ fun OnboardingContentPage(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(32.dp),
+            .verticalScroll(rememberScrollState())
+            .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterVertically)
+        verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically)
     ) {
         Card(
             modifier = Modifier
-                .size(240.dp)
+                .size(160.dp)
                 .padding(16.dp),
-            shape = RoundedCornerShape(64.dp),
+            shape = MaterialTheme.shapes.large,
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
             ),
@@ -276,14 +279,14 @@ fun OnboardingContentPage(
                     Image(
                         painter = painterResource(id = iconRes),
                         contentDescription = null,
-                        modifier = Modifier.size(120.dp),
+                        modifier = Modifier.size(80.dp),
                         colorFilter = if (iconTint != Color.Unspecified) ColorFilter.tint(iconTint) else null
                     )
                 } else if (iconVector != null) {
                     Icon(
                         imageVector = iconVector,
                         contentDescription = null,
-                        modifier = Modifier.size(120.dp),
+                        modifier = Modifier.size(80.dp),
                         tint = iconTint
                     )
                 }
@@ -296,7 +299,7 @@ fun OnboardingContentPage(
         ) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.displaySmall,
+                style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.ExtraBold,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onBackground
@@ -327,9 +330,10 @@ fun UnifiedPermissionsPage(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(32.dp),
+            .verticalScroll(rememberScrollState())
+            .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterVertically)
+        verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically)
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -337,7 +341,7 @@ fun UnifiedPermissionsPage(
         ) {
             Text(
                 text = stringResource(id = R.string.onboarding_setup_permissions_title),
-                style = MaterialTheme.typography.displaySmall,
+                style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.ExtraBold,
                 textAlign = TextAlign.Center
             )
@@ -424,7 +428,7 @@ fun PermissionItem(
     onClick: () -> Unit
 ) {
     Card(
-        shape = RoundedCornerShape(28.dp),
+        shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(
             containerColor = if (isGranted) 
                 MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f) 
@@ -434,11 +438,11 @@ fun PermissionItem(
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(28.dp))
+            .clip(MaterialTheme.shapes.large)
             .clickable(enabled = !isGranted, onClick = onClick)
     ) {
         Row(
-            modifier = Modifier.padding(20.dp),
+            modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
