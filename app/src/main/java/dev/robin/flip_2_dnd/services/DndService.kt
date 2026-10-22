@@ -123,18 +123,18 @@ class DndService(
 
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 					val baseAmplitude = dev.robin.flip_2_dnd.core.VibrationFeedback.amplitude(customStrength)
-                    if (baseAmplitude == 0 || pattern.isEmpty()) return@runBlocking
-                    val amplitudes = IntArray(pattern.size) { index ->
-                        if (index % 2 == 0) 0 else baseAmplitude
-                    }
-                    val adjustedPattern = dev.robin.flip_2_dnd.core.VibrationFeedback.timings(pattern, customStrength)
-                    vibrator.vibrate(VibrationEffect.createWaveform(adjustedPattern, amplitudes, -1))
+					if (baseAmplitude == 0 || pattern.isEmpty()) return@runBlocking
+					val amplitudes = IntArray(pattern.size) { index ->
+						if (index % 2 == 0) 0 else baseAmplitude
+					}
+					val adjustedPattern = dev.robin.flip_2_dnd.core.VibrationFeedback.timings(pattern, customStrength)
+					vibrator.vibrate(VibrationEffect.createWaveform(adjustedPattern, amplitudes, -1))
 				} else {
 					Log.d(TAG, "Using deprecated vibration method")
 					@Suppress("DEPRECATION")
 					if (customStrength > 0f && pattern.isNotEmpty()) {
-                        vibrator.vibrate(dev.robin.flip_2_dnd.core.VibrationFeedback.timings(pattern, customStrength), -1)
-                    }
+						vibrator.vibrate(dev.robin.flip_2_dnd.core.VibrationFeedback.timings(pattern, customStrength), -1)
+					}
 				}
 			} catch (e: Exception) {
 				Log.e(TAG, "Error during vibration: ${e.message}", e)

@@ -26,7 +26,7 @@ android {
 			versionNameSuffix = "-pro"
 			resValue("string", "app_name", "Flip 2 DND Pro")
 		} else {
-			versionNameSuffix = "-free"
+			versionNameSuffix = ""
 			resValue("string", "app_name", "Flip 2 DND")
 		}
 	}
@@ -40,6 +40,7 @@ android {
         debug {
             applicationIdSuffix = ".personal"
             resValue("string", "app_name", "Flip 2 DND Personal")
+            resValue("string", "personal_app_name", "Flip 2 DND Personal")
         }
 		release {
 			isMinifyEnabled = true
