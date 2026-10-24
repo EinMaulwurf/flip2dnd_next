@@ -33,10 +33,21 @@ android {
 
 	lint {
 		baseline = file("lint-baseline.xml")
-		abortOnError = false
+		abortOnError = true
+        // Existing localization gaps use Android's default-language fallback.
+        // Runtime/API errors must still fail verification.
+        warning += setOf("MissingTranslation", "ExtraTranslation")
 	}
 
-	testOptions { unitTests.isIncludeAndroidResources = true }
+	testOptions {
+        unitTests.isIncludeAndroidResources = true
+        unitTests.all {
+            // Docker runs under a numeric UID; Java otherwise resolves user.home to "?".
+            val testHome = rootProject.file(".build-cache/test-home").apply { mkdirs() }
+            it.systemProperty("user.home", testHome.absolutePath)
+            it.systemProperty("robolectric.dependency.repo.url", "https://repo.maven.apache.org/maven2")
+        }
+    }
 
 	buildTypes {
 		release {

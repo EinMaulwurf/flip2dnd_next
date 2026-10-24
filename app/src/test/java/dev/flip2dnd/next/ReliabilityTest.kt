@@ -41,6 +41,7 @@ class ReliabilityTest {
     @Before fun setup() {
         Dispatchers.setMain(StandardTestDispatcher())
         context = RuntimeEnvironment.getApplication()
+        shadowOf(context).grantPermissions("${context.packageName}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION")
         context.getSharedPreferences("flip_2_dnd_settings", Context.MODE_PRIVATE).edit().clear().commit()
         context.getSharedPreferences("flip_dnd_session", Context.MODE_PRIVATE).edit().clear().commit()
         settings = SettingsRepositoryImpl(context)
@@ -131,6 +132,18 @@ class ReliabilityTest {
         DetectionControl.startIfEnabled(context)
         assertFalse(DetectionControl.isEnabled(context))
         assertNull(application.nextStartedService)
+    }
+
+    @Test fun missingProximitySensorReportsRegistrationFailure() {
+        assertFalse(ServiceLocator.getDetectionManager(context).registerProximityListener {})
+    }
+
+    @Test @Config(sdk = [23]) fun vibrationFeedbackUsesCompatibleApiOnAndroid6() {
+        val feedback = dev.flip2dnd.next.data.repository.FeedbackRepositoryImpl(context,
+            ServiceLocator.getSoundController(context))
+        feedback.vibrate()
+        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as android.os.Vibrator
+        assertTrue(shadowOf(vibrator).isVibrating)
     }
 
     @Test @Config(sdk = [23]) fun startupUsesCompatibleServiceApiOnAndroid6() {

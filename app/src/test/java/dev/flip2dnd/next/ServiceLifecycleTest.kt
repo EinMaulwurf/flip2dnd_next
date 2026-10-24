@@ -29,8 +29,33 @@ class ServiceLifecycleTest {
     @Before fun setup() { Dispatchers.setMain(StandardTestDispatcher()) }
     @After fun cleanup() { Dispatchers.resetMain() }
 
+    @Test fun unavailableMotionSensorIsReportedInsteadOfClaimingDetectionWorks() = runTest {
+        val context = RuntimeEnvironment.getApplication() as FlipDndApp
+        shadowOf(context).grantPermissions("${context.packageName}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION")
+        SettingsRepositoryImpl(context).setScreenOffOnlyEnabled(false)
+        val sensors = context.getSystemService(Context.SENSOR_SERVICE) as android.hardware.SensorManager
+        shadowOf(sensors).setForceListenersToFail(true)
+        val controller = Robolectric.buildService(FlipDetectorService::class.java).create()
+        val service = controller.get()
+        try {
+            runCurrent()
+            service.onStartCommand(Intent(context, FlipDetectorService::class.java), 0, 1)
+            runCurrent()
+            assertFalse(DetectionControl.running.value)
+            assertEquals(R.string.detection_sensor_unavailable, DetectionControl.error.value)
+            assertTrue(DetectionControl.isEnabled(context))
+            val notification = shadowOf(service).lastForegroundNotification
+            assertEquals(context.getString(R.string.detection_sensor_unavailable),
+                notification.extras.getCharSequence(android.app.Notification.EXTRA_TEXT).toString())
+        } finally {
+            controller.destroy()
+            service.dndRepository.onCleared()
+        }
+    }
+
     @Test fun explicitPauseRestoresOwnedSilenceBeforeStopping() = runTest {
         val context = RuntimeEnvironment.getApplication() as FlipDndApp
+        shadowOf(context).grantPermissions("${context.packageName}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION")
         val settings = SettingsRepositoryImpl(context)
         settings.setActivationMode(ActivationMode.RINGER)
         val notifications = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
