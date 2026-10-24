@@ -146,3 +146,34 @@ All 38 core tests passed with zero failures/errors. App assembly failed at
 by this run. The first build attempt was terminated (exit 143); these results
 come from the second attempt. See `.build-cache/audit-build.log` for its output.
 No device testing was performed. No rename-related source changes were made.
+
+## Resolution
+
+The findings above describe the pre-fix snapshot. The fixes were committed
+separately from the rename:
+
+- `eb1b4de`: compatible service startup on Android 6–7.
+- `1e87987`: exclude session ownership from cloud backup and device transfer.
+- `1b267e0`: persist the activation mechanism and previous/applied values; restore
+  the old mechanism on a mode change and relinquish ownership after manual changes.
+- `70cdffe`: restore before explicitly pausing, cancel pending activation first,
+  persist the desired running state, and apply settings without service restarts.
+- `2502f6e`: manage a dedicated Android 15+ DND rule, finish overridden automatic
+  cycles on pickup, and leave unrelated DND rules alone.
+- `d532524`: distinguish unavailable sensors from intentional suspension; report
+  motion/proximity failures in the app and notification, permit retry, and keep
+  the enabled switch usable when monitoring has failed.
+- `bf001fe`: fix another Android 6–7 vibration API violation exposed by removing
+  obsolete API/wake-lock lint exemptions.
+- `7fc688d`: Android regression tests and strict runtime lint checks. Existing
+  missing/extra translations remain warnings using the default-language fallback.
+
+Post-fix verification: **49 core tests and 15 Android tests pass**, debug APK
+assembly succeeds, and strict lint completes with **zero errors** (256 warnings
+and 4 hints, including the inherited localization/deprecation warnings). Command:
+`./scripts/build-apk.sh :core:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug :app:lintDebug`.
+Android tests use Robolectric, with a small API 35 rule-state
+shadow for methods its built-in notification shadow does not implement. They
+verify application logic, not device-specific Android/OEM rule behavior or sensor
+delivery during actual CPU suspend. The physical-device checks above remain
+necessary before claiming overnight reliability or a particular battery cost.
