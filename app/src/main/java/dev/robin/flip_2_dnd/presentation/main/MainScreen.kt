@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ScreenRotation
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -12,6 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.robin.flip_2_dnd.R
@@ -46,21 +47,14 @@ fun MainScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
         ) {
-            FilledTonalIconButton(
-                onClick = onToggleService,
-                modifier = Modifier.size(144.dp),
-                shape = MaterialTheme.shapes.large,
-                colors = IconButtonDefaults.filledTonalIconButtonColors(
-                    containerColor = if (state.isServiceRunning) MaterialTheme.colorScheme.primaryContainer
-                        else MaterialTheme.colorScheme.surfaceContainerHighest,
-                ),
-            ) {
-                Icon(
-                    painterResource(R.drawable.ic_stat_flip),
-                    stringResource(if (state.isServiceRunning) R.string.stop_service else R.string.start_service),
-                    modifier = Modifier.size(64.dp),
-                )
-            }
+            val toggleDescription = stringResource(
+                if (state.isServiceRunning) R.string.stop_service else R.string.start_service,
+            )
+            Switch(
+                checked = state.isServiceRunning,
+                onCheckedChange = { onToggleService() },
+                modifier = Modifier.semantics { contentDescription = toggleDescription },
+            )
             Text(
                 stringResource(if (state.isServiceRunning) R.string.service_running else R.string.service_not_running),
                 style = MaterialTheme.typography.titleLarge,
