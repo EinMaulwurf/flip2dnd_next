@@ -129,7 +129,14 @@ class DndRepositoryImpl @Inject constructor(
                 else settingsRepository.getRingerMode().first().value
             changed = sessions.activate(mode, historyMode)
         } else {
-            historyMode = sessions.session?.previous ?: return
+            val previous = sessions.session?.previous
+            if (previous == null) {
+                // Complete the automatic condition even after a user's rule override
+                // relinquished ownership; Android can then accept the next physical flip.
+                dnd.endAutomaticCycle()
+                return
+            }
+            historyMode = previous
             changed = sessions.restore()
         }
         updateState()

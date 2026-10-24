@@ -30,6 +30,12 @@ internal class DeviceDndController(
         } else NotificationManager.INTERRUPTION_FILTER_ALL
     }
 
+    fun endAutomaticCycle() {
+        if (Build.VERSION.SDK_INT >= 35 && notifications.isNotificationPolicyAccessGranted) {
+            writeRule(NotificationManager.INTERRUPTION_FILTER_ALL)
+        }
+    }
+
     fun write(value: Int) {
         check(notifications.isNotificationPolicyAccessGranted) { "Notification policy access is required" }
         if (Build.VERSION.SDK_INT < 35) {
@@ -46,7 +52,7 @@ internal class DeviceDndController(
         if (value == NotificationManager.INTERRUPTION_FILTER_ALL) {
             if (savedId != null && savedRule != null) {
                 notifications.setAutomaticZenRuleState(savedId,
-                    Condition(conditionId, context.getString(R.string.app_name), Condition.STATE_FALSE))
+                    Condition(conditionId, context.getString(R.string.app_name), Condition.STATE_FALSE, Condition.SOURCE_CONTEXT))
             }
             return
         }
@@ -64,6 +70,6 @@ internal class DeviceDndController(
             }
         }
         notifications.setAutomaticZenRuleState(id,
-            Condition(conditionId, context.getString(R.string.app_name), Condition.STATE_TRUE))
+            Condition(conditionId, context.getString(R.string.app_name), Condition.STATE_TRUE, Condition.SOURCE_CONTEXT))
     }
 }

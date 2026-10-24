@@ -437,6 +437,8 @@ class FlipDetectorService : Service() {
                         showDndStateNotification(false)
                         updateBatterySaver(false)
                     }
+                } else {
+                    dndRepository.setActivated(false)
                 }
                 if (onlyWhenScreenOff && !screenOff) sensorService.stopMonitoring()
             }
