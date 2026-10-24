@@ -10,6 +10,15 @@ data class ChangelogEntry(
 val changelogEntries =
   listOf(
     ChangelogEntry(
+      version = "v1.1",
+      emoji = "💡",
+      changes =
+        listOf(
+          "Set flip tolerance in degrees (5–30°), with existing sensitivity settings migrated automatically",
+          "Info popups explain Do Not Disturb versus Mobile Ringer and each mode option",
+        ),
+    ),
+    ChangelogEntry(
       version = "v1",
       emoji = "🚀",
       changes =

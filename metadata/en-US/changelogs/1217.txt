@@ -1,0 +1,3 @@
+Flip2DND Next v1.1 (1.1.0).
+- Set flip tolerance in degrees (5–30°); existing sensitivity settings migrate automatically.
+- New info popups explain Do Not Disturb versus Mobile Ringer and each mode option.
