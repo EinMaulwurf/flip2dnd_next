@@ -1,7 +1,7 @@
 <resources>
-    <string name="app_name">Flip 2 DND</string>
+    <string name="app_name">Flip2DND Next</string>
     <string name="service_description">Telefonun yönünü algılamak için cihaz sensörlerini kullanır ve yüz aşağı çevrildiğinde Rahatsız Etmeyin modunu otomatik olarak etkinleştirir.</string>
-    <string name="widget_toggle_description">Flip 2 DND servisini aç/kapat</string>
+    <string name="widget_toggle_description">Flip2DND Next servisini aç/kapat</string>
     <string name="home">Ana Sayfa</string>
     <string name="settings">Ayarlar</string>
     <string name="about">Hakkında</string>
@@ -43,7 +43,7 @@
     <string name="adb_command_description">Otomatik Pil Tasarrufu geçişini etkinleştirmek için lütfen aşağıdaki ADB komutunu kullanarak WRITE_SECURE_SETTINGS iznini verin:</string>
     <string name="copy_command">Komutu Kopyala</string>
     <string name="close">Kapat</string>
-    <string name="adb_command_text">adb shell pm grant dev.robin.flip_2_dnd android.permission.WRITE_SECURE_SETTINGS</string>
+    <string name="adb_command_text">adb shell pm grant dev.flip2dnd.next android.permission.WRITE_SECURE_SETTINGS</string>
     <string name="dnd_on_sound_description">DND etkinleştirildiğinde çalacak ses</string>
     <string name="dnd_off_sound_description">DND devre dışı bırakıldığında çalacak ses</string>
     <string name="use_custom_volume_description">DND sesleri için özel ses seviyesi kullan</string>
@@ -64,7 +64,7 @@
     <string name="language">Dil</string>
     <string name="language_description">Uygulama dilini değiştirin</string>
     <string name="error_opening_language_settings">Dil ayarları açılamadı</string>
-    <string name="qs_tile_label">Flip DND servisi</string>
+    <string name="qs_tile_label">Flip2DND Next</string>
     <string name="detection">Algılama</string>
     <string name="flashlight_detection">El Feneri Algılama</string>
     <string name="flashlight_detection_description">El feneri açıkken servisi duraklat</string>
@@ -123,7 +123,7 @@
     <string name="dnd_mode_unknown">Bilinmeyen Mod</string>
 
     <!-- Onboarding -->
-    <string name="onboarding_welcome_title">"Flip 2 DND'ye Hoş Geldiniz"</string>
+    <string name="onboarding_welcome_title">"Flip2DND Next'ye Hoş Geldiniz"</string>
     <string name="onboarding_welcome_desc">Telefonunuzu yüz aşağı çevirerek Rahatsız Etmeyin modunu kontrol edin.</string>
     <string name="onboarding_simple_title">Basit ve Etkili</string>
     <string name="onboarding_simple_desc">Önemli olanlara odaklanın. Kesintileri anında susturmak için telefonunuzu çevirin.</string>
@@ -132,7 +132,7 @@
     <string name="onboarding_get_started">Başlayın</string>
     <string name="onboarding_next">İleri</string>
     <string name="onboarding_setup_permissions_title">İzinleri Ayarlayın</string>
-    <string name="onboarding_setup_permissions_desc">"Flip 2 DND'nin düzgün çalıştığından emin olmak için aşağıdaki izinleri verin."</string>
+    <string name="onboarding_setup_permissions_desc">"Flip2DND Next'nin düzgün çalıştığından emin olmak için aşağıdaki izinleri verin."</string>
     <string name="permission_dnd_title">Rahatsız Etmeyin Erişimi</string>
     <string name="permission_dnd_desc">DND modunu değiştirmek için gereklidir.</string>
     <string name="permission_battery_title">Pil Optimizasyonu</string>
@@ -178,7 +178,7 @@
     <string name="feature_schedules">DND, Ses ve Titreşim programları</string>
     <string name="feature_custom_sounds">Dosyalardan özel sesler</string>
     <string name="feature_telegram">Telegram Destek Grubu</string>
-    <string name="get_pro">Flip 2 DND Pro Al</string>
+    <string name="get_pro">Flip2DND Next Pro Al</string>
     <string name="maybe_later">Belki Sonra</string>
     <string name="pro">PRO</string>
     <string name="day_sunday_short">Pz</string>
@@ -201,7 +201,7 @@
     <string name="error_saving_sound">Özel ses kaydedilirken hata oluştu</string>
 
     <!-- Notifications -->
-    <string name="notification_service_channel_name">Flip 2 DND Servisi</string>
+    <string name="notification_service_channel_name">Flip2DND Next Servisi</string>
     <string name="notification_service_channel_desc">DND modunu değiştirmek için telefonun yönünü izler</string>
     <string name="notification_flip_channel_name">Çevirme Durumu Bildirimleri</string>
     <string name="notification_flip_channel_desc">Telefon çevirme durumu ve DND değişiklikleri hakkında bildirimler</string>
@@ -254,20 +254,20 @@
     <string name="collapse">Daralt</string>
     <string name="expand">Genişlet</string>
     <string name="permission_required_title">İzinler gerekli</string>
-    <string name="permission_required_desc">Flip 2 DND düzgün çalışması için zorunlu izinlere ihtiyaç duyar. Lütfen devam etmek için izin verin.</string>
+    <string name="permission_required_desc">Flip2DND Next düzgün çalışması için zorunlu izinlere ihtiyaç duyar. Lütfen devam etmek için izin verin.</string>
     <string name="permission_dnd">Rahatsız etmeyin erişimi</string>
     <string name="permission_battery">Pil optimizasyonu</string>
     <string name="permission_notification">Bildirimler</string>
     <string name="grant">İzin ver</string>
     <string name="check_again">Tekrar kontrol et</string>
     <string name="support_dialog_title">Geliştiriciyi destekle</string>
-    <string name="support_dialog_message">Flip 2 DND kullandığınız için teşekkürler! Desteğiniz uygulamayı ücretsiz ve sürekli gelişen tutmamıza yardımcı olur. Uygulamayı faydalı bulursanız lütfen desteği düşünün.</string>
+    <string name="support_dialog_message">Flip2DND Next kullandığınız için teşekkürler! Desteğiniz uygulamayı ücretsiz ve sürekli gelişen tutmamıza yardımcı olur. Uygulamayı faydalı bulursanız lütfen desteği düşünün.</string>
     <string name="patreon">Patreon</string>
     <string name="crypto">Kripto</string>
     <string name="check_for_updates">Güncellemeleri kontrol et</string>
-    <string name="check_for_updates_description">Flip 2 DND nin en son sürümünü kontrol et (Pro gerekir)</string>
+    <string name="check_for_updates_description">Flip2DND Next nin en son sürümünü kontrol et (Pro gerekir)</string>
     <string name="update_check_dialog_title">Güncellemeleri kontrol et</string>
-    <string name="update_check_dialog_message">Flip 2 DND Pro yu nereden aldınız? Güncellemeleri kontrol etmek için ilgili platforma yönlendireceğiz.</string>
+    <string name="update_check_dialog_message">Flip2DND Next Pro yu nereden aldınız? Güncellemeleri kontrol etmek için ilgili platforma yönlendireceğiz.</string>
     <string name="feedback_with_flashlight_on">Fener açıkken bile geri bildirim</string>
     <string name="gumroad">Gumroad</string>
     <string name="feedback">Geri bildirim</string>

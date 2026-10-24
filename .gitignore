@@ -23,3 +23,7 @@ app/release/app-release.aab
 .build-cache/
 app/build/
 artifacts/
+
+# Release signing material
+*.jks
+*.keystore

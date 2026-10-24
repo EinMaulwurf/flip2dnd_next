@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "dev.robin.flip_2_dnd.core"
+    namespace = "dev.flip2dnd.next.core"
     compileSdk = 36
 
     defaultConfig {

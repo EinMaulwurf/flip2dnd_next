@@ -17,13 +17,13 @@
 #-keepattributes SourceFile,LineNumberTable
 
 # Keep Pro and Free implementations as they are accessed via reflection
--keep class dev.robin.flip_2_dnd.pro.** { *; }
--keep class dev.robin.flip_2_dnd.free.** { *; }
--keep class dev.robin.flip_2_dnd.core.** { *; }
--keep class dev.robin.flip_2_dnd.core.ServiceLocator { *; }
+-keep class dev.flip2dnd.next.pro.** { *; }
+-keep class dev.flip2dnd.next.free.** { *; }
+-keep class dev.flip2dnd.next.core.** { *; }
+-keep class dev.flip2dnd.next.core.ServiceLocator { *; }
 
 # Keep Dagger/Hilt
--keep class dev.robin.flip_2_dnd.di.** { *; }
+-keep class dev.flip2dnd.next.di.** { *; }
 -keep class dagger.hilt.** { *; }
 -keep class javax.inject.** { *; }
 -keep class javax.annotation.** { *; }

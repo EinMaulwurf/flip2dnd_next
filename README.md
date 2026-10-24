@@ -1,154 +1,85 @@
-# Flip 2 DND
+# Flip2DND Next
 
 <p align="center">
-  <img src="./metadata/en-US/images/icon.png" alt="App Icon" width="120"/>
+  <img src="./assets/branding/flip-mark.svg" alt="Flip2DND Next icon" width="120">
   <br>
-  <b>A modern, open-source Android utility to automate your focus.</b>
+  <b>Flip your phone. Find your focus.</b>
 </p>
 
-<p align="center">
-  <img src="https://img.shields.io/github/v/release/robinsrk/Flip_2_DND?style=for-the-badge&color=6200EE" alt="Release">
-  <img src="https://img.shields.io/github/downloads/robinsrk/Flip_2_DND/total?style=for-the-badge" alt="Downloads">
-  <img src="https://img.shields.io/github/license/robinsrk/Flip_2_DND?style=for-the-badge" alt="License">
-  <img src="https://img.shields.io/github/stars/robinsrk/Flip_2_DND?style=for-the-badge" alt="Stars">
-</p>
+**Flip2DND Next** is an independently developed evolution of
+[Flip2DND by Abul Kalam Robin](https://github.com/robinsrk/Flip_2_DND).
+It builds on the original open-source Android app with configurable detection,
+feedback, scheduling, and improvements to background reliability and battery use.
 
----
+Place your phone face down to activate Do Not Disturb. Flip it back up to restore
+your previous state.
 
-## 📖 Overview
+## Features
 
-**Flip 2 DND** is a minimalist and intelligent Android application designed to enhance your productivity and peace of mind. By leveraging your device's orientation sensors, it automatically toggles **Do Not Disturb (DND)** mode based on physical movement.
+- Configurable flip sensitivity and activation delay from 0–10 seconds.
+- Optional proximity gating to require a covered sensor before activation.
+- DND, sound, and vibration schedule windows, including overnight windows.
+- Filters for media playback, connected audio devices, and the flashlight.
+- Custom audio files, vibration patterns, and adjustable vibration strength.
+- Automatic startup after reboot and app updates, subject to Android settings.
+- Material 3 interface, dynamic colors, dark mode, a widget, and a Quick Settings tile.
+- No ads or tracking.
 
-Simply **flip your phone face down** to silence notifications and stay focused. **Flip it back up** to return to your normal state. It's seamless, intuitive, and respects your privacy.
+This continuation implements its own features and does not include the original
+private Pro module. Paid upgrades and the upstream updater are absent from the
+settings UI.
 
----
+## Build and install
 
-## 🚀 Key Features
+Build with Docker, Java 17, and Android SDK 36:
 
-- 🔄 **Intelligent Flip Detection**: Automatically toggles DND mode based on phone orientation.
-- ⏱️ **Activation Delay**: Configure timing (2 seconds in Free, 0-10 seconds in Pro).
-- 🔋 **Battery Saver Integration**: Automatically enable Battery Saver when flipped (Requires ADB permission).
-- 🎨 **Modern Material 3 UI**: Built with Jetpack Compose, featuring a clean interface and dynamic "Material You" theming.
-- 🔔 **Custom Feedback**: Personalize your experience with custom vibration patterns and sound notifications.
-- 📅 **Advanced Scheduling (Pro)**: Set DND, Sound, and Vibration schedules for different times and days.
-- 📁 **Custom Sound (Pro)**: Use any sound file from your device for DND notifications.
-- 🚀 **Auto Start (Pro)**: Service starts automatically after device reboot.
-- 🔋 **Battery Saver Sync (Pro)**: Automatically enable Battery Saver when flipped (Requires ADB permission).
-- 🔍 **DND Cancellation Filters (Pro)**: Prevent DND activation when flashlight is on, media is playing, or headphones are connected.
-- 🌑 **Dark Mode Support**: Fully optimized for both light and dark themes.
-- 🛠️ **Quick Settings Tile**: Control the service directly from your notification shade.
-- 🔒 **Privacy Focused**: No tracking, no ads, and minimal permissions.
-
----
-
-## 💎 Flip 2 DND Pro
-
-Get the most out of Flip 2 DND by upgrading to Pro!
-
-- **Auto Start on Boot**: Never manualy start the service again.
-- **Advanced Sensitivity**: High sensitivity mode for better detection.
-- **Full Delay Customization**: Set your preferred activation delay precisely.
-- **Custom Sound Support**: Choose your own notification sounds from your file system.
-- **Full Automation Schedules**: Automate DND, Sound, and Vibration states based on your daily routine.
-- **Battery Saver Integration**: Automatically enable Battery Saver when flipped.
-- **DND Cancellation Filters**: Flashlight, Media, and Headphone detection.
-
-<p align="center">
-  <a href="https://www.patreon.com/posts/flip-2-dnd-150924870">
-    <img src="./assets/images/buy_on_patreon.png" alt="Buy on Patreon" width="170"/>
-  </a>
-</p>
-
----
-
-## ⚖️ Free vs Pro Comparison
-
-| Feature                | Free | Pro |
-| :--------------------- | :--: | :-: |
-| **Advanced Schedules** |  ❌  | ✅  |
-| **Battery Saver Sync** |  ❌  | ✅  |
-| **Detection Filters**  |  ❌  | ✅  |
-
----
-
-## 📥 Installation
-
-Choose your preferred platform to download the latest version:
-
-<p align="center">
-  <a href="https://www.patreon.com/posts/flip-2-dnd-150924870">
-    <img src="./assets/images/buy_on_patreon.png" alt="Buy on Patreon" width="160"/>
-  </a>
-  <a href="https://apt.izzysoft.de/fdroid/index/apk/dev.robin.flip_2_dnd">
-    <img src="./assets/images/getItIzzyOnDroid.png" alt="IzzyOnDroid" width="160"/>
-  </a>
-  <a href="https://github.com/robinsrk/Flip_2_DND/releases/">
-    <img src="./assets/images/getItGithub.png" alt="GitHub" width="160"/>
-  </a>
-  <a href="https://www.openapk.net/flip-2-dnd/dev.robin.flip_2_dnd/">
-    <img src="./assets/images/getItOpenapk.png" alt="OpenAPK" width="160"/>
-  </a>
-  <a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium://add/https://github.com/robinsrk/Flip_2_DND">
-    <img src="assets/images/getItObtainium.png" alt="Add to Obtainium" width="160" />
-  </a>
-</p>
-
----
-
-## 📱 Visual Experience
-
-<p align="center">
-  <img src="./metadata/en-US/images/phoneScreenshots/01-Home-Light.png" alt="Home Screen (Light)" width="200"/>
-  <img src="./metadata/en-US/images/phoneScreenshots/03-Settings-Light.png" alt="Settings (Light)" width="200"/>
-  <img src="./metadata/en-US/images/phoneScreenshots/04-Home-Dark.png" alt="Home Screen (Dark)" width="200"/>
-  <img src="./metadata/en-US/images/phoneScreenshots/05-Settings-Dark.png" alt="Settings (Dark)" width="200"/>
-</p>
-
----
-
-## ⚡ Battery Saver Setup (Optional)
-
-To enable automatic Battery Saver toggling, you need to grant the `WRITE_SECURE_SETTINGS` permission via ADB:
-
-```bash
-adb shell pm grant dev.robin.flip_2_dnd android.permission.WRITE_SECURE_SETTINGS
+```sh
+./scripts/build-apk.sh
 ```
 
----
+The APK is generated at `app/build/outputs/apk/debug/app-debug.apk`.
+The validated build is also available locally as `artifacts/Flip2DND-Next.apk`.
+GitHub Actions builds a downloadable debug APK on pushes and pull requests.
+See [Actions](https://github.com/EinMaulwurf/flip2dnd_next/actions) for build artifacts.
+Build artifacts and signing keys are not committed.
 
-## 📈 Growth & Support
+Keep `.build-cache/` to retain the signing key for subsequent updates. The Android
+package ID is `dev.flip2dnd.next`, including local debug builds. This installs as a
+separate app alongside upstream and earlier Personal builds. Settings and permission
+grants from those apps do not transfer automatically. Disable their detection
+services before using Flip2DND Next.
 
-<p align="center">
-  <a href="https://star-history.com/#robinsrk/flip_2_dnd&Date">
-    <img src="https://api.star-history.com/svg?repos=robinsrk/flip_2_dnd&type=Date" alt="Star History Chart" width="100%">
-  </a>
-</p>
+See [build instructions and device checks](docker/README.md) for setup details and
+[battery and reliability notes](docs/reliability-and-battery.md) for monitoring
+strategies and limitations.
 
----
+## Releases
 
-## 🎖️ Credits
+Tag pushes (`v*`) run the release workflow, which tests the core module, builds a
+release APK, signs it, and uploads it to GitHub Releases. Tags containing a hyphen
+are marked as prereleases. Configure repository secrets `SIGNING_KEY` (base64 JKS),
+`KEY_STORE_PASSWORD`, `KEY_ALIAS`, and `KEY_PASSWORD` before creating a release tag.
+Keep a backup of that key: all future releases need it for in-place updates.
 
-We are extremely grateful to our supporters on Patreon who help keep this project alive and growing.
+CI debug APKs use a temporary runner key and are intended for testing. They cannot
+update an app installed with the release signing key.
 
-<p align="center">
-  <a href="https://patreon.com/AbulKalamRobin369">
-    <img src="./assets/images/becomeAPatronBanner.png" alt="Become a Patron" width="400"/>
-  </a>
-</p>
+## Project identity and attribution
 
-### 🧡 Patreon Supporters
-- **Martin Buckley**
-- **Michael W Erdely**
+The app name is **Flip2DND Next**, including the launcher, onboarding, notifications,
+widget descriptions, Quick Settings tile, and store metadata. Android application
+IDs, source namespaces, reflection paths, and ProGuard rules use `dev.flip2dnd.next`. Historical changelogs retain the original release names.
 
-### 🤝 Contributors
-- **[ryosoftware](https://github.com/ryosoftware)**
+Source, issues, and releases for this continuation live at
+[EinMaulwurf/flip2dnd_next](https://github.com/EinMaulwurf/flip2dnd_next).
+Links to the original repository and purchase pages refer to upstream.
+No separate app store listing has been published. The F-Droid metadata identifies
+this continuation; catalog builds and automatic updates remain disabled until a
+signed release is available.
 
-Support the development of Flip 2 DND by [becoming a Patron](https://www.patreon.com/AbulKalamRobin369).
+This project is not presented as an official successor or an upstream release.
+Thanks to Abul Kalam Robin and the original contributors for Flip2DND.
 
----
+## License
 
-## 📄 License
-
-This project is licensed under the [MIT License](LICENSE).
-
-Built with ❤️ using **Kotlin** and **Jetpack Compose**.
+[MIT](LICENSE). Original copyright and attribution are retained.

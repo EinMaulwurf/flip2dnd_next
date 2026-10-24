@@ -1,8 +1,8 @@
 <resources>
     <!-- Translations in Chinese (Simplified) -->
-    <string name="app_name">Flip 2 DND</string>
+    <string name="app_name">Flip2DND Next</string>
     <string name="service_description">使用设备传感器检测手机方向，并在手机面朝下时自动开启“勿扰模式”</string>
-    <string name="widget_toggle_description">切换 Flip 2 DND 服务</string>
+    <string name="widget_toggle_description">切换 Flip2DND Next 服务</string>
     <string name="home">主页</string>
     <string name="settings">设置</string>
     <string name="about">关于</string>
@@ -44,7 +44,7 @@
     <string name="adb_command_description">要启用自动省电模式切换，请使用以下 ADB 命令授予 WRITE_SECURE_SETTINGS 权限：</string>
     <string name="copy_command">复制命令</string>
     <string name="close">关闭</string>
-    <string name="adb_command_text">adb shell pm grant dev.robin.flip_2_dnd android.permission.WRITE_SECURE_SETTINGS</string>
+    <string name="adb_command_text">adb shell pm grant dev.flip2dnd.next android.permission.WRITE_SECURE_SETTINGS</string>
     <string name="dnd_on_sound_description">开启勿扰模式时播放的声音</string>
     <string name="dnd_off_sound_description">关闭勿扰模式时播放的声音</string>
     <string name="use_custom_volume_description">为勿扰音效使用自定义音量</string>
@@ -65,7 +65,7 @@
     <string name="language">语言</string>
     <string name="language_description">更改应用语言</string>
     <string name="error_opening_language_settings">无法打开语言设置</string>
-    <string name="qs_tile_label">翻转勿扰服务</string>
+    <string name="qs_tile_label">Flip2DND Next</string>
     <string name="detection">检测</string>
     <string name="flashlight_detection">手电筒检测</string>
     <string name="flashlight_detection_description">手电筒开启时暂停服务</string>
@@ -124,7 +124,7 @@
     <string name="dnd_mode_unknown">未知模式</string>
 
     <!-- Onboarding -->
-    <string name="onboarding_welcome_title">欢迎使用 Flip 2 DND</string>
+    <string name="onboarding_welcome_title">欢迎使用 Flip2DND Next</string>
     <string name="onboarding_welcome_desc">只需将手机翻转面朝下，即可控制手机的勿扰模式。</string>
     <string name="onboarding_simple_title">简单有效</string>
     <string name="onboarding_simple_desc">专注于重要事项。翻转手机即可立即静音干扰。</string>
@@ -133,7 +133,7 @@
     <string name="onboarding_get_started">开始使用</string>
     <string name="onboarding_next">下一步</string>
     <string name="onboarding_setup_permissions_title">设置权限</string>
-    <string name="onboarding_setup_permissions_desc">授予以下权限以确保 Flip 2 DND 正常运行。</string>
+    <string name="onboarding_setup_permissions_desc">授予以下权限以确保 Flip2DND Next 正常运行。</string>
     <string name="permission_dnd_title">勿扰模式访问权限</string>
     <string name="permission_dnd_desc">切换勿扰模式所需。</string>
     <string name="permission_battery_title">电池优化</string>
@@ -178,7 +178,7 @@
     <string name="feature_schedules">勿扰、音效和振动计划</string>
     <string name="feature_custom_sounds">来自文件的自定义音效</string>
     <string name="feature_telegram">Telegram 支持小组</string>
-    <string name="get_pro">获取 Flip 2 DND Pro</string>
+    <string name="get_pro">获取 Flip2DND Next Pro</string>
     <string name="maybe_later">稍后再说</string>
     <string name="pro">PRO</string>
     <string name="day_sunday_short">日</string>
@@ -201,7 +201,7 @@
     <string name="error_saving_sound">保存自定义音效时出错</string>
 
     <!-- Notifications -->
-    <string name="notification_service_channel_name">Flip 2 DND 服务</string>
+    <string name="notification_service_channel_name">Flip2DND Next 服务</string>
     <string name="notification_service_channel_desc">监控手机方向以切换勿扰模式</string>
     <string name="notification_flip_channel_name">翻转状态通知</string>
     <string name="notification_flip_channel_desc">关于手机翻转状态和勿扰更改的通知</string>
@@ -230,20 +230,20 @@
     <string name="collapse">收起</string>
     <string name="expand">展开</string>
     <string name="permission_required_title">需要权限</string>
-    <string name="permission_required_desc">Flip 2 DND 需要必要权限才能正常工作。请授予这些权限以继续。</string>
+    <string name="permission_required_desc">Flip2DND Next 需要必要权限才能正常工作。请授予这些权限以继续。</string>
     <string name="permission_dnd">勿扰模式访问</string>
     <string name="permission_battery">电池优化</string>
     <string name="permission_notification">通知</string>
     <string name="grant">授予</string>
     <string name="check_again">重新检查</string>
     <string name="support_dialog_title">支持开发者</string>
-    <string name="support_dialog_message">感谢使用 Flip 2 DND！您的支持有助于让应用保持免费并持续改进。如果您觉得应用有用，请考虑支持我的工作。</string>
+    <string name="support_dialog_message">感谢使用 Flip2DND Next！您的支持有助于让应用保持免费并持续改进。如果您觉得应用有用，请考虑支持我的工作。</string>
     <string name="patreon">Patreon</string>
     <string name="crypto">加密货币</string>
     <string name="check_for_updates">检查更新</string>
-    <string name="check_for_updates_description">检查 Flip 2 DND 的最新版本（需要 Pro）</string>
+    <string name="check_for_updates_description">检查 Flip2DND Next 的最新版本（需要 Pro）</string>
     <string name="update_check_dialog_title">检查更新</string>
-    <string name="update_check_dialog_message">您在哪里购买了 Flip 2 DND Pro？我们将把您引导到相应平台以检查更新。</string>
+    <string name="update_check_dialog_message">您在哪里购买了 Flip2DND Next Pro？我们将把您引导到相应平台以检查更新。</string>
     <string name="feedback_with_flashlight_on">即使手电筒开启也反馈</string>
     <string name="gumroad">Gumroad</string>
     <string name="flashlight_schedule">手电筒计划</string>

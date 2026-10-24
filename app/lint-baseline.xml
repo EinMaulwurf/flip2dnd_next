@@ -14,7 +14,7 @@
         errorLine1="        val vibrationEffect = VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE)"
         errorLine2="                                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/dev/robin/flip_2_dnd/data/repository/FeedbackRepositoryImpl.kt"
+            file="src/main/java/dev/flip2dnd/next/data/repository/FeedbackRepositoryImpl.kt"
             line="22"
             column="66"/>
     </issue>
@@ -25,7 +25,7 @@
         errorLine1="            NotificationManager.IMPORTANCE_LOW"
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/dev/robin/flip_2_dnd/services/FlipDetectorService.kt"
+            file="src/main/java/dev/flip2dnd/next/services/FlipDetectorService.kt"
             line="199"
             column="13"/>
     </issue>
@@ -36,7 +36,7 @@
         errorLine1="        val vibrationEffect = VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE)"
         errorLine2="                                              ~~~~~~~~~~~~~">
         <location
-            file="src/main/java/dev/robin/flip_2_dnd/data/repository/FeedbackRepositoryImpl.kt"
+            file="src/main/java/dev/flip2dnd/next/data/repository/FeedbackRepositoryImpl.kt"
             line="22"
             column="47"/>
     </issue>
@@ -47,7 +47,7 @@
         errorLine1="        vibrator.vibrate(vibrationEffect)"
         errorLine2="                 ~~~~~~~">
         <location
-            file="src/main/java/dev/robin/flip_2_dnd/data/repository/FeedbackRepositoryImpl.kt"
+            file="src/main/java/dev/flip2dnd/next/data/repository/FeedbackRepositoryImpl.kt"
             line="23"
             column="18"/>
     </issue>
@@ -58,7 +58,7 @@
         errorLine1="        val channel = NotificationChannel("
         errorLine2="                      ^">
         <location
-            file="src/main/java/dev/robin/flip_2_dnd/services/FlipDetectorService.kt"
+            file="src/main/java/dev/flip2dnd/next/services/FlipDetectorService.kt"
             line="196"
             column="23"/>
     </issue>
@@ -69,7 +69,7 @@
         errorLine1="            description = &quot;Monitors phone orientation to toggle DND mode&quot;"
         errorLine2="            ~~~~~~~~~~~">
         <location
-            file="src/main/java/dev/robin/flip_2_dnd/services/FlipDetectorService.kt"
+            file="src/main/java/dev/flip2dnd/next/services/FlipDetectorService.kt"
             line="201"
             column="13"/>
     </issue>
@@ -80,7 +80,7 @@
         errorLine1="        notificationManager.createNotificationChannel(channel)"
         errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/dev/robin/flip_2_dnd/services/FlipDetectorService.kt"
+            file="src/main/java/dev/flip2dnd/next/services/FlipDetectorService.kt"
             line="205"
             column="29"/>
     </issue>
@@ -91,7 +91,7 @@
         errorLine1="            startForegroundService(intent)"
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/dev/robin/flip_2_dnd/MainActivity.kt"
+            file="src/main/java/dev/flip2dnd/next/MainActivity.kt"
             line="70"
             column="13"/>
     </issue>
@@ -190,7 +190,7 @@
         errorLine1="                action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"
         errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/dev/robin/flip_2_dnd/MainActivity.kt"
+            file="src/main/java/dev/flip2dnd/next/MainActivity.kt"
             line="83"
             column="35"/>
     </issue>
@@ -201,7 +201,7 @@
         errorLine1="                action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"
         errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/dev/robin/flip_2_dnd/MainActivity.kt"
+            file="src/main/java/dev/flip2dnd/next/MainActivity.kt"
             line="83"
             column="35"/>
     </issue>
@@ -377,7 +377,7 @@
         errorLine1="            wakeLock.acquire()"
         errorLine2="                     ~~~~~~~">
         <location
-            file="src/main/java/dev/robin/flip_2_dnd/services/FlipDetectorService.kt"
+            file="src/main/java/dev/flip2dnd/next/services/FlipDetectorService.kt"
             line="94"
             column="22"/>
     </issue>
@@ -388,7 +388,7 @@
         errorLine1="            wakeLock.acquire()"
         errorLine2="            ~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/dev/robin/flip_2_dnd/services/FlipDetectorService.kt"
+            file="src/main/java/dev/flip2dnd/next/services/FlipDetectorService.kt"
             line="94"
             column="13"/>
     </issue>

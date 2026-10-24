@@ -1,8 +1,8 @@
 <resources>
     <!-- Translations in German -->
-    <string name="app_name">Flip 2 DND</string>
+    <string name="app_name">Flip2DND Next</string>
     <string name="service_description">Verwendet Gerätesensoren, um die Ausrichtung des Telefons zu erkennen und den Nicht-Stören-Modus bei Bildschirm nach unten automatisch zu aktivieren</string>
-    <string name="widget_toggle_description">Flip 2 DND-Dienst umschalten</string>
+    <string name="widget_toggle_description">Flip2DND Next-Dienst umschalten</string>
     <string name="home">Startseite</string>
     <string name="settings">Einstellungen</string>
     <string name="about">Über</string>
@@ -44,7 +44,7 @@
     <string name="adb_command_description">Um das automatische Umschalten des Energiesparmodus zu ermöglichen, erteilen Sie bitte die WRITE_SECURE_SETTINGS-Berechtigung mit dem folgenden ADB-Befehl:</string>
     <string name="copy_command">Befehl kopieren</string>
     <string name="close">Schließen</string>
-    <string name="adb_command_text">adb shell pm grant dev.robin.flip_2_dnd android.permission.WRITE_SECURE_SETTINGS</string>
+    <string name="adb_command_text">adb shell pm grant dev.flip2dnd.next android.permission.WRITE_SECURE_SETTINGS</string>
     <string name="dnd_on_sound_description">Ton abspielen, wenn DND aktiviert wird</string>
     <string name="dnd_off_sound_description">Ton abspielen, wenn DND deaktiviert wird</string>
     <string name="use_custom_volume_description">Ermöglicht das Festlegen einer benutzerdefinierten Lautstärke für den DND-Ton</string>
@@ -65,7 +65,7 @@
     <string name="language">Sprache</string>
     <string name="language_description">App-Sprache ändern</string>
     <string name="error_opening_language_settings">Spracheinstellungen konnten nicht geöffnet werden</string>
-    <string name="qs_tile_label">Flip DND-Dienst</string>
+    <string name="qs_tile_label">Flip2DND Next</string>
     <string name="detection">Erkennung</string>
     <string name="flashlight_detection">Taschenlampen-Erkennung</string>
     <string name="flashlight_detection_description">Dienst pausieren, wenn die Taschenlampe eingeschaltet ist</string>
@@ -126,7 +126,7 @@
     <string name="dnd_mode_unknown">Unbekannter Modus</string>
 
     <!-- Onboarding -->
-    <string name="onboarding_welcome_title">Willkommen bei Flip 2 DND</string>
+    <string name="onboarding_welcome_title">Willkommen bei Flip2DND Next</string>
     <string name="onboarding_welcome_desc">Steuern Sie den Nicht-Stören-Modus Ihres Telefons, indem Sie es einfach umdrehen.</string>
     <string name="onboarding_simple_title">Einfach &amp; Effektiv</string>
     <string name="onboarding_simple_desc">Konzentrieren Sie sich auf das Wesentliche. Drehen Sie Ihr Telefon um, um Störungen sofort zu stummschalten.</string>
@@ -135,7 +135,7 @@
     <string name="onboarding_get_started">Loslegen</string>
     <string name="onboarding_next">Weiter</string>
     <string name="onboarding_setup_permissions_title">Berechtigungen einrichten</string>
-    <string name="onboarding_setup_permissions_desc">Erteilen Sie die folgenden Berechtigungen, damit Flip 2 DND korrekt funktioniert.</string>
+    <string name="onboarding_setup_permissions_desc">Erteilen Sie die folgenden Berechtigungen, damit Flip2DND Next korrekt funktioniert.</string>
     <string name="permission_dnd_title">Nicht-Stören-Zugriff</string>
     <string name="permission_dnd_desc">Erforderlich zum Umschalten des DND-Modus.</string>
     <string name="permission_battery_title">Akku-Optimierung</string>
@@ -181,7 +181,7 @@
     <string name="feature_custom_sounds">Benutzerdefinierte Töne aus Dateien</string>
     <string name="feature_proximity">Näherungssensor-Erkennung</string>
     <string name="feature_telegram">Telegram-Support-Gruppe</string>
-    <string name="get_pro">Flip 2 DND Pro holen</string>
+    <string name="get_pro">Flip2DND Next Pro holen</string>
     <string name="maybe_later">Vielleicht später</string>
     <string name="pro">PRO</string>
     <string name="day_sunday_short">S</string>
@@ -204,7 +204,7 @@
     <string name="error_saving_sound">Fehler beim Speichern des benutzerdefinierten Tons</string>
 
     <!-- Notifications -->
-    <string name="notification_service_channel_name">Flip 2 DND Dienst</string>
+    <string name="notification_service_channel_name">Flip2DND Next Dienst</string>
     <string name="notification_service_channel_desc">Überwacht die Ausrichtung des Telefons zum Umschalten des DND-Modus</string>
     <string name="notification_flip_channel_name">Flip-Status-Benachrichtigungen</string>
     <string name="notification_flip_channel_desc">Benachrichtigungen über Flip-Status und DND-Änderungen</string>
@@ -233,20 +233,20 @@
     <string name="collapse">Einklappen</string>
     <string name="expand">Ausklappen</string>
     <string name="permission_required_title">Berechtigungen erforderlich</string>
-    <string name="permission_required_desc">Flip 2 DND benötigt Pflichtberechtigungen, um korrekt zu funktionieren. Bitte gewähren Sie sie, um fortzufahren.</string>
+    <string name="permission_required_desc">Flip2DND Next benötigt Pflichtberechtigungen, um korrekt zu funktionieren. Bitte gewähren Sie sie, um fortzufahren.</string>
     <string name="permission_dnd">Nicht-Stören-Zugriff</string>
     <string name="permission_battery">Akku-Optimierung</string>
     <string name="permission_notification">Benachrichtigungen</string>
     <string name="grant">Erteilen</string>
     <string name="check_again">Erneut prüfen</string>
     <string name="support_dialog_title">Entwickler unterstützen</string>
-    <string name="support_dialog_message">Vielen Dank für die Nutzung von Flip 2 DND! Ihre Unterstützung hilft mir, die App kostenlos und kontinuierlich besser zu machen. Wenn Sie die App hilfreich finden, erwägen Sie bitte eine Unterstützung.</string>
+    <string name="support_dialog_message">Vielen Dank für die Nutzung von Flip2DND Next! Ihre Unterstützung hilft mir, die App kostenlos und kontinuierlich besser zu machen. Wenn Sie die App hilfreich finden, erwägen Sie bitte eine Unterstützung.</string>
     <string name="patreon">Patreon</string>
     <string name="crypto">Krypto</string>
     <string name="check_for_updates">Nach Updates suchen</string>
-    <string name="check_for_updates_description">Nach der neuesten Version von Flip 2 DND suchen (Pro erforderlich)</string>
+    <string name="check_for_updates_description">Nach der neuesten Version von Flip2DND Next suchen (Pro erforderlich)</string>
     <string name="update_check_dialog_title">Nach Updates suchen</string>
-    <string name="update_check_dialog_message">Wo haben Sie Flip 2 DND Pro gekauft? Wir leiten Sie zur jeweiligen Plattform weiter, um nach Updates zu suchen.</string>
+    <string name="update_check_dialog_message">Wo haben Sie Flip2DND Next Pro gekauft? Wir leiten Sie zur jeweiligen Plattform weiter, um nach Updates zu suchen.</string>
     <string name="feedback_with_flashlight_on">Feedback auch wenn Taschenlampe an ist</string>
     <string name="gumroad">Gumroad</string>
     <string name="flashlight_schedule">Taschenlampen-Zeitplan</string>

@@ -1,7 +1,7 @@
 <resources>
-    <string name="app_name">Flip 2 DND</string>
+    <string name="app_name">Flip2DND Next</string>
     <string name="service_description">ஃபோனின் நோக்குநிலையைக் கண்டறிய சாதன சென்சார்களைப் பயன்படுத்துகிறது மற்றும் முகம் குப்புற இருக்கும்போது தானாகவே \'தொந்தரவு செய்யாதே\' பயன்முறையை இயக்குகிறது.</string>
-    <string name="widget_toggle_description">Flip 2 DND சேவையை நிலைமாற்று</string>
+    <string name="widget_toggle_description">Flip2DND Next சேவையை நிலைமாற்று</string>
     <string name="home">முகப்பு</string>
     <string name="settings">அமைப்புகள்</string>
     <string name="about">பற்றி</string>
@@ -43,7 +43,7 @@
     <string name="adb_command_description">தானியங்கி பேட்டரி சேமிப்பான் மாற்றத்தை இயக்க, பின்வரும் ADB கட்டளையைப் பயன்படுத்தி WRITE_SECURE_SETTINGS அனுமதியை வழங்கவும்:</string>
     <string name="copy_command">கட்டளையை நகலெடு</string>
     <string name="close">மூடு</string>
-    <string name="adb_command_text">adb shell pm grant dev.robin.flip_2_dnd android.permission.WRITE_SECURE_SETTINGS</string>
+    <string name="adb_command_text">adb shell pm grant dev.flip2dnd.next android.permission.WRITE_SECURE_SETTINGS</string>
     <string name="dnd_on_sound_description">DND இயக்கப்படும் போது ஒலிக்கும்</string>
     <string name="dnd_off_sound_description">DND முடக்கப்படும் போது ஒலிக்கும்</string>
     <string name="use_custom_volume_description">DND ஒலிகளுக்கு தனிப்பயன் ஒலியளவைப் பயன்படுத்து</string>
@@ -64,7 +64,7 @@
     <string name="language">மொழி</string>
     <string name="language_description">பயன்பாட்டின் மொழியை மாற்றவும்</string>
     <string name="error_opening_language_settings">மொழி அமைப்புகளைத் திறக்க முடியவில்லை</string>
-    <string name="qs_tile_label">Flip DND சேவை</string>
+    <string name="qs_tile_label">Flip2DND Next</string>
     <string name="detection">கண்டறிதல்</string>
     <string name="flashlight_detection">ஃபிளாஷ்லைட் கண்டறிதல்</string>
     <string name="flashlight_detection_description">ஃபிளாஷ்லைட் ஆன் ஆக இருக்கும்போது சேவையை நிறுத்தி வைக்கவும்</string>
@@ -123,7 +123,7 @@
     <string name="dnd_mode_unknown">அறியப்படாத பயன்முறை</string>
 
     <!-- Onboarding -->
-    <string name="onboarding_welcome_title">Flip 2 DND க்கு வரவேற்கிறோம்</string>
+    <string name="onboarding_welcome_title">Flip2DND Next க்கு வரவேற்கிறோம்</string>
     <string name="onboarding_welcome_desc">உங்கள் ஃபோனை முகம் குப்புறத் திருப்புவதன் மூலம் அதன் தொந்தரவு செய்யாதே பயன்முறையைக் கட்டுப்படுத்தவும்.</string>
     <string name="onboarding_simple_title">எளிமையானது மற்றும் பயனுள்ளது</string>
     <string name="onboarding_simple_desc">முக்கியமானவற்றில் கவனம் செலுத்துங்கள். இடையூறுகளை உடனடியாக அமைதிப்படுத்த உங்கள் ஃபோனைத் திருப்புங்கள்.</string>
@@ -132,7 +132,7 @@
     <string name="onboarding_get_started">தொடங்குங்கள்</string>
     <string name="onboarding_next">அடுத்தது</string>
     <string name="onboarding_setup_permissions_title">அனுமதிகளை அமைக்கவும்</string>
-    <string name="onboarding_setup_permissions_desc">Flip 2 DND சரியாகச் செயல்படுவதை உறுதிசெய்ய பின்வரும் அனுமதிகளை வழங்கவும்.</string>
+    <string name="onboarding_setup_permissions_desc">Flip2DND Next சரியாகச் செயல்படுவதை உறுதிசெய்ய பின்வரும் அனுமதிகளை வழங்கவும்.</string>
     <string name="permission_dnd_title">தொந்தரவு செய்யாதே அணுகல்</string>
     <string name="permission_dnd_desc">DND பயன்முறையை நிலைமாற்றத் தேவை.</string>
     <string name="permission_battery_title">பேட்டரி மேம்படுத்தல்</string>
@@ -178,7 +178,7 @@
     <string name="feature_schedules">DND, ஒலி மற்றும் அதிர்வு அட்டவணைகள்</string>
     <string name="feature_custom_sounds">கோப்புகளிலிருந்து தனிப்பயன் ஒலிகள்</string>
     <string name="feature_telegram">டெலிகிராம் ஆதரவு குழு</string>
-    <string name="get_pro">Flip 2 DND Pro ஐப் பெறுங்கள்</string>
+    <string name="get_pro">Flip2DND Next Pro ஐப் பெறுங்கள்</string>
     <string name="maybe_later">பிறகு பார்க்கலாம்</string>
     <string name="pro">PRO</string>
     <string name="day_sunday_short">ஞா</string>
@@ -201,7 +201,7 @@
     <string name="error_saving_sound">தனிப்பயன் ஒலியைச் சேமிப்பதில் பிழை</string>
 
     <!-- Notifications -->
-    <string name="notification_service_channel_name">Flip 2 DND சேவை</string>
+    <string name="notification_service_channel_name">Flip2DND Next சேவை</string>
     <string name="notification_service_channel_desc">DND பயன்முறையை நிலைமாற்ற ஃபோனின் நோக்குநிலையைக் கண்காணிக்கிறது</string>
     <string name="notification_flip_channel_name">ஃபிளிப் நிலை அறிவிப்புகள்</string>
     <string name="notification_flip_channel_desc">ஃபோன் ஃபிளிப் நிலை மற்றும் DND மாற்றங்கள் பற்றிய அறிவிப்புகள்</string>
@@ -254,20 +254,20 @@
     <string name="collapse">சுருக்கு</string>
     <string name="expand">விரி</string>
     <string name="permission_required_title">அனுமதிகள் தேவை</string>
-    <string name="permission_required_desc">Flip 2 DND சரியாக இயங்க கட்டாயமான அனுமதிகள் தேவை. தொடர, அவற்றை வழங்குங்கள்.</string>
+    <string name="permission_required_desc">Flip2DND Next சரியாக இயங்க கட்டாயமான அனுமதிகள் தேவை. தொடர, அவற்றை வழங்குங்கள்.</string>
     <string name="permission_dnd">தொந்தரவு செய்ய வேண்டாம் அணுகல்</string>
     <string name="permission_battery">பேட்டரி ஆப்டிமைஸேஷன்</string>
     <string name="permission_notification">அறிவிப்புகள்</string>
     <string name="grant">வழங்கவும்</string>
     <string name="check_again">மீண்டும் சரிபார்</string>
     <string name="support_dialog_title">டெவலப்பரை ஆதரிக்கவும்</string>
-    <string name="support_dialog_message">Flip 2 DND பயன்படுத்தியதற்கு நன்றி! உங்கள் ஆதரவு ஆப்பை இலவசமாகவும் தொடர்ந்து மேம்படுத்தவும் உதவுகிறது. பயன்பாடு பயனுள்ளதாக இருந்தால் ஆதரவு செய்யுங்கள்.</string>
+    <string name="support_dialog_message">Flip2DND Next பயன்படுத்தியதற்கு நன்றி! உங்கள் ஆதரவு ஆப்பை இலவசமாகவும் தொடர்ந்து மேம்படுத்தவும் உதவுகிறது. பயன்பாடு பயனுள்ளதாக இருந்தால் ஆதரவு செய்யுங்கள்.</string>
     <string name="patreon">Patreon</string>
     <string name="crypto">கிரிப்டோ</string>
     <string name="check_for_updates">அப்டேட்களைச் சரிபார்</string>
-    <string name="check_for_updates_description">Flip 2 DND இன் சமீபத்திய பதிப்பைச் சரிபார் (Pro தேவை)</string>
+    <string name="check_for_updates_description">Flip2DND Next இன் சமீபத்திய பதிப்பைச் சரிபார் (Pro தேவை)</string>
     <string name="update_check_dialog_title">அப்டேட்களைச் சரிபார்</string>
-    <string name="update_check_dialog_message">Flip 2 DND Pro எங்கு வாங்கினீர்கள்? அப்டேட்கள் சரிபார்க்க சம்பந்தப்பட்ட தளத்திற்கு வழி நடத்துவோம்.</string>
+    <string name="update_check_dialog_message">Flip2DND Next Pro எங்கு வாங்கினீர்கள்? அப்டேட்கள் சரிபார்க்க சம்பந்தப்பட்ட தளத்திற்கு வழி நடத்துவோம்.</string>
     <string name="feedback_with_flashlight_on">ஃபிளாஷ் லைட் ஓன் இருந்தாலும் பின்னூட்டம்</string>
     <string name="gumroad">Gumroad</string>
     <string name="feedback">பின்னூட்டம்</string>

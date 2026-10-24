@@ -7,15 +7,15 @@ plugins {
 }
 
 android {
-	namespace = "dev.robin.flip_2_dnd"
+	namespace = "dev.flip2dnd.next"
 	compileSdk = 36
 
 	defaultConfig {
-		applicationId = "dev.robin.flip_2_dnd"
+		applicationId = "dev.flip2dnd.next"
 		minSdk = 23
 		targetSdk = 35
-		versionCode = 1214
-		versionName = "12.1.1-personal.3"
+		versionCode = 1215
+		versionName = "12.1.1-next.1"
 		vectorDrawables {
 			useSupportLibrary = true
 		}
@@ -24,10 +24,10 @@ android {
 		if (isPro) {
 			applicationIdSuffix = ".pro"
 			versionNameSuffix = "-pro"
-			resValue("string", "app_name", "Flip 2 DND Pro")
+			resValue("string", "app_name", "Flip2DND Next Pro")
 		} else {
 			versionNameSuffix = ""
-			resValue("string", "app_name", "Flip 2 DND")
+			resValue("string", "app_name", "Flip2DND Next")
 		}
 	}
 
@@ -37,11 +37,6 @@ android {
 	}
 
 	buildTypes {
-        debug {
-            applicationIdSuffix = ".personal"
-            resValue("string", "app_name", "Flip 2 DND Personal")
-            resValue("string", "personal_app_name", "Flip 2 DND Personal")
-        }
 		release {
 			isMinifyEnabled = true
 			isShrinkResources = true

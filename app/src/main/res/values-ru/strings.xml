@@ -1,7 +1,7 @@
 <resources>
-	<string name="app_name">Flip 2 DND</string>
+	<string name="app_name">Flip2DND Next</string>
 	<string name="service_description">Использует сенсоры устройства для определения ориентации телефона и автоматически включает режим "Не беспокоить", когда телефон перевернут экраном вниз.</string>
-	<string name="widget_toggle_description">Переключить сервис Flip 2 DND</string>
+	<string name="widget_toggle_description">Переключить сервис Flip2DND Next</string>
 	<string name="home">Главная</string>
 	<string name="settings">Настройки</string>
 	<string name="about">О приложении</string>
@@ -43,7 +43,7 @@
     <string name="adb_command_description">Чтобы включить автоматическое переключение режима энергосбережения, предоставьте разрешение WRITE_SECURE_SETTINGS с помощью следующей команды ADB:</string>
     <string name="copy_command">Копировать команду</string>
     <string name="close">Закрыть</string>
-    <string name="adb_command_text">adb shell pm grant dev.robin.flip_2_dnd android.permission.WRITE_SECURE_SETTINGS</string>
+    <string name="adb_command_text">adb shell pm grant dev.flip2dnd.next android.permission.WRITE_SECURE_SETTINGS</string>
 	<string name="dnd_on_sound_description">Звук при включении DND</string>
 	<string name="dnd_off_sound_description">Звук при выключении DND</string>
 	<string name="use_custom_volume_description">Использовать пользовательский уровень громкости для звуков DND</string>
@@ -64,7 +64,7 @@
 	<string name="language">Язык</string>
 	<string name="language_description">Изменить язык приложения</string>
 	<string name="error_opening_language_settings">Не удалось открыть настройки языка</string>
-    <string name="qs_tile_label">Служба Flip DND</string>
+    <string name="qs_tile_label">Flip2DND Next</string>
     <string name="detection">Обнаружение</string>
     <string name="flashlight_detection">Обнаружение фонарика</string>
     <string name="flashlight_detection_description">Приостановить службу, когда включен фонарик</string>
@@ -123,7 +123,7 @@
     <string name="dnd_mode_unknown">Неизвестный режим</string>
 
     <!-- Onboarding -->
-    <string name="onboarding_welcome_title">Добро пожаловать в Flip 2 DND</string>
+    <string name="onboarding_welcome_title">Добро пожаловать в Flip2DND Next</string>
     <string name="onboarding_welcome_desc">Управляйте режимом "Не беспокоить", просто переворачивая телефон экраном вниз.</string>
     <string name="onboarding_simple_title">Просто и эффективно</string>
     <string name="onboarding_simple_desc">Сосредоточьтесь на важном. Переверните телефон, чтобы мгновенно отключить уведомления.</string>
@@ -132,7 +132,7 @@
     <string name="onboarding_get_started">Начать</string>
     <string name="onboarding_next">Далее</string>
     <string name="onboarding_setup_permissions_title">Настройка разрешений</string>
-    <string name="onboarding_setup_permissions_desc">Предоставьте следующие разрешения для корректной работы Flip 2 DND.</string>
+    <string name="onboarding_setup_permissions_desc">Предоставьте следующие разрешения для корректной работы Flip2DND Next.</string>
     <string name="permission_dnd_title">Доступ к "Не беспокоить"</string>
     <string name="permission_dnd_desc">Требуется для переключения режима DND.</string>
     <string name="permission_battery_title">Оптимизация батареи</string>
@@ -177,7 +177,7 @@
     <string name="feature_schedules">Расписания DND, звука и вибрации</string>
     <string name="feature_custom_sounds">Свои звуки из файлов</string>
     <string name="feature_telegram">Группа поддержки в Telegram</string>
-    <string name="get_pro">Получить Flip 2 DND Pro</string>
+    <string name="get_pro">Получить Flip2DND Next Pro</string>
     <string name="maybe_later">Может позже</string>
     <string name="pro">PRO</string>
     <string name="day_sunday_short">Вс</string>
@@ -200,7 +200,7 @@
     <string name="error_saving_sound">Ошибка сохранения своего звука</string>
 
     <!-- Notifications -->
-    <string name="notification_service_channel_name">Служба Flip 2 DND</string>
+    <string name="notification_service_channel_name">Служба Flip2DND Next</string>
     <string name="notification_service_channel_desc">Отслеживает ориентацию телефона для переключения режима DND</string>
     <string name="notification_flip_channel_name">Уведомления о перевороте</string>
     <string name="notification_flip_channel_desc">Уведомления о состоянии переворота и изменениях DND</string>
@@ -254,20 +254,20 @@
     <string name="collapse">Свернуть</string>
     <string name="expand">Развернуть</string>
     <string name="permission_required_title">Требуются разрешения</string>
-    <string name="permission_required_desc">Для корректной работы Flip 2 DND требуются обязательные разрешения. Пожалуйста, предоставьте их.</string>
+    <string name="permission_required_desc">Для корректной работы Flip2DND Next требуются обязательные разрешения. Пожалуйста, предоставьте их.</string>
     <string name="permission_dnd">Доступ к режиму «Не беспокоить»</string>
     <string name="permission_battery">Оптимизация батареи</string>
     <string name="permission_notification">Уведомления</string>
     <string name="grant">Предоставить</string>
     <string name="check_again">Проверить снова</string>
     <string name="support_dialog_title">Поддержать разработчика</string>
-    <string name="support_dialog_message">Спасибо за использование Flip 2 DND! Ваша поддержка помогает сохранять приложение бесплатным и постоянно улучшать его. Если приложение полезно, рассмотрите возможность поддержки.</string>
+    <string name="support_dialog_message">Спасибо за использование Flip2DND Next! Ваша поддержка помогает сохранять приложение бесплатным и постоянно улучшать его. Если приложение полезно, рассмотрите возможность поддержки.</string>
     <string name="patreon">Patreon</string>
     <string name="crypto">Крипто</string>
     <string name="check_for_updates">Проверить обновления</string>
-    <string name="check_for_updates_description">Проверить последнюю версию Flip 2 DND (требуется Pro)</string>
+    <string name="check_for_updates_description">Проверить последнюю версию Flip2DND Next (требуется Pro)</string>
     <string name="update_check_dialog_title">Проверка обновлений</string>
-    <string name="update_check_dialog_message">Где вы приобрели Flip 2 DND Pro? Мы направим вас на соответствующую платформу для проверки обновлений.</string>
+    <string name="update_check_dialog_message">Где вы приобрели Flip2DND Next Pro? Мы направим вас на соответствующую платформу для проверки обновлений.</string>
     <string name="feedback_with_flashlight_on">Обратная связь даже при включенном фонарике</string>
     <string name="gumroad">Gumroad</string>
     <string name="feedback">Обратная связь</string>

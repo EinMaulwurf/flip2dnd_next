@@ -19,7 +19,7 @@ dependencyResolutionManagement {
 	}
 }
 
-rootProject.name = "Flip_2_DND"
+rootProject.name = "Flip2DND Next"
 include(":app")
 include(":core")
 include(":free-impl")

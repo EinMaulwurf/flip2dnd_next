@@ -3,7 +3,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 export DOCKER_CONFIG="$PWD/.build-cache/docker"
 mkdir -p "$DOCKER_CONFIG"
-docker build -t flip2dnd-build -f docker/Dockerfile .
+docker build -t flip2dnd-next-build -f docker/Dockerfile .
 mkdir -p .build-cache/gradle .build-cache/android
 if [ "$#" -eq 0 ]; then set -- :app:assembleDebug; fi
 docker run --rm --user "$(id -u):$(id -g)" \
@@ -11,4 +11,4 @@ docker run --rm --user "$(id -u):$(id -g)" \
   -v "$PWD:/workspace" \
   -v "$PWD/.build-cache/gradle:/cache/gradle" \
   -v "$PWD/.build-cache/android:/cache/android" \
-  flip2dnd-build --no-daemon --max-workers=2 "$@"
+  flip2dnd-next-build --no-daemon --max-workers=2 "$@"

@@ -1,8 +1,8 @@
 <resources>
     <!-- Translations in Korean -->
-    <string name="app_name">Flip 2 DND</string>
+    <string name="app_name">Flip2DND Next</string>
     <string name="service_description">기기의 센서를 사용하여 휴대폰의 방향을 감지하고, 화면이 아래로 향할 때 자동으로 방해 금지 모드를 활성화합니다</string>
-    <string name="widget_toggle_description">Flip 2 DND 서비스 전환</string>
+    <string name="widget_toggle_description">Flip2DND Next 서비스 전환</string>
     <string name="home">홈</string>
     <string name="settings">설정</string>
     <string name="about">정보</string>
@@ -44,7 +44,7 @@
     <string name="adb_command_description">배터리 절약 모드 자동 전환을 활성화하려면 다음 ADB 명령어를 사용하여 WRITE_SECURE_SETTINGS 권한을 부여하세요:</string>
     <string name="copy_command">명령어 복사</string>
     <string name="close">닫기</string>
-    <string name="adb_command_text">adb shell pm grant dev.robin.flip_2_dnd android.permission.WRITE_SECURE_SETTINGS</string>
+    <string name="adb_command_text">adb shell pm grant dev.flip2dnd.next android.permission.WRITE_SECURE_SETTINGS</string>
     <string name="dnd_on_sound_description">방해 금지 모드가 활성화될 때 재생할 사운드</string>
     <string name="dnd_off_sound_description">방해 금지 모드가 비활성화될 때 재생할 사운드</string>
     <string name="use_custom_volume_description">방해 금지 사운드에 사용자 지정 볼륨을 사용합니다</string>
@@ -65,7 +65,7 @@
     <string name="language">언어</string>
     <string name="language_description">앱 언어 변경</string>
     <string name="error_opening_language_settings">언어 설정을 열 수 없습니다</string>
-    <string name="qs_tile_label">Flip DND 서비스</string>
+    <string name="qs_tile_label">Flip2DND Next</string>
     <string name="detection">감지</string>
     <string name="flashlight_detection">손전등 감지</string>
     <string name="flashlight_detection_description">손전등이 켜져 있을 때 서비스를 일시 중지합니다</string>
@@ -124,7 +124,7 @@
     <string name="dnd_mode_unknown">알 수 없는 모드</string>
 
     <!-- Onboarding -->
-    <string name="onboarding_welcome_title">Flip 2 DND에 오신 것을 환영합니다</string>
+    <string name="onboarding_welcome_title">Flip2DND Next에 오신 것을 환영합니다</string>
     <string name="onboarding_welcome_desc">휴대폰을 뒤집기만 하면 방해 금지 모드를 간편하게 제어할 수 있습니다.</string>
     <string name="onboarding_simple_title">심플하고 효과적인 기능</string>
     <string name="onboarding_simple_desc">중요한 것에 집중하세요. 휴대폰을 뒤집어 즉시 알림을 무음으로 전환하세요.</string>
@@ -133,7 +133,7 @@
     <string name="onboarding_get_started">시작하기</string>
     <string name="onboarding_next">다음</string>
     <string name="onboarding_setup_permissions_title">권한 설정</string>
-    <string name="onboarding_setup_permissions_desc">Flip 2 DND가 정상적으로 작동하도록 다음 권한을 허용해 주세요.</string>
+    <string name="onboarding_setup_permissions_desc">Flip2DND Next가 정상적으로 작동하도록 다음 권한을 허용해 주세요.</string>
     <string name="permission_dnd_title">방해 금지 모드 액세스</string>
     <string name="permission_dnd_desc">방해 금지 모드 전환에 필요합니다.</string>
     <string name="permission_battery_title">배터리 최적화</string>
@@ -178,7 +178,7 @@
     <string name="feature_schedules">방해 금지, 사운드, 진동 일정 설정</string>
     <string name="feature_custom_sounds">파일에서 사용자 지정 사운드 설정</string>
     <string name="feature_telegram">텔레그램 지원 그룹</string>
-    <string name="get_pro">Flip 2 DND Pro 구매</string>
+    <string name="get_pro">Flip2DND Next Pro 구매</string>
     <string name="maybe_later">나중에</string>
     <string name="pro">PRO</string>
     <string name="day_sunday_short">일</string>
@@ -201,7 +201,7 @@
     <string name="error_saving_sound">사용자 지정 사운드 저장 중 오류 발생</string>
 
     <!-- Notifications -->
-    <string name="notification_service_channel_name">Flip 2 DND 서비스</string>
+    <string name="notification_service_channel_name">Flip2DND Next 서비스</string>
     <string name="notification_service_channel_desc">휴대폰 방향을 모니터링하여 방해 금지 모드를 전환합니다</string>
     <string name="notification_flip_channel_name">뒤집기 상태 알림</string>
     <string name="notification_flip_channel_desc">휴대폰 뒤집기 상태 및 방해 금지 모드 변경에 대한 알림</string>
@@ -255,20 +255,20 @@
     <string name="collapse">접기</string>
     <string name="expand">펼치기</string>
     <string name="permission_required_title">권한 필요</string>
-    <string name="permission_required_desc">Flip 2 DND가 정상 작동하려면 필수 권한이 필요합니다. 계속하려면 권한을 부여하세요.</string>
+    <string name="permission_required_desc">Flip2DND Next가 정상 작동하려면 필수 권한이 필요합니다. 계속하려면 권한을 부여하세요.</string>
     <string name="permission_dnd">방해 금지 액세스</string>
     <string name="permission_battery">배터리 최적화</string>
     <string name="permission_notification">알림</string>
     <string name="grant">부여</string>
     <string name="check_again">다시 확인</string>
     <string name="support_dialog_title">개발자 지원</string>
-    <string name="support_dialog_message">Flip 2 DND를 사용해 주셔서 감사합니다! 여러분의 지원은 앱을 무료로 유지하고 지속적으로 개선하는 데 도움이 됩니다. 유용하다고 느끼신다면 지원을 고려해 주세요.</string>
+    <string name="support_dialog_message">Flip2DND Next를 사용해 주셔서 감사합니다! 여러분의 지원은 앱을 무료로 유지하고 지속적으로 개선하는 데 도움이 됩니다. 유용하다고 느끼신다면 지원을 고려해 주세요.</string>
     <string name="patreon">Patreon</string>
     <string name="crypto">암호화폐</string>
     <string name="check_for_updates">업데이트 확인</string>
-    <string name="check_for_updates_description">Flip 2 DND 최신 버전 확인 (Pro 필요)</string>
+    <string name="check_for_updates_description">Flip2DND Next 최신 버전 확인 (Pro 필요)</string>
     <string name="update_check_dialog_title">업데이트 확인</string>
-    <string name="update_check_dialog_message">Flip 2 DND Pro를 어디에서 구매하셨나요? 해당 플랫폼으로 안내하여 업데이트를 확인합니다.</string>
+    <string name="update_check_dialog_message">Flip2DND Next Pro를 어디에서 구매하셨나요? 해당 플랫폼으로 안내하여 업데이트를 확인합니다.</string>
     <string name="feedback_with_flashlight_on">손전등 켜짐 상태에서도 피드백</string>
     <string name="gumroad">Gumroad</string>
     <string name="feedback">피드백</string>

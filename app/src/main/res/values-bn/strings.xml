@@ -1,7 +1,7 @@
 <resources>
-	<string name="app_name">ফ্লিপ 2 ডিএনডি</string>
+	<string name="app_name">Flip2DND Next</string>
 	<string name="service_description">ফোনের অরিয়েন্টেশন শনাক্ত করতে ডিভাইস সেন্সর ব্যবহার করে এবং ফোন উল্টানো হলে স্বয়ংক্রিয়ভাবে ডিএনডি মোড চালু করে</string>
-	<string name="widget_toggle_description">ফ্লিপ 2 ডিএনডি সেবা চালু/বন্ধ করুন</string>
+	<string name="widget_toggle_description">Flip2DND Next সেবা চালু/বন্ধ করুন</string>
 	<string name="home">হোম</string>
 	<string name="settings">সেটিংস</string>
 	<string name="about">সম্পর্কে</string>
@@ -43,7 +43,7 @@
 	<string name="adb_command_description">স্বয়ংক্রিয় ব্যাটারি সেভার টগল সক্ষম করতে, অনুগ্রহ করে নিচের ADB কমান্ডটি ব্যবহার করে WRITE_SECURE_SETTINGS অনুমতি প্রদান করুন:</string>
 	<string name="copy_command">কমান্ড কপি করুন</string>
 	<string name="close">বন্ধ করুন</string>
-	<string name="adb_command_text">adb shell pm grant dev.robin.flip_2_dnd android.permission.WRITE_SECURE_SETTINGS</string>
+	<string name="adb_command_text">adb shell pm grant dev.flip2dnd.next android.permission.WRITE_SECURE_SETTINGS</string>
 	<string name="dnd_on_sound_description">ডিএনডি চালু হলে যে শব্দ বাজবে</string>
 	<string name="dnd_off_sound_description">ডিএনডি বন্ধ হলে যে শব্দ বাজবে</string>
 	<string name="use_custom_volume_description">ডিএনডি শব্দের জন্য কাস্টম ভলিউম ব্যবহার করুন</string>
@@ -64,7 +64,7 @@
 	<string name="language">ভাষা</string>
 	<string name="language_description">অ্যাপের ভাষা পরিবর্তন করুন</string>
 	<string name="error_opening_language_settings">ভাষা সেটিংস খোলা যায়নি</string>
-	<string name="qs_tile_label">ফ্লিপ ডিএনডি সেবা</string>
+	<string name="qs_tile_label">Flip2DND Next</string>
 	<string name="detection">শনাক্তকরণ</string>
 	<string name="flashlight_detection">ফ্ল্যাশলাইট শনাক্তকরণ</string>
 	<string name="flashlight_detection_description">ফ্ল্যাশলাইট চালু থাকলে সেবা বন্ধ রাখুন</string>
@@ -123,7 +123,7 @@
 	<string name="dnd_mode_unknown">অজানা মোড</string>
 
 	<!-- Onboarding -->
-	<string name="onboarding_welcome_title">ফ্লিপ 2 ডিএনডি-তে স্বাগতম</string>
+	<string name="onboarding_welcome_title">Flip2DND Next-তে স্বাগতম</string>
 	<string name="onboarding_welcome_desc">আপনার ফোনের ডিএনডি মোড নিয়ন্ত্রণ করুন শুধুমাত্র এটি উল্টে রেখে।</string>
 	<string name="onboarding_simple_title">সহজ ও কার্যকর</string>
 	<string name="onboarding_simple_desc">গুরুত্বপূর্ণ কাজে মনোযোগ দিন। বিরতিহীনভাবে নীরব করতে আপনার ফোন উল্টে দিন।</string>
@@ -132,7 +132,7 @@
 	<string name="onboarding_get_started">শুরু করুন</string>
 	<string name="onboarding_next">পরবর্তী</string>
 	<string name="onboarding_setup_permissions_title">অনুমতি সেটআপ করুন</string>
-	<string name="onboarding_setup_permissions_desc">ফ্লিপ 2 ডিএনডি সঠিকভাবে কাজ করার জন্য নিচের অনুমতিগুলো প্রদান করুন।</string>
+	<string name="onboarding_setup_permissions_desc">Flip2DND Next সঠিকভাবে কাজ করার জন্য নিচের অনুমতিগুলো প্রদান করুন।</string>
 	<string name="permission_dnd_title">ডিএনডি অ্যাক্সেস</string>
 	<string name="permission_dnd_desc">ডিএনডি মোড টগল করার জন্য প্রয়োজন।</string>
 	<string name="permission_battery_title">ব্যাটারি অপ্টিমাইজেশন</string>
@@ -177,7 +177,7 @@
 	<string name="feature_schedules">ডিএনডি, শব্দ ও ভাইব্রেশন সময়সূচী</string>
 	<string name="feature_custom_sounds">ফাইল থেকে কাস্টম শব্দ</string>
 	<string name="feature_telegram">টেলিগ্রাম সাপোর্ট গ্রুপ</string>
-	<string name="get_pro">Flip 2 DND Pro নিন</string>
+	<string name="get_pro">Flip2DND Next Pro নিন</string>
 	<string name="maybe_later">পরে হবে</string>
 	<string name="pro">প্রো</string>
 	<string name="day_sunday_short">র</string>
@@ -200,7 +200,7 @@
 	<string name="error_saving_sound">কাস্টম শব্দ সেভ করতে ত্রুটি</string>
 
 	<!-- Notifications -->
-	<string name="notification_service_channel_name">ফ্লিপ 2 ডিএনডি সেবা</string>
+	<string name="notification_service_channel_name">Flip2DND Next সেবা</string>
 	<string name="notification_service_channel_desc">ডিএনডি মোড টগল করতে ফোনের অরিয়েন্টেশন পর্যবেক্ষণ করে</string>
 	<string name="notification_flip_channel_name">ফ্লিপ অবস্থার নোটিফিকেশন</string>
 	<string name="notification_flip_channel_desc">ফোনের ফ্লিপ অবস্থা এবং ডিএনডি পরিবর্তনের নোটিফিকেশন</string>
@@ -252,20 +252,20 @@
     <string name="collapse">সংকুচিত করুন</string>
     <string name="expand">প্রসারিত করুন</string>
     <string name="permission_required_title">অনুমতি প্রয়োজন</string>
-    <string name="permission_required_desc">Flip 2 DND সঠিকভাবে কাজ করতে বাধ্যতামূলক অনুমতি দরকার। অনুগ্রহ করে এগুলো দিন।</string>
+    <string name="permission_required_desc">Flip2DND Next সঠিকভাবে কাজ করতে বাধ্যতামূলক অনুমতি দরকার। অনুগ্রহ করে এগুলো দিন।</string>
     <string name="permission_dnd">ডিএনডি অ্যাক্সেস</string>
     <string name="permission_battery">ব্যাটারি অপ্টিমাইজেশন</string>
     <string name="permission_notification">নোটিফিকেশন</string>
     <string name="grant">অনুমতি দিন</string>
     <string name="check_again">আবার পরীক্ষা করুন</string>
     <string name="support_dialog_title">ডেভেলপারকে সহায়তা করুন</string>
-    <string name="support_dialog_message">Flip 2 DND ব্যবহারের জন্য ধন্যবাদ! আপনার সহায়তা অ্যাপটি বিনামূল্যে ও উন্নত রাখতে সাহায্য করে। যদি উপকারী লাগে, অনুগ্রহ করে সমর্থন বিবেচনা করুন।</string>
+    <string name="support_dialog_message">Flip2DND Next ব্যবহারের জন্য ধন্যবাদ! আপনার সহায়তা অ্যাপটি বিনামূল্যে ও উন্নত রাখতে সাহায্য করে। যদি উপকারী লাগে, অনুগ্রহ করে সমর্থন বিবেচনা করুন।</string>
     <string name="patreon">Patreon</string>
     <string name="crypto">ক্রিপ্টো</string>
     <string name="check_for_updates">আপডেট পরীক্ষা করুন</string>
-    <string name="check_for_updates_description">Flip 2 DND-এর সর্বশেষ সংস্করণ পরীক্ষা করুন (প্রো প্রয়োজন)</string>
+    <string name="check_for_updates_description">Flip2DND Next-এর সর্বশেষ সংস্করণ পরীক্ষা করুন (প্রো প্রয়োজন)</string>
     <string name="update_check_dialog_title">আপডেট পরীক্ষা করুন</string>
-    <string name="update_check_dialog_message">আপনি Flip 2 DND Pro কোথায় কিনেছেন? আমরা আপডেট পরীক্ষা করতে আপনাকে সংশ্লিষ্ট প্ল্যাটফর্মে নিয়ে যাব।</string>
+    <string name="update_check_dialog_message">আপনি Flip2DND Next Pro কোথায় কিনেছেন? আমরা আপডেট পরীক্ষা করতে আপনাকে সংশ্লিষ্ট প্ল্যাটফর্মে নিয়ে যাব।</string>
     <string name="feedback_with_flashlight_on">ফ্ল্যাশলাইট চালু থাকলেও ফিডব্যাক দিন</string>
     <string name="gumroad">Gumroad</string>
     <string name="feedback">ফিডব্যাক</string>

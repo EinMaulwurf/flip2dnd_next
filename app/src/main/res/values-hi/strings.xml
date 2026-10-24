@@ -1,7 +1,7 @@
 <resources>
-	<string name="app_name">Flip 2 DND</string>
+	<string name="app_name">Flip2DND Next</string>
 	<string name="service_description">फोन की स्थिति का पता लगाने के लिए डिवाइस सेंसर का उपयोग करें और इसे नीचे की ओर पलटने पर स्वचालित रूप से "डू नॉट डिस्टर्ब" मोड सक्षम करें।</string>
-	<string name="widget_toggle_description">Flip 2 DND सेवा को टॉगल करें</string>
+	<string name="widget_toggle_description">Flip2DND Next सेवा को टॉगल करें</string>
 	<string name="home">मुख्य स्क्रीन</string>
 	<string name="settings">सेटिंग्स</string>
 	<string name="about">के बारे में</string>
@@ -39,7 +39,7 @@
 	<string name="adb_command_description">स्वचालित बैटरी सेवर टॉगलिंग सक्षम करने के लिए, कृपया निम्नलिखित ADB कमांड का उपयोग करके WRITE_SECURE_SETTINGS अनुमति प्रदान करें:</string>
 	<string name="copy_command">कमांड कॉपी करें</string>
 	<string name="close">बंद करें</string>
-	<string name="adb_command_text">adb shell pm grant dev.robin.flip_2_dnd android.permission.WRITE_SECURE_SETTINGS</string>
+	<string name="adb_command_text">adb shell pm grant dev.flip2dnd.next android.permission.WRITE_SECURE_SETTINGS</string>
 	<string name="dnd_on_sound_description">DND सक्षम होने पर बजने वाली ध्वनि</string>
 	<string name="dnd_off_sound_description">DND बंद होने पर बजने वाली ध्वनि</string>
 	<string name="use_custom_volume">कस्टम वॉल्यूम का उपयोग करें</string>
@@ -64,7 +64,7 @@
 	<string name="language">भाषा</string>
 	<string name="language_description">ऐप की भाषा बदलें</string>
 	<string name="error_opening_language_settings">भाषा सेटिंग्स नहीं खुल सकीं</string>
-	<string name="qs_tile_label">फ्लिप DND सेवा</string>
+	<string name="qs_tile_label">Flip2DND Next</string>
 	<string name="detection">डिटेक्शन</string>
 	<string name="flashlight_detection">फ्लैशलाइट डिटेक्शन</string>
 	<string name="flashlight_detection_description">फ्लैशलाइट चालू होने पर सेवा रोकें</string>
@@ -123,7 +123,7 @@
 	<string name="dnd_mode_unknown">अज्ञात मोड</string>
 
 	<!-- Onboarding -->
-	<string name="onboarding_welcome_title">Flip 2 DND में आपका स्वागत है</string>
+	<string name="onboarding_welcome_title">Flip2DND Next में आपका स्वागत है</string>
 	<string name="onboarding_welcome_desc">बस अपने फोन को नीचे की ओर पलटकर डू नॉट डिस्टर्ब मोड को नियंत्रित करें।</string>
 	<string name="onboarding_simple_title">सरल और प्रभावी</string>
 	<string name="onboarding_simple_desc">महत्वपूर्ण बातों पर ध्यान दें। व्यवधानों को तुरंत शांत करने के लिए अपना फोन पलटें।</string>
@@ -132,7 +132,7 @@
 	<string name="onboarding_get_started">शुरू करें</string>
 	<string name="onboarding_next">अगला</string>
 	<string name="onboarding_setup_permissions_title">अनुमतियाँ सेटअप करें</string>
-	<string name="onboarding_setup_permissions_desc">यह सुनिश्चित करने के लिए कि Flip 2 DND सही ढंग से काम करे, निम्नलिखित अनुमतियाँ प्रदान करें।</string>
+	<string name="onboarding_setup_permissions_desc">यह सुनिश्चित करने के लिए कि Flip2DND Next सही ढंग से काम करे, निम्नलिखित अनुमतियाँ प्रदान करें।</string>
 	<string name="permission_dnd_title">डू नॉट डिस्टर्ब एक्सेस</string>
 	<string name="permission_dnd_desc">DND मोड टॉगल करने के लिए आवश्यक है।</string>
 	<string name="permission_battery_title">बैटरी ऑप्टिमाइजेशन</string>
@@ -178,7 +178,7 @@
 	<string name="feature_schedules">DND, ध्वनि और कंपन शेड्यूल</string>
 	<string name="feature_custom_sounds">फ़ाइलों से कस्टम ध्वनियाँ</string>
 	<string name="feature_telegram">टेलीग्राम सपोर्ट ग्रुप</string>
-	<string name="get_pro">Flip 2 DND Pro प्राप्त करें</string>
+	<string name="get_pro">Flip2DND Next Pro प्राप्त करें</string>
 	<string name="maybe_later">बाद में</string>
 	<string name="pro">PRO</string>
 	<string name="day_sunday_short">र</string>
@@ -201,7 +201,7 @@
 	<string name="error_saving_sound">कस्टम ध्वनि सहेजने में त्रुटि</string>
 
 	<!-- Notifications -->
-	<string name="notification_service_channel_name">Flip 2 DND सेवा</string>
+	<string name="notification_service_channel_name">Flip2DND Next सेवा</string>
 	<string name="notification_service_channel_desc">DND मोड टॉगल करने के लिए फोन की स्थिति की निगरानी करता है</string>
 	<string name="notification_flip_channel_name">फ्लिप स्थिति सूचनाएं</string>
 	<string name="notification_flip_channel_desc">फोन की फ्लिप स्थिति और DND परिवर्तनों के बारे में सूचनाएं</string>
@@ -254,20 +254,20 @@
     <string name="collapse">सिकोड़ें</string>
     <string name="expand">फैलाएँ</string>
     <string name="permission_required_title">अनुमतियाँ आवश्यक</string>
-    <string name="permission_required_desc">Flip 2 DND के सही कार्य के लिए अनिवार्य अनुमतियाँ आवश्यक हैं। कृपया उन्हें प्रदान करें।</string>
+    <string name="permission_required_desc">Flip2DND Next के सही कार्य के लिए अनिवार्य अनुमतियाँ आवश्यक हैं। कृपया उन्हें प्रदान करें।</string>
     <string name="permission_dnd">डू नॉट डिस्टर्ब एक्सेस</string>
     <string name="permission_battery">बैटरी ऑप्टिमाइज़ेशन</string>
     <string name="permission_notification">सूचनाएँ</string>
     <string name="grant">अनुमति दें</string>
     <string name="check_again">फिर जांचें</string>
     <string name="support_dialog_title">डेवलपर का समर्थन करें</string>
-    <string name="support_dialog_message">Flip 2 DND उपयोग करने के लिए धन्यवाद! आपका समर्थन ऐप को मुफ्त रखने और निरंतर सुधार में मदद करता है। अगर ऐप उपयोगी लगे, कृपया समर्थन करने पर विचार करें।</string>
+    <string name="support_dialog_message">Flip2DND Next उपयोग करने के लिए धन्यवाद! आपका समर्थन ऐप को मुफ्त रखने और निरंतर सुधार में मदद करता है। अगर ऐप उपयोगी लगे, कृपया समर्थन करने पर विचार करें।</string>
     <string name="patreon">Patreon</string>
     <string name="crypto">क्रिप्टो</string>
     <string name="check_for_updates">अपडेट जांचें</string>
-    <string name="check_for_updates_description">Flip 2 DND का नवीनतम संस्करण जांचें (Pro आवश्यक)</string>
+    <string name="check_for_updates_description">Flip2DND Next का नवीनतम संस्करण जांचें (Pro आवश्यक)</string>
     <string name="update_check_dialog_title">अपडेट जांचें</string>
-    <string name="update_check_dialog_message">आपने Flip 2 DND Pro कहाँ से खरीदा? हम आपको संबंधित प्लेटफ़ॉर्म पर अपडेट जांचने के लिए भेजेंगे।</string>
+    <string name="update_check_dialog_message">आपने Flip2DND Next Pro कहाँ से खरीदा? हम आपको संबंधित प्लेटफ़ॉर्म पर अपडेट जांचने के लिए भेजेंगे।</string>
     <string name="feedback_with_flashlight_on">फ़्लैशलाइट चालू होने पर भी फीडबैक</string>
     <string name="gumroad">Gumroad</string>
     <string name="feedback">फीडबैक</string>

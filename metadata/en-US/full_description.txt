@@ -1,4 +1,6 @@
-Flip 2 DND is a simple yet powerful app that automatically toggles Do Not Disturb mode based on your phone's orientation.
+Flip2DND Next is a simple yet powerful app that automatically toggles Do Not Disturb mode based on your phone's orientation.
+
+An independently developed evolution of Flip2DND, with configurable flip detection, proximity gating, schedules, and custom feedback.
 
 Features:
 

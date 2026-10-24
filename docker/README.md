@@ -1,4 +1,4 @@
-Build the Personal APK with Java 17 and Android SDK 36 in Docker:
+Build the Flip2DND Next APK with Java 17 and Android SDK 36 in Docker:
 
 ```sh
 ./scripts/build-apk.sh
@@ -6,8 +6,13 @@ Build the Personal APK with Java 17 and Android SDK 36 in Docker:
 
 Output: `app/build/outputs/apk/debug/app-debug.apk`.
 Build caches and the debug signing key persist in `.build-cache/`; keep that directory
-for subsequent APKs to update an existing installation. The `.personal` application ID
-allows the app to coexist with upstream. Disable upstream detection before using it.
+for subsequent Flip2DND Next APKs to update an existing Next installation. The
+`dev.flip2dnd.next` application ID allows it to coexist with upstream and previous
+Personal builds. Settings and permissions from those builds do not transfer. Disable
+their detection services before using Next.
+If switching an existing checkout from the old package, run `./scripts/build-apk.sh clean`
+once before building to remove generated classes from the previous namespace.
+
 No Android Studio, emulator, NDK, or phone-specific build is required. Budget roughly
 3–6 GB after the first build, plus temporary Docker build cache.
 
@@ -15,7 +20,7 @@ No Android Studio, emulator, NDK, or phone-specific build is required. Budget ro
 ./scripts/build-apk.sh :core:testDebugUnitTest :app:lintDebug :app:assembleDebug
 ```
 
-Implemented Personal features:
+Implemented features:
 
 - Compact settings categories and scrollable onboarding, with fixed navigation.
 - Continuous vibration strength: 0% is silent; low values reduce amplitude and pulse
@@ -46,7 +51,7 @@ Implemented Personal features:
 
 Unsupported flashlight feedback and battery-saver sync are hidden. Paid support,
 updater, credits, sponsor links, and Pro badges are absent from the settings UI.
-This fork implements its own features and does not include the private Pro module.
+This continuation implements its own features and does not include the private Pro module.
 
 Phone acceptance checks:
 
@@ -67,9 +72,13 @@ Phone acceptance checks:
 7. Check launcher icons with standard and themed icons, widget/Quick Settings symbols,
    and the small notification icon against both light and dark status bars.
 
-The generated APK is copied to `artifacts/Flip-2-DND-Personal.apk`, with its SHA-256
+The validated Flip2DND Next APK is copied to `artifacts/Flip2DND-Next.apk`, with its SHA-256
 in the adjacent `.sha256` file. Build artifacts and signing keys are not committed.
 Physical-device testing is still required for boot/update, proximity and haptics.
+
+## Historical Personal builds
+
+The names and artifact paths below refer to earlier builds, before the Flip2DND Next rename.
 
 Validation for `12.1.1-personal.2` (1213), 2026-10-22:
 
@@ -97,3 +106,19 @@ Validation for `12.1.1-personal.3` (1214), 2026-10-22:
 - APK signature verification passes and its certificate matches Personal v2 for in-place upgrades.
 - Installable artifact: `artifacts/Flip-2-DND-Personal-v3.apk`, with an adjacent `.sha256` file.
 - Hardware battery use has not been measured. See [the monitoring strategies and device checklist](../docs/reliability-and-battery.md), especially the higher-power fallback for phones without usable wake-up sensors.
+
+
+## Flip2DND Next validation
+
+Validation for `12.1.1-next.1` (1215), 2026-10-24:
+
+- Clean Docker build passed: `clean :core:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleRelease`.
+- All 38 core tests passed, with no failures or skipped tests.
+- Debug APK signature verification passed. Debug and release APKs report package
+  `dev.flip2dnd.next`; every packaged launcher locale reports `Flip2DND Next`.
+- All eight reflection-loaded feature implementations remain in the optimized release APK.
+- Lint still reports 11 existing missing-translation issues; the inherited configuration
+  does not abort on lint errors. No API-level errors remain after the clean build.
+- Installable local test build: `artifacts/Flip2DND-Next.apk`, with an adjacent SHA-256 file.
+- The new package installs separately; previous Personal settings and permissions do not migrate.
+- Physical-device behavior still needs the acceptance checks above.

@@ -1,0 +1,3 @@
+• Renamed the app to Flip2DND Next across the launcher, onboarding, notifications, widget descriptions, and Quick Settings tile.
+• Updated project documentation to describe this independently developed evolution of Flip2DND.
+• New Android package: dev.flip2dnd.next. Installs separately from earlier Personal and upstream builds.

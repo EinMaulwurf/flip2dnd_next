@@ -1,8 +1,8 @@
 <resources>
     <!-- Translations in Arabic -->
-    <string name="app_name">Flip 2 DND</string>
+    <string name="app_name">Flip2DND Next</string>
     <string name="service_description">يستخدم مستشعرات الجهاز لاكتشاف اتجاه الهاتف وتمكين وضع "عدم الإزعاج" تلقائياً عندما يكون الوجه لأسفل</string>
-    <string name="widget_toggle_description">تبديل خدمة Flip 2 DND</string>
+    <string name="widget_toggle_description">تبديل خدمة Flip2DND Next</string>
     <string name="home">الرئيسية</string>
     <string name="settings">الإعدادات</string>
     <string name="about">حول</string>
@@ -44,7 +44,7 @@
     <string name="adb_command_description">لتمكين تبديل موفر البطارية تلقائياً، يرجى منح إذن WRITE_SECURE_SETTINGS باستخدام أمر ADB التالي:</string>
     <string name="copy_command">نسخ الأمر</string>
     <string name="close">إغلاق</string>
-    <string name="adb_command_text">adb shell pm grant dev.robin.flip_2_dnd android.permission.WRITE_SECURE_SETTINGS</string>
+    <string name="adb_command_text">adb shell pm grant dev.flip2dnd.next android.permission.WRITE_SECURE_SETTINGS</string>
     <string name="dnd_on_sound_description">الصوت الذي يعمل عند تفعيل وضع عدم الإزعاج</string>
     <string name="dnd_off_sound_description">الصوت الذي يعمل عند إيقاف وضع عدم الإزعاج</string>
     <string name="use_custom_volume_description">استخدام مستوى صوت مخصص لأصوات وضع عدم الإزعاج</string>
@@ -65,7 +65,7 @@
     <string name="language">اللغة</string>
     <string name="language_description">تغيير لغة التطبيق</string>
     <string name="error_opening_language_settings">تعذر فتح إعدادات اللغة</string>
-    <string name="qs_tile_label">خدمة قلب الهاتف</string>
+    <string name="qs_tile_label">Flip2DND Next</string>
     <string name="detection">الاكتشاف</string>
     <string name="flashlight_detection">اكتشاف الكشاف</string>
     <string name="flashlight_detection_description">إيقاف الخدمة مؤقتاً عند تشغيل الكشاف</string>
@@ -124,7 +124,7 @@
     <string name="dnd_mode_unknown">وضع غير معروف</string>
 
     <!-- Onboarding -->
-    <string name="onboarding_welcome_title">مرحباً بك في Flip 2 DND</string>
+    <string name="onboarding_welcome_title">مرحباً بك في Flip2DND Next</string>
     <string name="onboarding_welcome_desc">تحكم في وضع عدم الإزعاج بهاتفك ببساطة عن طريق قلبه ليكون وجهه لأسفل.</string>
     <string name="onboarding_simple_title">بسيط وفعال</string>
     <string name="onboarding_simple_desc">ركز على ما يهم. اقلب هاتفك لإسكات الإزعاج فوراً.</string>
@@ -133,7 +133,7 @@
     <string name="onboarding_get_started">ابدأ الآن</string>
     <string name="onboarding_next">التالي</string>
     <string name="onboarding_setup_permissions_title">إعداد الأذونات</string>
-    <string name="onboarding_setup_permissions_desc">امنح الأذونات التالية لضمان عمل Flip 2 DND بشكل صحيح.</string>
+    <string name="onboarding_setup_permissions_desc">امنح الأذونات التالية لضمان عمل Flip2DND Next بشكل صحيح.</string>
     <string name="permission_dnd_title">الوصول لوضع عدم الإزعاج</string>
     <string name="permission_dnd_desc">مطلوب لتبديل وضع عدم الإزعاج.</string>
     <string name="permission_battery_title">تحسين البطارية</string>
@@ -178,7 +178,7 @@
     <string name="feature_schedules">جداول عدم الإزعاج والصوت والاهتزاز</string>
     <string name="feature_custom_sounds">أصوات مخصصة من الملفات</string>
     <string name="feature_telegram">مجموعة دعم تيليجرام</string>
-    <string name="get_pro">احصل على Flip 2 DND Pro</string>
+    <string name="get_pro">احصل على Flip2DND Next Pro</string>
     <string name="maybe_later">ربما لاحقاً</string>
     <string name="pro">PRO</string>
     <string name="day_sunday_short">ح</string>
@@ -201,7 +201,7 @@
     <string name="error_saving_sound">خطأ في حفظ الصوت المخصص</string>
 
     <!-- Notifications -->
-    <string name="notification_service_channel_name">خدمة Flip 2 DND</string>
+    <string name="notification_service_channel_name">خدمة Flip2DND Next</string>
     <string name="notification_service_channel_desc">يراقب اتجاه الهاتف لتبديل وضع عدم الإزعاج</string>
     <string name="notification_flip_channel_name">تنبيهات حالة القلب</string>
     <string name="notification_flip_channel_desc">تنبيهات حول حالة قلب الهاتف وتغييرات وضع عدم الإزعاج</string>
@@ -231,20 +231,20 @@
     <string name="collapse">تصغير</string>
     <string name="expand">توسيع</string>
     <string name="permission_required_title">الأذونات مطلوبة</string>
-    <string name="permission_required_desc">Flip 2 DND يتطلب أذونات أساسية ليعمل بشكل صحيح. يرجى منحها للمتابعة.</string>
+    <string name="permission_required_desc">Flip2DND Next يتطلب أذونات أساسية ليعمل بشكل صحيح. يرجى منحها للمتابعة.</string>
     <string name="permission_dnd">الوصول لوضع عدم الإزعاج</string>
     <string name="permission_battery">تحسين البطارية</string>
     <string name="permission_notification">التنبيهات</string>
     <string name="grant">منح</string>
     <string name="check_again">تحقق مرة أخرى</string>
     <string name="support_dialog_title">ادعم المطور</string>
-    <string name="support_dialog_message">شكراً لاستخدامك Flip 2 DND! يساعدني دعمك في إبقاء التطبيق مجانياً ويتحسن باستمرار. إذا وجدت التطبيق مفيداً، يرجى التفكير في الدعم.</string>
+    <string name="support_dialog_message">شكراً لاستخدامك Flip2DND Next! يساعدني دعمك في إبقاء التطبيق مجانياً ويتحسن باستمرار. إذا وجدت التطبيق مفيداً، يرجى التفكير في الدعم.</string>
     <string name="patreon">Patreon</string>
     <string name="crypto">العملات المشفرة</string>
     <string name="check_for_updates">تحقق من التحديثات</string>
-    <string name="check_for_updates_description">تحقق من أحدث إصدار لـ Flip 2 DND (يتطلب Pro)</string>
+    <string name="check_for_updates_description">تحقق من أحدث إصدار لـ Flip2DND Next (يتطلب Pro)</string>
     <string name="update_check_dialog_title">التحقق من التحديثات</string>
-    <string name="update_check_dialog_message">أين قمت بشراء Flip 2 DND Pro؟ سنوجهك إلى المنصة المناسبة للتحقق من التحديثات.</string>
+    <string name="update_check_dialog_message">أين قمت بشراء Flip2DND Next Pro؟ سنوجهك إلى المنصة المناسبة للتحقق من التحديثات.</string>
     <string name="feedback_with_flashlight_on">تقديم الملاحظات حتى لو كان الكشاف يعمل</string>
     <string name="gumroad">Gumroad</string>
     <string name="flashlight_schedule">جدول الكشاف</string>

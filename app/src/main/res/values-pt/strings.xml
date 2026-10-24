@@ -1,8 +1,8 @@
 <resources>
     <!-- Translations in Portuguese -->
-    <string name="app_name">Flip 2 DND</string>
+    <string name="app_name">Flip2DND Next</string>
     <string name="service_description">Usa os sensores do dispositivo para detetar a orientação do telemóvel e ativar automaticamente o modo Não Incomodar quando virado para baixo</string>
-    <string name="widget_toggle_description">Alternar o serviço Flip 2 DND</string>
+    <string name="widget_toggle_description">Alternar o serviço Flip2DND Next</string>
     <string name="home">Início</string>
     <string name="settings">Definições</string>
     <string name="about">Sobre</string>
@@ -44,7 +44,7 @@
     <string name="adb_command_description">Para permitir a alternância automática da Economia de Bateria, conceda a permissão WRITE_SECURE_SETTINGS usando o seguinte comando ADB:</string>
     <string name="copy_command">Copiar Comando</string>
     <string name="close">Fechar</string>
-    <string name="adb_command_text">adb shell pm grant dev.robin.flip_2_dnd android.permission.WRITE_SECURE_SETTINGS</string>
+    <string name="adb_command_text">adb shell pm grant dev.flip2dnd.next android.permission.WRITE_SECURE_SETTINGS</string>
     <string name="dnd_on_sound_description">Som a reproduzir quando o Não Incomodar é ativado</string>
     <string name="dnd_off_sound_description">Som a reproduzir quando o Não Incomodar é desativado</string>
     <string name="use_custom_volume_description">Usar volume personalizado para os sons do Não Incomodar</string>
@@ -65,7 +65,7 @@
     <string name="language">Idioma</string>
     <string name="language_description">Alterar o idioma da aplicação</string>
     <string name="error_opening_language_settings">Não foi possível abrir as definições de idioma</string>
-    <string name="qs_tile_label">Serviço Flip DND</string>
+    <string name="qs_tile_label">Flip2DND Next</string>
     <string name="detection">Deteção</string>
     <string name="flashlight_detection">Deteção de Lanterna</string>
     <string name="flashlight_detection_description">Pausar o serviço quando a lanterna estiver ligada</string>
@@ -124,7 +124,7 @@
     <string name="dnd_mode_unknown">Modo Desconhecido</string>
 
     <!-- Onboarding -->
-    <string name="onboarding_welcome_title">Bem-vindo ao Flip 2 DND</string>
+    <string name="onboarding_welcome_title">Bem-vindo ao Flip2DND Next</string>
     <string name="onboarding_welcome_desc">Controle o modo Não Incomodar do seu telemóvel simplesmente virando-o com o ecrã para baixo.</string>
     <string name="onboarding_simple_title">Simples e Eficaz</string>
     <string name="onboarding_simple_desc">Foque-se no que importa. Vire o seu telemóvel para silenciar interrupções instantaneamente.</string>
@@ -133,7 +133,7 @@
     <string name="onboarding_get_started">Começar</string>
     <string name="onboarding_next">Seguinte</string>
     <string name="onboarding_setup_permissions_title">Configurar Permissões</string>
-    <string name="onboarding_setup_permissions_desc">Conceda as seguintes permissões para garantir que o Flip 2 DND funciona corretamente.</string>
+    <string name="onboarding_setup_permissions_desc">Conceda as seguintes permissões para garantir que o Flip2DND Next funciona corretamente.</string>
     <string name="permission_dnd_title">Acesso ao Não Incomodar</string>
     <string name="permission_dnd_desc">Necessário para alternar o modo Não Incomodar.</string>
     <string name="permission_battery_title">Otimização de Bateria</string>
@@ -178,7 +178,7 @@
     <string name="feature_schedules">Agendamentos de Não Incomodar, Som e Vibração</string>
     <string name="feature_custom_sounds">Sons personalizados a partir de ficheiros</string>
     <string name="feature_telegram">Grupo de Suporte no Telegram</string>
-    <string name="get_pro">Obter Flip 2 DND Pro</string>
+    <string name="get_pro">Obter Flip2DND Next Pro</string>
     <string name="maybe_later">Talvez mais tarde</string>
     <string name="pro">PRO</string>
     <string name="day_sunday_short">D</string>
@@ -201,7 +201,7 @@
     <string name="error_saving_sound">Erro ao guardar som personalizado</string>
 
     <!-- Notifications -->
-    <string name="notification_service_channel_name">Serviço Flip 2 DND</string>
+    <string name="notification_service_channel_name">Serviço Flip2DND Next</string>
     <string name="notification_service_channel_desc">Monitoriza a orientação do telemóvel para alternar o modo Não Incomodar</string>
     <string name="notification_flip_channel_name">Notificações de Estado de Viragem</string>
     <string name="notification_flip_channel_desc">Notificações sobre o estado de viragem do telemóvel e alterações no Não Incomodar</string>
@@ -255,20 +255,20 @@
     <string name="collapse">Recolher</string>
     <string name="expand">Expandir</string>
     <string name="permission_required_title">Permissões necessárias</string>
-    <string name="permission_required_desc">Flip 2 DND requer permissões obrigatórias para funcionar corretamente. Conceda-as para continuar.</string>
+    <string name="permission_required_desc">Flip2DND Next requer permissões obrigatórias para funcionar corretamente. Conceda-as para continuar.</string>
     <string name="permission_dnd">Acesso a Não perturbe</string>
     <string name="permission_battery">Otimização de bateria</string>
     <string name="permission_notification">Notificações</string>
     <string name="grant">Conceder</string>
     <string name="check_again">Verificar novamente</string>
     <string name="support_dialog_title">Apoiar o desenvolvedor</string>
-    <string name="support_dialog_message">Obrigado por usar o Flip 2 DND! Seu apoio ajuda a manter o app gratuito e em melhoria contínua. Se achar útil, considere apoiar meu trabalho.</string>
+    <string name="support_dialog_message">Obrigado por usar o Flip2DND Next! Seu apoio ajuda a manter o app gratuito e em melhoria contínua. Se achar útil, considere apoiar meu trabalho.</string>
     <string name="patreon">Patreon</string>
     <string name="crypto">Cripto</string>
     <string name="check_for_updates">Verificar atualizações</string>
-    <string name="check_for_updates_description">Verificar a última versão do Flip 2 DND (requer Pro)</string>
+    <string name="check_for_updates_description">Verificar a última versão do Flip2DND Next (requer Pro)</string>
     <string name="update_check_dialog_title">Verificar atualizações</string>
-    <string name="update_check_dialog_message">Onde você comprou o Flip 2 DND Pro? Iremos redirecioná-lo para a plataforma correspondente para verificar atualizações.</string>
+    <string name="update_check_dialog_message">Onde você comprou o Flip2DND Next Pro? Iremos redirecioná-lo para a plataforma correspondente para verificar atualizações.</string>
     <string name="feedback_with_flashlight_on">Feedback mesmo com a lanterna ligada</string>
     <string name="gumroad">Gumroad</string>
     <string name="feedback">Feedback</string>

@@ -1,8 +1,8 @@
 <resources>
     <!-- Translations in Japanese -->
-    <string name="app_name">Flip 2 DND</string>
+    <string name="app_name">Flip2DND Next</string>
     <string name="service_description">デバイスのセンサーを使用してスマートフォンの向きを検知し、画面が下向きのときに自動で「おやすみモード」を有効にします</string>
-    <string name="widget_toggle_description">Flip 2 DNDサービスの切り替え</string>
+    <string name="widget_toggle_description">Flip2DND Nextサービスの切り替え</string>
     <string name="home">ホーム</string>
     <string name="settings">設定</string>
     <string name="about">アプリについて</string>
@@ -44,7 +44,7 @@
     <string name="adb_command_description">自動バッテリーセーバー切り替えを有効にするには、以下のADBコマンドを使用してWRITE_SECURE_SETTINGS権限を付与してください：</string>
     <string name="copy_command">コマンドをコピー</string>
     <string name="close">閉じる</string>
-    <string name="adb_command_text">adb shell pm grant dev.robin.flip_2_dnd android.permission.WRITE_SECURE_SETTINGS</string>
+    <string name="adb_command_text">adb shell pm grant dev.flip2dnd.next android.permission.WRITE_SECURE_SETTINGS</string>
     <string name="dnd_on_sound_description">DNDが有効になったときに再生する音</string>
     <string name="dnd_off_sound_description">DNDが無効になったときに再生する音</string>
     <string name="use_custom_volume_description">DNDのサウンドにカスタム音量を使用します</string>
@@ -65,7 +65,7 @@
     <string name="language">言語</string>
     <string name="language_description">アプリの言語を変更</string>
     <string name="error_opening_language_settings">言語設定を開けませんでした</string>
-    <string name="qs_tile_label">Flip DND サービス</string>
+    <string name="qs_tile_label">Flip2DND Next</string>
     <string name="detection">検知</string>
     <string name="flashlight_detection">懐中電灯検知</string>
     <string name="flashlight_detection_description">懐中電灯が点灯している間、サービスを一時停止します</string>
@@ -124,7 +124,7 @@
     <string name="dnd_mode_unknown">不明なモード</string>
 
     <!-- Onboarding -->
-    <string name="onboarding_welcome_title">Flip 2 DND へようこそ</string>
+    <string name="onboarding_welcome_title">Flip2DND Next へようこそ</string>
     <string name="onboarding_welcome_desc">スマートフォンを裏返すだけで、おやすみモードを簡単にコントロールできます。</string>
     <string name="onboarding_simple_title">シンプルで効果的</string>
     <string name="onboarding_simple_desc">大切なことに集中しましょう。スマートフォンを裏返すだけで、すぐに静かな環境を作れます。</string>
@@ -133,7 +133,7 @@
     <string name="onboarding_get_started">始める</string>
     <string name="onboarding_next">次へ</string>
     <string name="onboarding_setup_permissions_title">権限の設定</string>
-    <string name="onboarding_setup_permissions_desc">Flip 2 DNDが正しく動作するために、以下の権限を許可してください。</string>
+    <string name="onboarding_setup_permissions_desc">Flip2DND Nextが正しく動作するために、以下の権限を許可してください。</string>
     <string name="permission_dnd_title">おやすみモードへのアクセス</string>
     <string name="permission_dnd_desc">おやすみモードを切り替えるために必要です。</string>
     <string name="permission_battery_title">電池の最適化</string>
@@ -178,7 +178,7 @@
     <string name="feature_schedules">DND、サウンド、バイブのスケジュール設定</string>
     <string name="feature_custom_sounds">ファイルからカスタムサウンドを設定</string>
     <string name="feature_telegram">Telegram サポートグループ</string>
-    <string name="get_pro">Flip 2 DND Pro を入手</string>
+    <string name="get_pro">Flip2DND Next Pro を入手</string>
     <string name="maybe_later">あとで</string>
     <string name="pro">PRO</string>
     <string name="day_sunday_short">日</string>
@@ -201,7 +201,7 @@
     <string name="error_saving_sound">カスタムサウンドの保存中にエラーが発生しました</string>
 
     <!-- Notifications -->
-    <string name="notification_service_channel_name">Flip 2 DND サービス</string>
+    <string name="notification_service_channel_name">Flip2DND Next サービス</string>
     <string name="notification_service_channel_desc">スマートフォンの向きを監視してDNDモードを切り替えます</string>
     <string name="notification_flip_channel_name">反転状態の通知</string>
     <string name="notification_flip_channel_desc">反転状態やDNDの変更に関する通知</string>
@@ -255,20 +255,20 @@
     <string name="collapse">折りたたむ</string>
     <string name="expand">展開</string>
     <string name="permission_required_title">権限が必要です</string>
-    <string name="permission_required_desc">Flip 2 DND を正しく動作させるには必須の権限が必要です。続行するには付与してください。</string>
+    <string name="permission_required_desc">Flip2DND Next を正しく動作させるには必須の権限が必要です。続行するには付与してください。</string>
     <string name="permission_dnd">おやすみモードへのアクセス</string>
     <string name="permission_battery">バッテリー最適化</string>
     <string name="permission_notification">通知</string>
     <string name="grant">付与</string>
     <string name="check_again">再確認</string>
     <string name="support_dialog_title">開発者を支援</string>
-    <string name="support_dialog_message">Flip 2 DND をご利用いただきありがとうございます！皆様の支援により、アプリを無料で継続的に改善できます。役立つと感じたら、ぜひ支援をご検討ください。</string>
+    <string name="support_dialog_message">Flip2DND Next をご利用いただきありがとうございます！皆様の支援により、アプリを無料で継続的に改善できます。役立つと感じたら、ぜひ支援をご検討ください。</string>
     <string name="patreon">Patreon</string>
     <string name="crypto">暗号資産</string>
     <string name="check_for_updates">アップデートを確認</string>
-    <string name="check_for_updates_description">Flip 2 DND の最新バージョンを確認（Pro が必要）</string>
+    <string name="check_for_updates_description">Flip2DND Next の最新バージョンを確認（Pro が必要）</string>
     <string name="update_check_dialog_title">アップデートを確認</string>
-    <string name="update_check_dialog_message">Flip 2 DND Pro はどこで購入しましたか？該当プラットフォームに誘導してアップデートを確認します。</string>
+    <string name="update_check_dialog_message">Flip2DND Next Pro はどこで購入しましたか？該当プラットフォームに誘導してアップデートを確認します。</string>
     <string name="feedback_with_flashlight_on">ライト点灯中でもフィードバック</string>
     <string name="gumroad">Gumroad</string>
     <string name="feedback">フィードバック</string>

@@ -1,0 +1,27 @@
+# Repository metadata; enable catalog builds after the first signed release.
+Categories:
+  - System
+  - Connectivity
+License: MIT
+AuthorName: EinMaulwurf
+WebSite: https://github.com/EinMaulwurf/flip2dnd_next
+SourceCode: https://github.com/EinMaulwurf/flip2dnd_next
+IssueTracker: https://github.com/EinMaulwurf/flip2dnd_next/issues
+Changelog: https://github.com/EinMaulwurf/flip2dnd_next/releases
+AutoName: Flip2DND Next
+RepoType: git
+Repo: https://github.com/EinMaulwurf/flip2dnd_next.git
+Description: |-
+  Flip2DND Next automatically activates Do Not Disturb when you put your phone
+  face down and restores your previous state when you flip it back up.
+
+  An independently developed evolution of Flip2DND by Abul Kalam Robin, with
+  configurable detection, proximity gating, schedule windows, audio-device and
+  media filters, custom audio, and adjustable vibration feedback.
+
+  No ads or tracking. Open source under the MIT license.
+Builds: []
+AutoUpdateMode: None
+UpdateCheckMode: None
+CurrentVersion: 12.1.1-next.1
+CurrentVersionCode: 1215
