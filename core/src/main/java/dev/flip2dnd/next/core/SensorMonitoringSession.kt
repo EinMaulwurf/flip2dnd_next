@@ -22,7 +22,7 @@ class SensorMonitoringSession(
         fun releaseWakeLock()
     }
 
-    enum class Mode { STOPPED, SCREEN_ON, TILT, WAKE_UP_ACCELEROMETER, LEGACY }
+    enum class Mode { STOPPED, UNAVAILABLE, SCREEN_ON, TILT, WAKE_UP_ACCELEROMETER, LEGACY }
     private val _mode = MutableStateFlow(Mode.STOPPED)
     val mode = _mode.asStateFlow()
     private var enabled = false
@@ -31,7 +31,7 @@ class SensorMonitoringSession(
     private var confirmations = 0
 
     fun start(screenOff: Boolean) {
-        if (enabled && this.screenOff == screenOff && _mode.value != Mode.STOPPED) return
+        if (enabled && this.screenOff == screenOff && _mode.value != Mode.STOPPED && _mode.value != Mode.UNAVAILABLE) return
         enabled = true
         this.screenOff = screenOff
         configure()
@@ -46,7 +46,8 @@ class SensorMonitoringSession(
     private fun configure() {
         releaseHardware()
         if (!screenOff) {
-            if (hardware.startAcceleration(wakeUp = false, batch = false)) _mode.value = Mode.SCREEN_ON
+            _mode.value = if (hardware.startAcceleration(wakeUp = false, batch = false) ||
+                hardware.startAcceleration(wakeUp = true, batch = false)) Mode.SCREEN_ON else Mode.UNAVAILABLE
             return
         }
         // Arm before the initial snapshot, so there is no blind period when sampling ends.
@@ -72,6 +73,8 @@ class SensorMonitoringSession(
                     hardware.acquireWakeLock(LEGACY_LEASE_MS)
                 }
             }
+        } else {
+            _mode.value = Mode.UNAVAILABLE
         }
     }
 

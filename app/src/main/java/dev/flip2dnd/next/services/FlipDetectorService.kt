@@ -99,6 +99,7 @@ class FlipDetectorService : Service() {
     private var mediaPlaybackDetectionEnabled = false
     private var headphoneDetectionEnabled = false
     private var proximityDetectionEnabled = false
+    private var proximityUnavailable = false
 
 
 
@@ -166,6 +167,13 @@ class FlipDetectorService : Service() {
             return START_NOT_STICKY
         }
         stopping = false
+        if (::sensorService.isInitialized && !sensorService.isRegistered &&
+            (!onlyWhenScreenOff || isScreenOff.value || dndService.isAppEnabledDnd.value)) {
+            sensorService.startMonitoring()
+        }
+        if (proximityUnavailable) retryProximity()
+        publishState()
+        startForeground(SERVICE_NOTIFICATION_ID, createServiceNotification())
         if (intent?.action == ACTION_REEVALUATE) requestReevaluation()
         return START_STICKY
     }
@@ -223,14 +231,18 @@ class FlipDetectorService : Service() {
                     Log.d(TAG, "Settings updated - Proximity detection: $enabled")
                     
                     val detectionManager = dev.flip2dnd.next.core.ServiceLocator.getDetectionManager(this@FlipDetectorService)
+                    proximityUnavailable = false
                     if (enabled && !stopping) {
-                        detectionManager.registerProximityListener { covered ->
+                        proximityUnavailable = !detectionManager.registerProximityListener { covered ->
                             _isProximityCovered.value = covered
                         }
                     } else {
                         detectionManager.unregisterProximityListener()
                         _isProximityCovered.value = false
                     }
+                    publishState()
+                    val notifications = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                    notifications.notify(SERVICE_NOTIFICATION_ID, createServiceNotification())
                 }
             }
             
@@ -366,11 +378,13 @@ class FlipDetectorService : Service() {
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error in onCreate: ${e.localizedMessage}", e)
+            DetectionControl.publish(false, R.string.detection_start_failed)
             stopSelf()
         }
     }
 
     private fun canActivate(screenOff: Boolean): Boolean {
+        if (!sensorService.isRegistered || proximityUnavailable) return false
         if (onlyWhenScreenOff && !screenOff) return false
         if (dndScheduleEnabled && !isWithinDndSchedule()) return false
         if (flashlightDetectionEnabled && dndService.isFlashlightOn) return false
@@ -462,8 +476,21 @@ class FlipDetectorService : Service() {
         }
     }
 
+    private fun retryProximity() {
+        proximityUnavailable = !dev.flip2dnd.next.core.ServiceLocator.getDetectionManager(this)
+            .registerProximityListener { _isProximityCovered.value = it }
+    }
+
+    private fun hardwareError(): Int? = when {
+        ::sensorService.isInitialized && sensorService.monitoringMode.value == SensorMonitoringSession.Mode.UNAVAILABLE ->
+            R.string.detection_sensor_unavailable
+        proximityUnavailable -> R.string.detection_proximity_unavailable
+        else -> null
+    }
+
     private fun publishState(error: Int? = null) {
-        DetectionControl.publish(!stopping && ::sensorService.isInitialized, error)
+        val failure = if (stopping) error ?: DetectionControl.error.value else error ?: hardwareError()
+        DetectionControl.publish(!stopping && ::sensorService.isInitialized && failure == null, failure)
         dev.flip2dnd.next.widget.FlipDndWidgetProvider.updateWidgetUI(this)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             android.service.quicksettings.TileService.requestListeningState(this,
@@ -475,6 +502,7 @@ class FlipDetectorService : Service() {
     private fun pauseDetection() {
         if (stopJob?.isActive == true) return
         stopping = true
+        DetectionControl.publish(false)
         publishState()
         stopJob = serviceScope.launch {
             var error: Int? = null
@@ -485,6 +513,9 @@ class FlipDetectorService : Service() {
                     if (::sensorService.isInitialized) sensorService.stopMonitoring()
                     dndRepository.setActivated(false)
                 }
+            } catch (e: TimeoutCancellationException) {
+                Log.e(TAG, "Restoring sound while pausing timed out", e)
+                error = R.string.detection_restore_failed
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -622,6 +653,7 @@ class FlipDetectorService : Service() {
         return NotificationCompat.Builder(this, SERVICE_CHANNEL_ID)
             .setContentTitle(getString(R.string.app_name))
             .setContentText(getString(when {
+                hardwareError() != null -> hardwareError()!!
                 !::sensorService.isInitialized -> R.string.notification_monitoring_text
                 sensorService.monitoringMode.value == SensorMonitoringSession.Mode.LEGACY -> R.string.notification_monitoring_higher_power
                 sensorService.monitoringMode.value == SensorMonitoringSession.Mode.TILT ||

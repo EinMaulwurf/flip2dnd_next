@@ -30,11 +30,15 @@ class FreeDetectionManager(context: Context) : DetectionManager, SensorEventList
     }
     override fun isProximityCovered() = covered
 
-    override fun registerProximityListener(callback: (Boolean) -> Unit) {
+    override fun registerProximityListener(callback: (Boolean) -> Unit): Boolean {
         unregisterProximityListener()
         this.callback = callback
         callback(false)
-        proximity?.let { sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL) }
+        val success = try {
+            proximity?.let { sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL) } ?: false
+        } catch (_: RuntimeException) { false }
+        if (!success) unregisterProximityListener()
+        return success
     }
 
     override fun unregisterProximityListener() {

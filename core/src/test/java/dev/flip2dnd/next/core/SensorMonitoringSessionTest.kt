@@ -170,8 +170,28 @@ class SensorMonitoringSessionTest {
         val session = SensorMonitoringSession(this, hw)
         session.start(true)
         advanceTimeBy(60_000)
-        assertEquals(SensorMonitoringSession.Mode.STOPPED, session.mode.value)
+        assertEquals(SensorMonitoringSession.Mode.UNAVAILABLE, session.mode.value)
         assertEquals(0, hw.acquisitions)
+        session.stop()
+    }
+
+    @Test fun screenOnRegistrationFailureIsReportedAndCanBeRetried() = runTest {
+        val hw = Hardware(tiltAvailable = false, wakeAcceleration = false, acceleration = false)
+        val session = SensorMonitoringSession(this, hw)
+        session.start(false)
+        assertEquals(SensorMonitoringSession.Mode.UNAVAILABLE, session.mode.value)
+        hw.acceleration = true
+        session.start(false)
+        assertEquals(SensorMonitoringSession.Mode.SCREEN_ON, session.mode.value)
+        session.stop()
+    }
+
+    @Test fun wakeAccelerometerCanMonitorWithScreenOnWhenOrdinaryRegistrationFails() = runTest {
+        val hw = Hardware(acceleration = false)
+        val session = SensorMonitoringSession(this, hw)
+        session.start(false)
+        assertEquals(SensorMonitoringSession.Mode.SCREEN_ON, session.mode.value)
+        assertFalse(hw.held)
         session.stop()
     }
 

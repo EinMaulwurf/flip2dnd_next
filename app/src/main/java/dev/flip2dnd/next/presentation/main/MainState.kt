@@ -11,5 +11,6 @@ data class MainState(
     val isVibrationEnabled: Boolean = true,
     val isSoundEnabled: Boolean = false,
     val isServiceRunning: Boolean = false,
-    val detectionError: Int? = null
+    val detectionError: Int? = null,
+    val isDetectionEnabled: Boolean = true
 )

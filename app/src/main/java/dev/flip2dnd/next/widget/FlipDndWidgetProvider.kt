@@ -7,9 +7,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
-import androidx.core.content.ContextCompat
 import dev.flip2dnd.next.R
-import dev.flip2dnd.next.services.FlipDetectorService
 import dev.flip2dnd.next.services.DetectionControl
 
 class FlipDndWidgetProvider : AppWidgetProvider() {
@@ -39,10 +37,7 @@ class FlipDndWidgetProvider : AppWidgetProvider() {
         super.onReceive(context, intent)
 
         if (intent.action == ACTION_TOGGLE_SERVICE) {
-            val serviceIntent = Intent(context, FlipDetectorService::class.java)
-            val isServiceRunning = isServiceRunning(context)
-
-            if (isServiceRunning) {
+            if (DetectionControl.isEnabled(context)) {
                 DetectionControl.pause(context)
             } else {
                 DetectionControl.resume(context)

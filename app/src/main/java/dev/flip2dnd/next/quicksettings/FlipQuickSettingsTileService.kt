@@ -1,7 +1,5 @@
 package dev.flip2dnd.next.quicksettings
 
-import android.app.ActivityManager
-import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Icon
 import android.os.Build
@@ -11,7 +9,6 @@ import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import androidx.annotation.RequiresApi
 import dev.flip2dnd.next.R
-import dev.flip2dnd.next.services.FlipDetectorService
 import dev.flip2dnd.next.services.DetectionControl
 import dev.flip2dnd.next.widget.FlipDndWidgetProvider
 

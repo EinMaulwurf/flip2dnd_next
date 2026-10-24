@@ -1,9 +1,6 @@
 package dev.flip2dnd.next.presentation.main
 
-import android.app.ActivityManager
 import android.content.Context
-import android.content.Intent
-import android.os.Build
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -48,15 +45,16 @@ class MainViewModel @Inject constructor(
     }
 
     private fun updateServiceState() {
+        DetectionControl.isEnabled(context)
         viewModelScope.launch {
-            combine(DetectionControl.running, DetectionControl.error) { running, error ->
-                _state.update { it.copy(isServiceRunning = running, detectionError = error) }
+            combine(DetectionControl.enabled, DetectionControl.running, DetectionControl.error) { enabled, running, error ->
+                _state.update { it.copy(isServiceRunning = running, detectionError = error, isDetectionEnabled = enabled) }
             }.collect()
         }
     }
 
     fun toggleService() {
-        if (DetectionControl.running.value) DetectionControl.pause(context)
+        if (DetectionControl.isEnabled(context)) DetectionControl.pause(context)
         else DetectionControl.resume(context)
     }
 

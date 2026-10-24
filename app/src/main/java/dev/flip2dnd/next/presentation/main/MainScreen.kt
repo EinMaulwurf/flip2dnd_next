@@ -48,10 +48,10 @@ fun MainScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
         ) {
             val toggleDescription = stringResource(
-                if (state.isServiceRunning) R.string.stop_service else R.string.start_service,
+                if (state.isDetectionEnabled) R.string.stop_service else R.string.start_service,
             )
             Switch(
-                checked = state.isServiceRunning,
+                checked = state.isDetectionEnabled,
                 onCheckedChange = { onToggleService() },
                 modifier = Modifier.semantics { contentDescription = toggleDescription },
             )

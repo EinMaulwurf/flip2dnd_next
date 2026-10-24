@@ -110,7 +110,8 @@ class SensorService(context: Context, settingsRepository: SettingsRepository) {
     })
     val monitoringMode = session.mode
     // A tilt listener is still monitoring even when its accelerometer snapshot has ended.
-    val isRegistered: Boolean get() = monitoringMode.value != SensorMonitoringSession.Mode.STOPPED
+    val isRegistered: Boolean get() = monitoringMode.value != SensorMonitoringSession.Mode.STOPPED &&
+        monitoringMode.value != SensorMonitoringSession.Mode.UNAVAILABLE
 
     init {
         scope.launch { settingsRepository.getFlipSensitivity().collect { sensitivity = it.coerceIn(0f, 1f) } }

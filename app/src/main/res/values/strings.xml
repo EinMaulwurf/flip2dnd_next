@@ -303,4 +303,6 @@
     <string name="notification_monitoring_higher_power" translatable="false">Monitoring flips · Higher battery use on this device</string>
     <string name="detection_start_failed" translatable="false">Detection could not start. Check the app’s permissions and try again.</string>
     <string name="detection_restore_failed" translatable="false">Detection is paused, but sound could not be restored. Check Do Not Disturb access and your phone’s sound settings.</string>
+    <string name="detection_sensor_unavailable" translatable="false">Detection is unavailable because the motion sensor could not start. Try starting detection again.</string>
+    <string name="detection_proximity_unavailable" translatable="false">The proximity sensor is unavailable. Turn off the proximity filter in Settings or try starting detection again.</string>
 </resources>

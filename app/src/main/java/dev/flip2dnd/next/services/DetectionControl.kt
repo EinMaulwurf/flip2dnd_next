@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.asStateFlow
 /** Desired state survives process death; runtime state is published by the service. */
 object DetectionControl {
     const val ACTION_PAUSE = "dev.flip2dnd.next.PAUSE_DETECTION"
+    private val mutableEnabled = MutableStateFlow(true)
+    val enabled = mutableEnabled.asStateFlow()
     private val mutableRunning = MutableStateFlow(false)
     val running = mutableRunning.asStateFlow()
     private val mutableError = MutableStateFlow<Int?>(null)
@@ -20,9 +22,11 @@ object DetectionControl {
         context.getSharedPreferences("flip_2_dnd_settings", Context.MODE_PRIVATE)
 
     fun isEnabled(context: Context): Boolean = preferences(context).getBoolean("detection_enabled", true)
+        .also { mutableEnabled.value = it }
 
     fun resume(context: Context) {
         preferences(context).edit().putBoolean("detection_enabled", true).apply()
+        mutableEnabled.value = true
         startIfEnabled(context)
     }
 
@@ -32,6 +36,7 @@ object DetectionControl {
 
     fun pause(context: Context) {
         preferences(context).edit().putBoolean("detection_enabled", false).apply()
+        mutableEnabled.value = false
         send(context, ACTION_PAUSE)
     }
 
