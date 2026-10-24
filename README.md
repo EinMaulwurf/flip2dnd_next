@@ -1,5 +1,9 @@
 # Flip2DND Next
 
+<p align="center">
+  <img src="./assets/branding/flip-mark.svg" alt="Flip2DND Next icon" width="120">
+</p>
+
 An independently developed continuation of [Flip2DND by Abul Kalam Robin](https://github.com/robinsrk/Flip_2_DND).
 
 Flip your phone face down to activate Do Not Disturb. Flip it back up to restore
@@ -19,7 +23,11 @@ your previous state.
 
 ## Build and install
 
-[Download the latest APK](https://github.com/EinMaulwurf/flip2dnd_next/releases/latest) or [install with Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22dev.flip2dnd.next%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2FEinMaulwurf%2Fflip2dnd_next%22%2C%22author%22%3A%22EinMaulwurf%22%2C%22name%22%3A%22Flip2DND%20Next%22%7D). Requires Android 6.0+.
+[Download the latest APK](https://github.com/EinMaulwurf/flip2dnd_next/releases/latest). Requires Android 6.0+.
+
+<a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22dev.flip2dnd.next%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2FEinMaulwurf%2Fflip2dnd_next%22%2C%22author%22%3A%22EinMaulwurf%22%2C%22name%22%3A%22Flip2DND%20Next%22%7D">
+  <img src="./assets/images/getItObtainium.png" alt="Install with Obtainium" width="160">
+</a>
 
 Build with Docker: `./scripts/build-apk.sh`. See [build instructions](docker/README.md) for details.
 
