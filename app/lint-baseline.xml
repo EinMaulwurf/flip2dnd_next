@@ -9,94 +9,6 @@
     </issue>
 
     <issue
-        id="InlinedApi"
-        message="Field requires API level 26 (current min is 23): `android.os.VibrationEffect#DEFAULT_AMPLITUDE`"
-        errorLine1="        val vibrationEffect = VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE)"
-        errorLine2="                                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/dev/flip2dnd/next/data/repository/FeedbackRepositoryImpl.kt"
-            line="22"
-            column="66"/>
-    </issue>
-
-    <issue
-        id="InlinedApi"
-        message="Field requires API level 24 (current min is 23): `android.app.NotificationManager#IMPORTANCE_LOW`"
-        errorLine1="            NotificationManager.IMPORTANCE_LOW"
-        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/dev/flip2dnd/next/services/FlipDetectorService.kt"
-            line="199"
-            column="13"/>
-    </issue>
-
-    <issue
-        id="NewApi"
-        message="Call requires API level 26 (current min is 23): `android.os.VibrationEffect#createOneShot`"
-        errorLine1="        val vibrationEffect = VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE)"
-        errorLine2="                                              ~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/dev/flip2dnd/next/data/repository/FeedbackRepositoryImpl.kt"
-            line="22"
-            column="47"/>
-    </issue>
-
-    <issue
-        id="NewApi"
-        message="Call requires API level 26 (current min is 23): `android.os.Vibrator#vibrate`"
-        errorLine1="        vibrator.vibrate(vibrationEffect)"
-        errorLine2="                 ~~~~~~~">
-        <location
-            file="src/main/java/dev/flip2dnd/next/data/repository/FeedbackRepositoryImpl.kt"
-            line="23"
-            column="18"/>
-    </issue>
-
-    <issue
-        id="NewApi"
-        message="Call requires API level 26 (current min is 23): `android.app.NotificationChannel()`"
-        errorLine1="        val channel = NotificationChannel("
-        errorLine2="                      ^">
-        <location
-            file="src/main/java/dev/flip2dnd/next/services/FlipDetectorService.kt"
-            line="196"
-            column="23"/>
-    </issue>
-
-    <issue
-        id="NewApi"
-        message="Call requires API level 26 (current min is 23): `android.app.NotificationChannel#setDescription`"
-        errorLine1="            description = &quot;Monitors phone orientation to toggle DND mode&quot;"
-        errorLine2="            ~~~~~~~~~~~">
-        <location
-            file="src/main/java/dev/flip2dnd/next/services/FlipDetectorService.kt"
-            line="201"
-            column="13"/>
-    </issue>
-
-    <issue
-        id="NewApi"
-        message="Call requires API level 26 (current min is 23): `android.app.NotificationManager#createNotificationChannel`"
-        errorLine1="        notificationManager.createNotificationChannel(channel)"
-        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/dev/flip2dnd/next/services/FlipDetectorService.kt"
-            line="205"
-            column="29"/>
-    </issue>
-
-    <issue
-        id="NewApi"
-        message="Call requires API level 26 (current min is 23): `android.content.ContextWrapper#startForegroundService`"
-        errorLine1="            startForegroundService(intent)"
-        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/dev/flip2dnd/next/MainActivity.kt"
-            line="70"
-            column="13"/>
-    </issue>
-
-    <issue
         id="OldTargetApi"
         message="Not targeting the latest versions of Android; compatibility modes apply. Consider testing and updating this version. Consult the android.os.Build.VERSION_CODES javadoc for details."
         errorLine1="        targetSdk = 34"
@@ -369,28 +281,6 @@
             file="$HOME/AndroidStudioProjects/Flip_2_DND/gradle/libs.versions.toml"
             line="10"
             column="14"/>
-    </issue>
-
-    <issue
-        id="Wakelock"
-        message="Found a wakelock `acquire()` but no `release()` calls anywhere"
-        errorLine1="            wakeLock.acquire()"
-        errorLine2="                     ~~~~~~~">
-        <location
-            file="src/main/java/dev/flip2dnd/next/services/FlipDetectorService.kt"
-            line="94"
-            column="22"/>
-    </issue>
-
-    <issue
-        id="WakelockTimeout"
-        message="Provide a timeout when requesting a wakelock with `PowerManager.Wakelock.acquire(long timeout)`. This will ensure the OS will cleanup any wakelocks that last longer than you intend, and will save your user&apos;s battery."
-        errorLine1="            wakeLock.acquire()"
-        errorLine2="            ~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/dev/flip2dnd/next/services/FlipDetectorService.kt"
-            line="94"
-            column="13"/>
     </issue>
 
     <issue
