@@ -43,7 +43,7 @@ class SensorService(context: Context, settingsRepository: SettingsRepository) {
     private var previousTimestamp = 0L
     private var registeredAtNs = 0L
     private var registeredAcceleration: Sensor? = null
-    private var sensitivity = 0.5f
+    private var sensitivity = dev.flip2dnd.next.core.FlipTolerance.DEFAULT_POSITION
     private val _orientation = MutableStateFlow(PhoneOrientation.UNKNOWN)
     val orientation = _orientation.asStateFlow()
 

@@ -279,7 +279,7 @@ class DiagnosticRecorder(context: Context) {
 
     companion object {
         private val SAFE_SETTINGS = setOf("screen_off_only", "turn_screen_off", "activation_mode", "dnd_mode",
-            "ringer_mode", "flip_sensitivity", "activation_delay", "proximity_detection", "media_playback_detection",
+            "ringer_mode", "flip_sensitivity", "flip_tolerance", "activation_delay", "proximity_detection", "media_playback_detection",
             "headphone_detection", "flashlight_detection", "schedule_enabled", "schedule_start_time",
             "schedule_end_time", "schedule_days", "auto_start", "detection_enabled", "vibration", "sound",
             "notifications_enabled", "use_custom_vibration", "custom_vibration_strength", "dnd_on_vibration", "dnd_off_vibration")

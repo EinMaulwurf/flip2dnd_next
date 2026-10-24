@@ -15,6 +15,9 @@
 	<string name="service_running">Service is running</string>
 	<string name="service_not_running">Service is not running</string>
 	<string name="flip_sensitivity">Flip Sensitivity</string>
+    <string name="flip_tolerance">Tolerance</string>
+    <string name="flip_tolerance_description">Allowed tilt from perfectly flat, screen down. Smaller angles require the phone to be flatter.</string>
+    <string name="flip_tolerance_angle">%1$d°</string>
 	<string name="screen_off_only">Screen Off Only</string>
 	<string name="priority_dnd">Priority DND</string>
 	<string name="notifications_enabled">Notifications Enabled</string>
@@ -156,6 +159,10 @@
 	<string name="app_settings">App Settings</string>
 	<string name="activation_mode">Activation Mode</string>
 	<string name="activation_mode_description">Choose what happens when you flip your phone</string>
+	<string name="setting_help_description">About %1$s</string>
+	<string name="activation_mode_help">Choose what your phone changes when you flip it face down.\n\nDo Not Disturb: Uses Android’s interruption rules to control which calls, notifications, and sounds can interrupt you. Choose the rules in DND Mode below.\n\nMobile Ringer: Changes the ringer to Silent, Vibrate, or Normal. It mainly affects calls and notification sounds; media and alarms use separate volume settings.\n\nAndroid may link Silent with Do Not Disturb on some phones. Existing DND rules can still silence sounds in Ringer mode.</string>
+	<string name="dnd_mode_help">Priority Mode: Allows interruptions that your Android Do Not Disturb settings permit, such as selected contacts, repeat callers, alarms, or apps. Check those settings to choose your exceptions.\n\nTotal Silence: Silences notifications, vibrations, and audio, including alarms and media. Audio during a phone call is exempt. Avoid this mode if you need an alarm to sound.\n\nAlarms Only: Allows alarms while silencing incoming calls and other notifications. Some other audio may also be muted.\n\nYour Android version, phone manufacturer, and other active DND rules can affect the result.</string>
+	<string name="ringer_mode_help">Silent: Silences the ringer and notification alerts without vibration.\n\nVibrate: Uses vibration for calls and notifications instead of ringing. The phone must support vibration.\n\nNormal: Uses your current ring volume and vibration settings. It does not raise the volume or override Do Not Disturb.\n\nMedia and alarms use separate volume settings. On some phones, switching to Silent can also affect Do Not Disturb.</string>
 	<string name="mode_dnd">Do Not Disturb</string>
 	<string name="mode_ringer">Mobile Ringer</string>
 	<string name="dnd_sub_mode">DND Mode</string>

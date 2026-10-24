@@ -34,7 +34,10 @@ Implemented features:
   On Xiaomi also allow Background autostart in system settings.
 - Optional proximity gating: DND requires both face-down orientation and a covered
   sensor. The option is off initially and disabled when no sensor is reported.
-- Adjustable activation delay (0–10 seconds) and working sensitivity control.
+- Adjustable activation delay (0–10 seconds) and face-down tolerance (5–30° in
+  1° steps). Tolerance is the allowed tilt from perfectly flat, screen down;
+  smaller angles require a flatter phone. The default is 26°. Existing sensitivity
+  settings convert to the nearest supported angle on upgrade.
 - DND, sound and vibration schedule windows, with Sunday=1 weekday selection.
   Overnight windows belong to the day they start (Monday 22:00 includes Tuesday
   02:00). Equal start/end times mean the whole selected day. These restrict flip

@@ -8,6 +8,7 @@ import dev.flip2dnd.next.core.DndMode
 import dev.flip2dnd.next.core.RingerMode
 import dev.flip2dnd.next.core.SettingsRepository
 import dev.flip2dnd.next.core.FlashlightPattern
+import dev.flip2dnd.next.core.FlipTolerance
 import dev.flip2dnd.next.core.Sound
 import dev.flip2dnd.next.core.VibrationPattern
 import kotlinx.coroutines.flow.Flow
@@ -30,6 +31,7 @@ private const val KEY_CUSTOM_VIBRATION_STRENGTH = "custom_vibration_strength"
 private const val KEY_DND_ON_VIBRATION = "dnd_on_vibration"
 private const val KEY_DND_OFF_VIBRATION = "dnd_off_vibration"
 private const val KEY_FLIP_SENSITIVITY = "flip_sensitivity"
+private const val KEY_FLIP_TOLERANCE = "flip_tolerance"
 private const val KEY_DND_ON_CUSTOM_SOUND_URI = "dnd_on_custom_sound_uri"
 private const val KEY_DND_OFF_CUSTOM_SOUND_URI = "dnd_off_custom_sound_uri"
 private const val KEY_NOTIFICATIONS_ENABLED = "notifications_enabled"
@@ -118,7 +120,17 @@ class SettingsRepositoryImpl @Inject constructor(
 			) ?: VibrationPattern.SINGLE_PULSE.name
 		)
 	)
-	private val flipSensitivity = MutableStateFlow(prefs.getFloat(KEY_FLIP_SENSITIVITY, 0.5f))
+	private val flipSensitivity = MutableStateFlow(
+		if (prefs.contains(KEY_FLIP_TOLERANCE)) {
+			prefs.getFloat(KEY_FLIP_TOLERANCE, FlipTolerance.DEFAULT_POSITION)
+		} else {
+			val migrated = if (prefs.contains(KEY_FLIP_SENSITIVITY)) {
+				FlipTolerance.fromLegacySensitivity(prefs.getFloat(KEY_FLIP_SENSITIVITY, 0.5f))
+			} else FlipTolerance.DEFAULT_POSITION
+			prefs.edit().putFloat(KEY_FLIP_TOLERANCE, migrated).apply()
+			migrated
+		}
+	)
 	private val dndOnCustomSoundUri = MutableStateFlow<String?>(prefs.getString(KEY_DND_ON_CUSTOM_SOUND_URI, null))
 	private val dndOffCustomSoundUri = MutableStateFlow<String?>(prefs.getString(KEY_DND_OFF_CUSTOM_SOUND_URI, null))
 	private val notificationsEnabled = MutableStateFlow(prefs.getBoolean(KEY_NOTIFICATIONS_ENABLED, true))
@@ -295,7 +307,7 @@ class SettingsRepositoryImpl @Inject constructor(
 	override fun getFlipSensitivity(): Flow<Float> = flipSensitivity
 
 	override suspend fun setFlipSensitivity(sensitivity: Float) {
-		prefs.edit().putFloat(KEY_FLIP_SENSITIVITY, sensitivity).apply()
+		prefs.edit().putFloat(KEY_FLIP_TOLERANCE, sensitivity).apply()
 		flipSensitivity.value = sensitivity
 	}
 

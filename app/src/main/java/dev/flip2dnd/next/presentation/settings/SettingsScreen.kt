@@ -33,6 +33,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -45,6 +47,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -100,6 +103,8 @@ import dev.flip2dnd.next.R
 import dev.flip2dnd.next.core.ActivationMode
 import dev.flip2dnd.next.core.DndMode
 import dev.flip2dnd.next.core.FlashlightPattern
+import dev.flip2dnd.next.core.FlipTolerance
+import kotlin.math.roundToInt
 import dev.flip2dnd.next.core.RingerMode
 import dev.flip2dnd.next.core.ServiceLocator
 import dev.flip2dnd.next.core.Sound
@@ -252,6 +257,7 @@ fun SettingsContent(
 
                     SettingsSliderItem(
                         title = stringResource(id = R.string.activation_mode),
+                        helpText = stringResource(id = R.string.activation_mode_help),
                         description = stringResource(id = R.string.activation_mode_description),
                         sliderContent = {
                             Column(modifier = Modifier.fillMaxWidth()) {
@@ -303,6 +309,7 @@ fun SettingsContent(
                             ActivationMode.DND -> {
                                 SettingsSliderItem(
                                     title = stringResource(id = R.string.dnd_sub_mode),
+                                    helpText = stringResource(id = R.string.dnd_mode_help),
                                     sliderContent = {
                                         Row(modifier = Modifier.fillMaxWidth()) {
                                             val modes =
@@ -342,6 +349,7 @@ fun SettingsContent(
                             ActivationMode.RINGER -> {
                                 SettingsSliderItem(
                                     title = stringResource(id = R.string.ringer_sub_mode),
+                                    helpText = stringResource(id = R.string.ringer_mode_help),
                                     sliderContent = {
                                         Row(modifier = Modifier.fillMaxWidth()) {
                                             val modes =
@@ -463,8 +471,8 @@ fun SettingsContent(
                     )
 
                     SettingsSliderItem(
-                        title = stringResource(id = R.string.flip_sensitivity),
-                        description = stringResource(id = R.string.flip_sensitivity_description),
+                        title = stringResource(id = R.string.flip_tolerance),
+                        description = stringResource(id = R.string.flip_tolerance_description),
                         sliderContent = {
                             val flipSensitivity by viewModel.flipSensitivity.collectAsState()
                             var sliderPosition by remember { mutableStateOf(flipSensitivity) }
@@ -473,20 +481,29 @@ fun SettingsContent(
                                 sliderPosition = flipSensitivity
                             }
 
+                            Text(
+                                text = stringResource(R.string.flip_tolerance_angle, FlipTolerance.degrees(sliderPosition)),
+                                style = MaterialTheme.typography.titleMedium,
+                            )
                             Slider(
-                                value = sliderPosition,
-                                onValueChange = { newSensitivity ->
-                                    val steps = listOf(0f, 0.17f, 0.33f, 0.5f, 0.67f, 0.83f, 1f)
-                                    val nearestStep =
-                                        steps.minByOrNull { kotlin.math.abs(it - newSensitivity) } ?: newSensitivity
-                                    sliderPosition = nearestStep
+                                value = FlipTolerance.degrees(sliderPosition).toFloat(),
+                                onValueChange = { angle ->
+                                    sliderPosition = FlipTolerance.position(angle.roundToInt())
                                 },
                                 onValueChangeFinished = {
                                     viewModel.setFlipSensitivity(sliderPosition)
                                 },
                                 modifier = Modifier.fillMaxWidth(),
-                                steps = 6,
+                                valueRange = FlipTolerance.MIN_DEGREES.toFloat()..FlipTolerance.MAX_DEGREES.toFloat(),
+                                steps = FlipTolerance.MAX_DEGREES - FlipTolerance.MIN_DEGREES - 1,
                             )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Text(stringResource(R.string.flip_tolerance_angle, FlipTolerance.MIN_DEGREES))
+                                Text(stringResource(R.string.flip_tolerance_angle, FlipTolerance.MAX_DEGREES))
+                            }
                         },
                     )
 
@@ -1464,6 +1481,7 @@ fun SettingsSliderItem(
     title: String,
     description: String? = null,
     isPro: Boolean = false,
+    helpText: String? = null,
     sliderContent: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
@@ -1503,15 +1521,21 @@ fun SettingsSliderItem(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 12.dp),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f, fill = false),
+                    modifier = Modifier.weight(1f),
                 )
                 if (isPro && !featureManager.isPro()) {
                     ProBadge(modifier = Modifier.padding(start = 8.dp))
+                }
+                if (helpText != null) {
+                    SettingsHelpButton(title = title, text = helpText)
                 }
             }
             if (description != null) {
@@ -1525,6 +1549,38 @@ fun SettingsSliderItem(
             Spacer(modifier = Modifier.height(12.dp))
             sliderContent()
         }
+    }
+}
+
+@Composable
+private fun SettingsHelpButton(title: String, text: String) {
+    var showHelp by rememberSaveable { mutableStateOf(false) }
+
+    IconButton(onClick = { showHelp = true }) {
+        Icon(
+            imageVector = Icons.Default.Info,
+            contentDescription = stringResource(R.string.setting_help_description, title),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(20.dp),
+        )
+    }
+
+    if (showHelp) {
+        AlertDialog(
+            onDismissRequest = { showHelp = false },
+            title = { Text(title) },
+            text = {
+                Text(
+                    text = text,
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { showHelp = false }) {
+                    Text(stringResource(R.string.close))
+                }
+            },
+        )
     }
 }
 
