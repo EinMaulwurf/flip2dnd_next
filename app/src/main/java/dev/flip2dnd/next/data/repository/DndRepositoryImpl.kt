@@ -1,29 +1,18 @@
 package dev.flip2dnd.next.data.repository
 
 import android.app.NotificationManager
-import android.media.AudioManager
-import android.content.Context
 import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import androidx.core.content.ContextCompat
+import android.media.AudioManager
 import android.util.Log
+import androidx.core.content.ContextCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.flip2dnd.next.R
-import dev.flip2dnd.next.core.DndRepository
-import dev.flip2dnd.next.core.HistoryRepository
-import dev.flip2dnd.next.core.SettingsRepository
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import dev.flip2dnd.next.core.*
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
@@ -33,133 +22,131 @@ import javax.inject.Singleton
 class DndRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val settingsRepository: SettingsRepository,
-    private val historyRepository: HistoryRepository
+    private val historyRepository: HistoryRepository,
 ) : DndRepository {
-    private val notificationManager =
-        context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-    private val audioManager =
-        context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-
-    private val _isActivated = MutableStateFlow(false)
-    private val _dndMode = MutableStateFlow(R.string.dnd_mode_all)
-
-    private val stateMutex = Mutex()
-    private val stateScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private val stateReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            stateScope.launch { stateMutex.withLock { updateDndState() } }
+    private val notifications = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    private val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    private val preferences = context.getSharedPreferences("flip_dnd_session", Context.MODE_PRIVATE)
+    private val dnd = DeviceDndController(context, notifications, preferences)
+    private val sessions = ActivationSessionController(object : ActivationSessionController.Hardware {
+        override fun read(mode: ActivationMode) = when (mode) {
+            ActivationMode.DND -> dnd.read()
+            ActivationMode.RINGER -> audio.ringerMode
         }
+        override fun write(mode: ActivationMode, value: Int) {
+            when (mode) {
+                ActivationMode.DND -> dnd.write(value)
+                ActivationMode.RINGER -> audio.ringerMode = value
+            }
+        }
+    }, object : ActivationSessionController.Store {
+        override fun load(): ActivationSession? {
+            // Old boolean-only records cannot safely identify what needs restoring.
+            val mode = preferences.getString("mode", null) ?: return null
+            return runCatching {
+                ActivationSession(ActivationMode.valueOf(mode), preferences.getInt("previous", 0),
+                    preferences.getInt("applied", 0))
+            }.getOrNull()
+        }
+        override fun save(session: ActivationSession?) {
+            val edit = preferences.edit().remove("owned")
+            if (session == null) edit.remove("mode").remove("previous").remove("applied")
+            else edit.putString("mode", session.mode.name).putInt("previous", session.previous)
+                .putInt("applied", session.applied)
+            check(edit.commit()) { "Cannot persist activation session" }
+        }
+    })
+
+    private val activated = MutableStateFlow(false)
+    private val owned = MutableStateFlow(false)
+    private val dndMode = MutableStateFlow(R.string.dnd_mode_all)
+    private val mutex = Mutex()
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private val receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) { refreshInBackground() }
     }
 
     init {
-        runBlocking {
-            if (settingsRepository.getActivationMode().first() == dev.flip2dnd.next.core.ActivationMode.RINGER) {
-                _isActivated.value = context.getSharedPreferences("flip_dnd_session", Context.MODE_PRIVATE)
-                    .getBoolean("owned", false) && audioManager.ringerMode == settingsRepository.getRingerMode().first().value
-            }
-            stateMutex.withLock { updateDndState() }
-        }
         val filter = IntentFilter().apply {
             addAction(NotificationManager.ACTION_INTERRUPTION_FILTER_CHANGED)
+            addAction(NotificationManager.ACTION_NOTIFICATION_POLICY_ACCESS_GRANTED_CHANGED)
             addAction(AudioManager.RINGER_MODE_CHANGED_ACTION)
-        }
-        ContextCompat.registerReceiver(context, stateReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
-        stateScope.launch {
-            combine(settingsRepository.getActivationMode(), settingsRepository.getRingerMode()) { _, _ -> Unit }
-                .collect { stateMutex.withLock { updateDndState() } }
-        }
-    }
-
-    override fun isActivated(): Flow<Boolean> = _isActivated
-    override fun getDndMode(): Flow<Int> = _dndMode
-
-    override suspend fun setActivated(enabled: Boolean) = stateMutex.withLock {
-        applyActivation(enabled)
-    }
-
-    private suspend fun applyActivation(enabled: Boolean) {
-        val activationMode = settingsRepository.getActivationMode().first()
-        if (activationMode == dev.flip2dnd.next.core.ActivationMode.DND) updateDndState()
-        if (enabled == _isActivated.value) return
-        val historyMode: Int
-        if (activationMode == dev.flip2dnd.next.core.ActivationMode.DND) {
-            check(notificationManager.isNotificationPolicyAccessGranted) {
-                "Notification policy access is required to change DND"
+            if (android.os.Build.VERSION.SDK_INT >= 35) {
+                addAction(NotificationManager.ACTION_AUTOMATIC_ZEN_RULE_STATUS_CHANGED)
             }
-            historyMode = if (enabled) settingsRepository.getDndMode().first().filter
-                else NotificationManager.INTERRUPTION_FILTER_ALL
-            notificationManager.setInterruptionFilter(historyMode)
-        } else {
-            if (enabled) {
-                settingsRepository.setPreviousRingerMode(audioManager.ringerMode)
-                historyMode = settingsRepository.getRingerMode().first().value
-            } else {
-                historyMode = settingsRepository.getPreviousRingerMode().first()
-            }
-            audioManager.ringerMode = historyMode
         }
-        // Publish only after the system call succeeds. Monitoring shares the same mutex,
-        // so it cannot overwrite an in-flight change with an earlier system reading.
-        _isActivated.value = enabled
-        CoroutineScope(Dispatchers.IO).launch {
-            historyRepository.addHistory(enabled, historyMode)
+        ContextCompat.registerReceiver(context, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
+        scope.launch {
+            settingsRepository.getActivationMode().collect { refreshSafely() }
         }
     }
 
-    override suspend fun toggle() = stateMutex.withLock {
-        applyActivation(!_isActivated.value)
+    private fun refreshInBackground() { scope.launch { refreshSafely() } }
+    private suspend fun refreshSafely() {
+        try { refresh() }
+        catch (e: CancellationException) { throw e }
+        catch (e: Exception) { Log.e("DndRepository", "Cannot refresh device state", e) }
     }
 
-    private suspend fun updateDndState() {
-        val currentFilter = notificationManager.currentInterruptionFilter
-        val isDndActive = currentFilter != NotificationManager.INTERRUPTION_FILTER_ALL
+    override fun isActivated(): Flow<Boolean> = activated
+    override fun isOwned(): Flow<Boolean> = owned
+    override fun getDndMode(): Flow<Int> = dndMode
+    override suspend fun refresh() = mutex.withLock { updateState() }
 
-        val activationMode = settingsRepository.getActivationMode().first()
-
-        val dndModeText = if (activationMode == dev.flip2dnd.next.core.ActivationMode.DND) {
-            when (currentFilter) {
+    private suspend fun updateState() {
+        sessions.reconcile()
+        val mode = settingsRepository.getActivationMode().first()
+        if (sessions.session?.mode?.let { it != mode } == true) sessions.restore()
+        owned.value = sessions.session != null
+        activated.value = if (mode == ActivationMode.DND) {
+            notifications.currentInterruptionFilter != NotificationManager.INTERRUPTION_FILTER_ALL
+        } else owned.value
+        dndMode.value = if (mode == ActivationMode.DND) {
+            when (notifications.currentInterruptionFilter) {
                 NotificationManager.INTERRUPTION_FILTER_NONE -> R.string.dnd_mode_total_silence
                 NotificationManager.INTERRUPTION_FILTER_PRIORITY -> R.string.dnd_mode_priority
                 NotificationManager.INTERRUPTION_FILTER_ALARMS -> R.string.dnd_mode_alarms_only
-                NotificationManager.INTERRUPTION_FILTER_ALL -> R.string.dnd_mode_all
-                else -> R.string.dnd_mode_unknown
+                else -> R.string.dnd_mode_all
             }
-        } else {
-            if (_isActivated.value) {
-                val selectedRinger = settingsRepository.getRingerMode().first()
-                when (selectedRinger) {
-                    dev.flip2dnd.next.core.RingerMode.SILENT -> R.string.status_ringer_silent
-                    dev.flip2dnd.next.core.RingerMode.VIBRATE -> R.string.status_ringer_vibrate
-                    dev.flip2dnd.next.core.RingerMode.NORMAL -> R.string.dnd_mode_all
-                }
-            } else {
-                R.string.dnd_mode_all
-            }
-        }
-
-        if (_dndMode.value != dndModeText) {
-            _dndMode.value = dndModeText
-        }
-
-        // Synchronization logic
-        if (activationMode == dev.flip2dnd.next.core.ActivationMode.DND) {
-            // In DND mode, we sync with system DND state
-            if (isDndActive && !_isActivated.value) {
-                _isActivated.value = true
-            } else if (!isDndActive && _isActivated.value) {
-                _isActivated.value = false
-            }
-        } else {
-            // In RINGER mode, we don't sync with system DND state because
-            // setting ringer to silent might trigger DND on some devices,
-            // which would mess up our "isActivated" if we synced back.
-            // We only record history when state changes via setActivated.
+        } else if (!owned.value) R.string.dnd_mode_all else when (sessions.session?.applied) {
+            AudioManager.RINGER_MODE_SILENT -> R.string.status_ringer_silent
+            AudioManager.RINGER_MODE_VIBRATE -> R.string.status_ringer_vibrate
+            else -> R.string.dnd_mode_all
         }
     }
 
-    // Ensure the monitoring job is cancelled when the repository is no longer used
+    override suspend fun setActivated(enabled: Boolean) = mutex.withLock { applyActivation(enabled) }
+
+    private suspend fun applyActivation(enabled: Boolean) {
+        updateState()
+        val changed: Boolean
+        val historyMode: Int
+        if (enabled) {
+            // Existing DND belongs to the user or another rule. Do not take ownership.
+            if (activated.value) return
+            val mode = settingsRepository.getActivationMode().first()
+            historyMode = if (mode == ActivationMode.DND) settingsRepository.getDndMode().first().filter
+                else settingsRepository.getRingerMode().first().value
+            changed = sessions.activate(mode, historyMode)
+        } else {
+            historyMode = sessions.session?.previous ?: return
+            changed = sessions.restore()
+        }
+        updateState()
+        if (changed) scope.launch(Dispatchers.IO) {
+            try { historyRepository.addHistory(enabled, historyMode) }
+            catch (e: CancellationException) { throw e }
+            catch (e: Exception) { Log.w("DndRepository", "Cannot save history", e) }
+        }
+    }
+
+    override suspend fun toggle() = mutex.withLock {
+        updateState()
+        applyActivation(!activated.value)
+    }
+
     override fun onCleared() {
-        context.unregisterReceiver(stateReceiver)
-        stateScope.cancel()
+        context.unregisterReceiver(receiver)
+        scope.cancel()
     }
 }

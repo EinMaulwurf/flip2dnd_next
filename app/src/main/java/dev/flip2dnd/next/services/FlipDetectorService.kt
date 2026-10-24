@@ -334,6 +334,7 @@ class FlipDetectorService : Service() {
                     isScreenOff.map { Unit },
                     isProximityCovered.map { Unit },
                     dndRepository.isActivated().map { Unit },
+                    dndRepository.isOwned().map { Unit },
                     dndService.flashlightOn.map { Unit },
                     reevaluations,
                 ).conflate().collect {
@@ -379,6 +380,7 @@ class FlipDetectorService : Service() {
             }
             if (orientation == PhoneOrientation.FACE_DOWN) {
                 if (dndService.isDndEnabled.value) {
+                    pendingActivation.cancel()
                     activatedDuringFaceDown = true
                     return
                 }
@@ -418,7 +420,7 @@ class FlipDetectorService : Service() {
                 activatedDuringFaceDown = false
                 legacyMediaRetry?.cancel()
                 pendingActivation.cancel()
-                if (dndService.isDndEnabled.value && dndService.isAppEnabledDnd.value) {
+                if (dndService.isAppEnabledDnd.value) {
                     if (dndService.setActivated(false)) {
                         showDndStateNotification(false)
                         updateBatterySaver(false)

@@ -37,7 +37,6 @@ class DndService(
     }
     private val feedbackScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var feedbackJob: Job? = null
-    private val ownership = context.getSharedPreferences("flip_dnd_session", Context.MODE_PRIVATE)
 
     private val soundService = SoundService(context, settingsRepository)
 
@@ -72,7 +71,6 @@ class DndService(
     }
 
     init {
-        _isAppEnabledDnd.value = ownership.getBoolean("owned", false)
         feedbackScope.launch { updateDndStatus() }
         try {
             cameraManager.registerTorchCallback(torchCallback, null)
@@ -84,6 +82,7 @@ class DndService(
     fun cleanup() {
         feedbackScope.cancel()
         vibrator.cancel()
+        soundService.release()
         try {
             cameraManager.unregisterTorchCallback(torchCallback)
         } catch (e: Exception) {
@@ -165,7 +164,7 @@ class DndService(
 
     suspend fun setActivated(enabled: Boolean): Boolean {
         updateDndStatus()
-        if (_isDndEnabled.value == enabled) return false
+        if (enabled && _isDndEnabled.value || !enabled && !_isAppEnabledDnd.value) return false
         try {
             feedbackJob?.cancel()
             vibrator.cancel()
@@ -184,9 +183,7 @@ class DndService(
 
             suspend fun applyState() {
                 dndRepository.setActivated(enabled)
-                _isDndEnabled.value = enabled
-                _isAppEnabledDnd.value = enabled
-                ownership.edit().putBoolean("owned", enabled).apply()
+                updateDndStatus()
             }
             if (totalSilence) {
                 dev.flip2dnd.next.core.ActivationFeedback.transition(true, { applyState() }, { feedback() })
@@ -205,7 +202,7 @@ class DndService(
                     }
                 }
             }
-            return true
+            return if (enabled) _isAppEnabledDnd.value else !_isAppEnabledDnd.value
         } catch (e: CancellationException) {
             vibrator.cancel()
             throw e
@@ -217,31 +214,9 @@ class DndService(
 
     suspend fun updateDndStatus() {
         try {
-            val activationMode = settingsRepository.getActivationMode().first()
-            val isActivated = dndRepository.isActivated().first()
-
-            if (activationMode == dev.flip2dnd.next.core.ActivationMode.DND) {
-                val currentFilter = notificationManager.currentInterruptionFilter
-                val isDndOn = currentFilter != NotificationManager.INTERRUPTION_FILTER_ALL
-                _isDndEnabled.value = isDndOn
-                if (!isDndOn) {
-                    _isAppEnabledDnd.value = false
-                }
-            } else {
-                // In Ringer mode, we rely on the repository's activation state
-                _isDndEnabled.value = isActivated
-                if (!isActivated) {
-                    _isAppEnabledDnd.value = false
-                }
-            }
-
-            if (!_isAppEnabledDnd.value && ownership.getBoolean("owned", false)) {
-                ownership.edit().putBoolean("owned", false).apply()
-            }
-            Log.d(
-                TAG,
-                "Updated status: isActivated=$isActivated, mode=$activationMode, isDndEnabled=${_isDndEnabled.value}, isAppEnabled=${_isAppEnabledDnd.value}"
-            )
+            dndRepository.refresh()
+            _isDndEnabled.value = dndRepository.isActivated().first()
+            _isAppEnabledDnd.value = dndRepository.isOwned().first()
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
