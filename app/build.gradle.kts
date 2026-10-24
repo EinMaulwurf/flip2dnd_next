@@ -14,8 +14,8 @@ android {
 		applicationId = "dev.flip2dnd.next"
 		minSdk = 23
 		targetSdk = 35
-		versionCode = 1215
-		versionName = "12.1.1-next.1"
+		versionCode = 1216
+		versionName = "1.0.0"
 		vectorDrawables {
 			useSupportLibrary = true
 		}

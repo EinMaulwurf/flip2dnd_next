@@ -23,5 +23,5 @@ Description: |-
 Builds: []
 AutoUpdateMode: None
 UpdateCheckMode: None
-CurrentVersion: 12.1.1-next.1
-CurrentVersionCode: 1215
+CurrentVersion: 1.0.0
+CurrentVersionCode: 1216

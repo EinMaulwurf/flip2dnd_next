@@ -10,6 +10,18 @@ data class ChangelogEntry(
 val changelogEntries =
   listOf(
     ChangelogEntry(
+      version = "v1",
+      emoji = "🚀",
+      changes =
+        listOf(
+          "First signed release of Flip2DND Next",
+          "Configurable flip detection, proximity gating, schedules, and feedback",
+          "Restore app-owned silence on pause and respect manual sound changes",
+          "Persist detection state and report unavailable sensors",
+          "Optional diagnostic recording and log export for troubleshooting",
+        ),
+    ),
+    ChangelogEntry(
       version = "v12.0.9",
       emoji = "🎨",
       changes =

@@ -55,6 +55,14 @@ jobs:
             --key-pass env:KEY_PASSWORD --out Flip2DND-Next.apk "$RUNNER_TEMP/aligned.apk"
           "$TOOLS/apksigner" verify --verbose Flip2DND-Next.apk
           sha256sum Flip2DND-Next.apk > Flip2DND-Next.apk.sha256
+      - name: Select release notes
+        id: release_notes
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          if [ -f "docs/releases/$TAG_NAME.md" ]; then
+            echo "path=docs/releases/$TAG_NAME.md" >> "$GITHUB_OUTPUT"
+          fi
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
         with:
@@ -62,5 +70,7 @@ jobs:
             Flip2DND-Next.apk
             Flip2DND-Next.apk.sha256
           fail_on_unmatched_files: true
-          generate_release_notes: true
+          name: Flip2DND Next ${{ github.ref_name }}
+          body_path: ${{ steps.release_notes.outputs.path }}
+          generate_release_notes: ${{ steps.release_notes.outputs.path == '' }}
           prerelease: ${{ contains(github.ref_name, '-') }}

@@ -32,6 +32,11 @@ settings UI.
 
 ## Build and install
 
+Download `Flip2DND-Next.apk` from the [latest signed release](https://github.com/EinMaulwurf/flip2dnd_next/releases/latest).
+If you previously installed a debug APK of Next, uninstall it before installing the
+release APK: the signing keys differ. Uninstalling removes that installation's data.
+
+
 Build with Docker, Java 17, and Android SDK 36:
 
 ```sh

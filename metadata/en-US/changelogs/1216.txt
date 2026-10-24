@@ -1,0 +1,5 @@
+First signed release of Flip2DND Next (v1 / 1.0.0).
+- Configurable flip detection, proximity gating, schedules, and custom feedback.
+- Improved sound restoration, persistent pause state, Android 15+ DND rules, and sensor-failure reporting.
+- Optional local diagnostic recording and secure log export.
+- Independent package: dev.flip2dnd.next.
