@@ -5,15 +5,23 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import dev.flip2dnd.next.diagnostics.DiagnosticLog
 
 class AutoStartService : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED &&
             intent.action != Intent.ACTION_MY_PACKAGE_REPLACED) return
+        DiagnosticLog.event("auto_start_received", "reason" to intent.action)
         val prefs = context.getSharedPreferences("flip_2_dnd_settings", Context.MODE_PRIVATE)
-        if (!prefs.getBoolean("auto_start", true)) return
+        if (!prefs.getBoolean("auto_start", true)) {
+            DiagnosticLog.event("auto_start_skipped", "reason" to "auto_start_disabled")
+            return
+        }
         val notifications = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        if (!notifications.isNotificationPolicyAccessGranted) return
+        if (!notifications.isNotificationPolicyAccessGranted) {
+            DiagnosticLog.event("auto_start_skipped", "reason" to "dnd_access_missing")
+            return
+        }
         try {
             DetectionControl.startIfEnabled(context)
         } catch (e: IllegalStateException) {

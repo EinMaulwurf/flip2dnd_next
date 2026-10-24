@@ -23,6 +23,7 @@ your previous state.
 - Custom audio files, vibration patterns, and adjustable vibration strength.
 - Automatic startup after reboot and app updates, subject to Android settings.
 - Material 3 interface, dynamic colors, dark mode, a widget, and a Quick Settings tile.
+- Optional local diagnostic recording and log export for longer reliability tests.
 - No ads or tracking.
 
 This continuation implements its own features and does not include the original
@@ -53,9 +54,13 @@ See [build instructions and device checks](docker/README.md) for setup details a
 [battery and reliability notes](docs/reliability-and-battery.md) for monitoring
 strategies and limitations.
 
+For a one- or two-day reliability test, enable **Settings → App settings → Diagnostics**,
+then export the log with the approximate times of any missed flips. See the
+[diagnostic logging guide](docs/diagnostic-logs.md) for details and privacy limits.
+
 ## Releases
 
-Tag pushes (`v*`) run the release workflow, which tests the core module, builds a
+Tag pushes (`v*`) run the release workflow, which tests the core and app modules, builds a
 release APK, signs it, and uploads it to GitHub Releases. Tags containing a hyphen
 are marked as prereleases. Configure repository secrets `SIGNING_KEY` (base64 JKS),
 `KEY_STORE_PASSWORD`, `KEY_ALIAS`, and `KEY_PASSWORD` before creating a release tag.

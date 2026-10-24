@@ -30,7 +30,7 @@ jobs:
       - name: Install Android SDK
         run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
       - name: Test, lint, and build
-        run: ./gradlew --no-daemon :core:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleRelease
+        run: ./gradlew --no-daemon :core:testDebugUnitTest :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleRelease
       - name: Name test APK
         run: cp app/build/outputs/apk/debug/app-debug.apk Flip2DND-Next-debug.apk
       - name: Upload APK and reports
@@ -41,5 +41,6 @@ jobs:
           path: |
             Flip2DND-Next-debug.apk
             core/build/reports/tests/testDebugUnitTest/
+            app/build/reports/tests/testDebugUnitTest/
             app/build/reports/lint-results-debug.*
           retention-days: 14

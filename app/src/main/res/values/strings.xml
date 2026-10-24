@@ -305,4 +305,13 @@
     <string name="detection_restore_failed" translatable="false">Detection is paused, but sound could not be restored. Check Do Not Disturb access and your phone’s sound settings.</string>
     <string name="detection_sensor_unavailable" translatable="false">Detection is unavailable because the motion sensor could not start. Try starting detection again.</string>
     <string name="detection_proximity_unavailable" translatable="false">The proximity sensor is unavailable. Turn off the proximity filter in Settings or try starting detection again.</string>
+    <string name="diagnostics_title" translatable="false">Diagnostics</string>
+    <string name="diagnostics_record" translatable="false">Record diagnostic log</string>
+    <string name="diagnostics_description" translatable="false">Keeps up to 2 MB of recent events on this phone. Exports include device model, detection settings, battery state and event times. Notification contents, custom sound paths and other apps’ data are never recorded. Nothing is uploaded automatically.</string>
+    <string name="diagnostics_instructions" translatable="false">Leave recording on for 1–2 days, then export the log. If a flip fails, note the approximate time and what happened.</string>
+    <string name="diagnostics_export" translatable="false">Export log</string>
+    <string name="diagnostics_clear" translatable="false">Clear log</string>
+    <string name="diagnostics_cleared" translatable="false">Diagnostic log cleared</string>
+    <string name="diagnostics_action_failed" translatable="false">Could not complete the diagnostic action. Check free storage and try again.</string>
+    <string name="diagnostics_storage_error" translatable="false">Some diagnostic events could not be saved. Check free storage and export the available log.</string>
 </resources>

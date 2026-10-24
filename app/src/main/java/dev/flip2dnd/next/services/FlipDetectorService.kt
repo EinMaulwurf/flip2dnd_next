@@ -18,6 +18,7 @@ import java.util.Calendar
 import dev.flip2dnd.next.core.ScheduleWindow
 import dev.flip2dnd.next.core.SensorMonitoringSession
 import android.util.Log
+import dev.flip2dnd.next.diagnostics.DiagnosticLog
 import androidx.core.app.NotificationCompat
 import dagger.hilt.android.AndroidEntryPoint
 import dev.flip2dnd.next.MainActivity
@@ -84,6 +85,8 @@ class FlipDetectorService : Service() {
     private var activatedDuringFaceDown = false
     private var stopping = false
     private var stopJob: Job? = null
+    private var lastDecision: String? = null
+    private var lastEvaluation: String? = null
     private val pendingActivation = dev.flip2dnd.next.core.PendingActivation(serviceScope) { action ->
         withTransitionWakeLock(this) { sensorService.confirm(action) }
     }
@@ -159,6 +162,8 @@ class FlipDetectorService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        DiagnosticLog.event("service_start_command", "reason" to (intent?.action ?: "start"),
+            "system_restart" to (intent == null), "start_id" to startId, "restart_flags" to flags)
         Log.d(TAG, "onStartCommand: Starting FlipDetectorService")
         val notification = createServiceNotification()
         startForeground(SERVICE_NOTIFICATION_ID, notification)
@@ -180,6 +185,7 @@ class FlipDetectorService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        DiagnosticLog.event("service_created")
         Log.d(TAG, "onCreate: Initializing FlipDetectorService")
         stopping = !DetectionControl.isEnabled(this)
         
@@ -365,6 +371,7 @@ class FlipDetectorService : Service() {
                             handleOrientationChange(sensorService.orientation.value, isScreenOff.value)
                         }
                     } catch (e: TimeoutCancellationException) {
+                        DiagnosticLog.failure("flip_service_error", e)
                         Log.e(TAG, "Flip processing exceeded its wake-lock deadline", e)
                     }
                 }
@@ -377,41 +384,66 @@ class FlipDetectorService : Service() {
                 }
             }
         } catch (e: Exception) {
+            DiagnosticLog.failure("flip_service_error", e)
             Log.e(TAG, "Error in onCreate: ${e.localizedMessage}", e)
             DetectionControl.publish(false, R.string.detection_start_failed)
             stopSelf()
         }
     }
 
+    private fun decision(reason: String) {
+        if (reason == lastDecision) return
+        lastDecision = reason
+        DiagnosticLog.event("activation_decision", "reason" to reason)
+    }
+
     private fun canActivate(screenOff: Boolean): Boolean {
-        if (!sensorService.isRegistered || proximityUnavailable) return false
-        if (onlyWhenScreenOff && !screenOff) return false
-        if (dndScheduleEnabled && !isWithinDndSchedule()) return false
-        if (flashlightDetectionEnabled && dndService.isFlashlightOn) return false
         val detection = dev.flip2dnd.next.core.ServiceLocator.getDetectionManager(this)
-        if (mediaPlaybackDetectionEnabled && detection.isMediaPlaying()) return false
-        if (headphoneDetectionEnabled && detection.areHeadphonesConnected()) return false
-        if (proximityDetectionEnabled && !isProximityCovered.value) return false
-        return true
+        val blocker = when {
+            !sensorService.isRegistered -> "motion_sensor_unavailable"
+            proximityUnavailable -> "proximity_unavailable"
+            onlyWhenScreenOff && !screenOff -> "screen_on"
+            dndScheduleEnabled && !isWithinDndSchedule() -> "outside_schedule"
+            flashlightDetectionEnabled && dndService.isFlashlightOn -> "flashlight_on"
+            mediaPlaybackDetectionEnabled && detection.isMediaPlaying() -> "media_playing"
+            headphoneDetectionEnabled && detection.areHeadphonesConnected() -> "headphones_connected"
+            proximityDetectionEnabled && !isProximityCovered.value -> "proximity_uncovered"
+            else -> null
+        }
+        decision(blocker ?: "eligible")
+        return blocker == null
     }
 
     private suspend fun handleOrientationChange(orientation: PhoneOrientation, screenOff: Boolean) {
         if (stopping) return
         try {
             dndService.updateDndStatus()
+            val evaluation = listOf(orientation, screenOff, isProximityCovered.value, dndService.isFlashlightOn,
+                dndService.isDndEnabled.value, dndService.isAppEnabledDnd.value).joinToString("|")
+            if (evaluation != lastEvaluation) {
+                lastEvaluation = evaluation
+                DiagnosticLog.event("flip_evaluated", "orientation" to orientation.name, "screen_off" to screenOff,
+                    "proximity_covered" to isProximityCovered.value, "flashlight_on" to dndService.isFlashlightOn,
+                    "active" to dndService.isDndEnabled.value, "owned" to dndService.isAppEnabledDnd.value)
+            }
             if (orientation == PhoneOrientation.UNKNOWN) {
+                decision("orientation_unknown")
                 activatedDuringFaceDown = false
                 pendingActivation.cancel()
                 return
             }
             if (orientation == PhoneOrientation.FACE_DOWN) {
                 if (dndService.isDndEnabled.value) {
+                    decision("already_active")
                     pendingActivation.cancel()
                     activatedDuringFaceDown = true
                     return
                 }
                 // Respect a manual DND-off change until the next physical flip.
-                if (activatedDuringFaceDown) return
+                if (activatedDuringFaceDown) {
+                    decision("manual_override_until_next_flip")
+                    return
+                }
                 if (!canActivate(screenOff)) {
                     pendingActivation.cancel()
                     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && mediaPlaybackDetectionEnabled &&
@@ -429,7 +461,10 @@ class FlipDetectorService : Service() {
                 // or cancel feedback for a transition that has already completed.
                 pendingActivation.startIfIdle(
                     activationDelaySeconds.coerceAtLeast(0) * 1000L,
-                    onStarted = { showFlipDetectedNotification() }
+                    onStarted = {
+                        DiagnosticLog.event("activation_pending", "delay_seconds" to activationDelaySeconds)
+                        showFlipDetectedNotification()
+                    }
                 ) {
                     if (sensorService.orientation.value != PhoneOrientation.FACE_DOWN ||
                         !canActivate(isScreenOff.value)) return@startIfIdle
@@ -443,6 +478,7 @@ class FlipDetectorService : Service() {
                     }
                 }
             } else {
+                decision("face_up")
                 activatedDuringFaceDown = false
                 legacyMediaRetry?.cancel()
                 pendingActivation.cancel()
@@ -459,6 +495,7 @@ class FlipDetectorService : Service() {
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
+            DiagnosticLog.failure("flip_service_error", e)
             Log.e(TAG, "Error handling orientation change", e)
         }
     }
@@ -472,6 +509,7 @@ class FlipDetectorService : Service() {
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
+            DiagnosticLog.failure("flip_service_error", e)
             Log.e(TAG, "Error changing battery saver", e)
         }
     }
@@ -501,6 +539,7 @@ class FlipDetectorService : Service() {
 
     private fun pauseDetection() {
         if (stopJob?.isActive == true) return
+        DiagnosticLog.event("pause_restoration_started")
         stopping = true
         DetectionControl.publish(false)
         publishState()
@@ -512,13 +551,16 @@ class FlipDetectorService : Service() {
                     legacyMediaRetry?.cancel()
                     if (::sensorService.isInitialized) sensorService.stopMonitoring()
                     dndRepository.setActivated(false)
+                    DiagnosticLog.event("pause_restoration_completed")
                 }
             } catch (e: TimeoutCancellationException) {
+                DiagnosticLog.failure("flip_service_error", e)
                 Log.e(TAG, "Restoring sound while pausing timed out", e)
                 error = R.string.detection_restore_failed
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
+                DiagnosticLog.failure("flip_service_error", e)
                 Log.e(TAG, "Could not restore sound while pausing", e)
                 error = R.string.detection_restore_failed
             } finally {
@@ -537,6 +579,7 @@ class FlipDetectorService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        DiagnosticLog.event("service_destroyed")
         Log.d(TAG, "onDestroy: Cleaning up FlipDetectorService")
         stopping = true
         publishState(DetectionControl.error.value)

@@ -5,6 +5,7 @@ import android.content.Intent
 import android.util.Log
 import androidx.core.content.ContextCompat
 import dev.flip2dnd.next.R
+import dev.flip2dnd.next.diagnostics.DiagnosticLog
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
@@ -25,6 +26,7 @@ object DetectionControl {
         .also { mutableEnabled.value = it }
 
     fun resume(context: Context) {
+        DiagnosticLog.event("detection_requested", "enabled" to true)
         preferences(context).edit().putBoolean("detection_enabled", true).apply()
         mutableEnabled.value = true
         startIfEnabled(context)
@@ -35,6 +37,7 @@ object DetectionControl {
     }
 
     fun pause(context: Context) {
+        DiagnosticLog.event("detection_requested", "enabled" to false)
         preferences(context).edit().putBoolean("detection_enabled", false).apply()
         mutableEnabled.value = false
         send(context, ACTION_PAUSE)
@@ -45,12 +48,16 @@ object DetectionControl {
             ContextCompat.startForegroundService(context,
                 Intent(context, FlipDetectorService::class.java).setAction(action))
         } catch (e: RuntimeException) {
+            DiagnosticLog.failure("detection_start_failed", e)
             Log.e("DetectionControl", "Cannot start detection service", e)
             publish(false, R.string.detection_start_failed)
         }
     }
 
     fun publish(running: Boolean, error: Int? = null) {
+        if (mutableRunning.value != running || mutableError.value != error) {
+            DiagnosticLog.event("detection_status", "running" to running, "error_resource" to error)
+        }
         mutableRunning.value = running
         mutableError.value = error
     }

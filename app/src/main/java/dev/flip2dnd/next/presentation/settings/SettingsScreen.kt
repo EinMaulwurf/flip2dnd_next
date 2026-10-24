@@ -1176,6 +1176,10 @@ fun SettingsContent(
             }
         }
 
+        if (section == 3) {
+            item { DiagnosticsSettings() }
+        }
+
         if (section == 4) {
             item {
                 Column {

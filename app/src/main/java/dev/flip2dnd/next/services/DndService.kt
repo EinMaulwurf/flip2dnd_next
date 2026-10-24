@@ -9,6 +9,7 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import android.util.Log
+import dev.flip2dnd.next.diagnostics.DiagnosticLog
 import dev.flip2dnd.next.core.SettingsRepository
 import dev.flip2dnd.next.core.DndRepository
 import dev.flip2dnd.next.core.VibrationPattern
@@ -75,6 +76,7 @@ class DndService(
         try {
             cameraManager.registerTorchCallback(torchCallback, null)
         } catch (e: Exception) {
+            DiagnosticLog.failure("dnd_service_error", e)
             Log.e(TAG, "Error registering torch callback: ${e.message}")
         }
     }
@@ -86,6 +88,7 @@ class DndService(
         try {
             cameraManager.unregisterTorchCallback(torchCallback)
         } catch (e: Exception) {
+            DiagnosticLog.failure("dnd_service_error", e)
             Log.e(TAG, "Error unregistering torch callback: ${e.message}")
         }
     }
@@ -141,6 +144,7 @@ class DndService(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
+                DiagnosticLog.failure("dnd_service_error", e)
                 Log.e(TAG, "Error during vibration: ${e.message}", e)
             }
         }
@@ -163,13 +167,17 @@ class DndService(
     }
 
     suspend fun setActivated(enabled: Boolean): Boolean {
+        DiagnosticLog.event("activation_requested", "enabled" to enabled)
         updateDndStatus()
         if (enabled && _isDndEnabled.value || !enabled && !_isAppEnabledDnd.value) return false
         try {
             feedbackJob?.cancel()
             vibrator.cancel()
             if (settingsRepository.getActivationMode().first() == dev.flip2dnd.next.core.ActivationMode.DND &&
-                !notificationManager.isNotificationPolicyAccessGranted) return false
+                !notificationManager.isNotificationPolicyAccessGranted) {
+                DiagnosticLog.event("activation_failed", "reason" to "dnd_access_missing")
+                return false
+            }
             val totalSilence = enabled &&
                 settingsRepository.getActivationMode().first() == dev.flip2dnd.next.core.ActivationMode.DND &&
                 settingsRepository.getDndMode().first() == dev.flip2dnd.next.core.DndMode.TOTAL_SILENCE
@@ -198,6 +206,7 @@ class DndService(
                     } catch (e: CancellationException) {
                         throw e
                     } catch (e: Exception) {
+                        DiagnosticLog.failure("dnd_service_error", e)
                         Log.e(TAG, "Error playing activation feedback", e)
                     }
                 }
@@ -207,6 +216,7 @@ class DndService(
             vibrator.cancel()
             throw e
         } catch (e: Exception) {
+            DiagnosticLog.failure("dnd_service_error", e)
             Log.e(TAG, "Error setting activation state", e)
             return false
         }
@@ -220,6 +230,7 @@ class DndService(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
+            DiagnosticLog.failure("dnd_service_error", e)
             Log.e(TAG, "Error updating status: ${e.message}", e)
         }
     }

@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioManager
 import android.util.Log
+import dev.flip2dnd.next.diagnostics.DiagnosticLog
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.flip2dnd.next.R
@@ -85,7 +86,10 @@ class DndRepositoryImpl @Inject constructor(
     private suspend fun refreshSafely() {
         try { refresh() }
         catch (e: CancellationException) { throw e }
-        catch (e: Exception) { Log.e("DndRepository", "Cannot refresh device state", e) }
+        catch (e: Exception) {
+            DiagnosticLog.failure("state_refresh_failed", e)
+            Log.e("DndRepository", "Cannot refresh device state", e)
+        }
     }
 
     override fun isActivated(): Flow<Boolean> = activated
@@ -94,9 +98,17 @@ class DndRepositoryImpl @Inject constructor(
     override suspend fun refresh() = mutex.withLock { updateState() }
 
     private suspend fun updateState() {
+        val before = sessions.session
         sessions.reconcile()
+        if (before != null && sessions.session == null) {
+            DiagnosticLog.event("session_relinquished", "mode" to before.mode.name,
+                "previous" to before.previous, "applied" to before.applied)
+        }
         val mode = settingsRepository.getActivationMode().first()
-        if (sessions.session?.mode?.let { it != mode } == true) sessions.restore()
+        if (sessions.session?.mode?.let { it != mode } == true) {
+            sessions.restore()
+            DiagnosticLog.event("mode_change_restored", "new_mode" to mode.name)
+        }
         owned.value = sessions.session != null
         activated.value = if (mode == ActivationMode.DND) {
             notifications.currentInterruptionFilter != NotificationManager.INTERRUPTION_FILTER_ALL
@@ -140,6 +152,8 @@ class DndRepositoryImpl @Inject constructor(
             changed = sessions.restore()
         }
         updateState()
+        DiagnosticLog.event("activation_applied", "enabled" to enabled, "changed" to changed,
+            "system_value" to historyMode, "owned" to owned.value, "effective_active" to activated.value)
         if (changed) scope.launch(Dispatchers.IO) {
             try { historyRepository.addHistory(enabled, historyMode) }
             catch (e: CancellationException) { throw e }

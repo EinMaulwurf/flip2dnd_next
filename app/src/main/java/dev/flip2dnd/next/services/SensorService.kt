@@ -8,6 +8,7 @@ import android.hardware.SensorManager
 import android.os.PowerManager
 import android.os.SystemClock
 import android.util.Log
+import dev.flip2dnd.next.diagnostics.DiagnosticLog
 import dev.flip2dnd.next.core.FlipOrientationDetector
 import dev.flip2dnd.next.core.PhoneOrientation
 import dev.flip2dnd.next.core.SensorMonitoringSession
@@ -49,6 +50,8 @@ class SensorService(context: Context, settingsRepository: SettingsRepository) {
     private val listener: SensorEventListener = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent) {
             if (event.sensor == tilt) {
+                DiagnosticLog.event("tilt_delivered", "delivery_delay_ms" to
+                    (SystemClock.elapsedRealtime() - event.timestamp / 1_000_000L).coerceAtLeast(0))
                 session.onTilt()
                 return
             }
@@ -75,6 +78,9 @@ class SensorService(context: Context, settingsRepository: SettingsRepository) {
             if (next != _orientation.value) {
                 // Hand the wake-up event to the coroutine that owns the longer transition lease.
                 if (!powerManager.isInteractive) deliveryWakeLock.acquire(2000)
+                DiagnosticLog.event("orientation_confirmed", "orientation" to next.name,
+                    "delivery_delay_ms" to (SystemClock.elapsedRealtime() - now).coerceAtLeast(0),
+                    "screen_off" to !powerManager.isInteractive, "monitoring_mode" to monitoringMode.value.name)
                 _orientation.value = next
             }
         }
@@ -101,12 +107,23 @@ class SensorService(context: Context, settingsRepository: SettingsRepository) {
         }
 
         override fun stopAcceleration() {
-            registeredAcceleration?.let { sensorManager.unregisterListener(listener, it) }
+            registeredAcceleration?.let {
+                sensorManager.unregisterListener(listener, it)
+                DiagnosticLog.event("accelerometer_stopped", "wake_up" to it.isWakeUpSensor)
+            }
             registeredAcceleration = null
         }
 
-        override fun acquireWakeLock(timeoutMs: Long) { wakeLock.acquire(timeoutMs) }
-        override fun releaseWakeLock() { if (wakeLock.isHeld) wakeLock.release() }
+        override fun acquireWakeLock(timeoutMs: Long) {
+            wakeLock.acquire(timeoutMs)
+            DiagnosticLog.event("sensor_wake_lock_acquired", "timeout_ms" to timeoutMs)
+        }
+        override fun releaseWakeLock() {
+            if (wakeLock.isHeld) {
+                wakeLock.release()
+                DiagnosticLog.event("sensor_wake_lock_released")
+            }
+        }
     })
     val monitoringMode = session.mode
     // A tilt listener is still monitoring even when its accelerometer snapshot has ended.
@@ -114,14 +131,20 @@ class SensorService(context: Context, settingsRepository: SettingsRepository) {
         monitoringMode.value != SensorMonitoringSession.Mode.UNAVAILABLE
 
     init {
+        scope.launch { monitoringMode.collect { DiagnosticLog.modeChanged(it.name) } }
         scope.launch { settingsRepository.getFlipSensitivity().collect { sensitivity = it.coerceIn(0f, 1f) } }
     }
 
     private fun register(sensor: Sensor?, periodUs: Int, latencyUs: Int): Boolean {
         if (sensor == null) return false
         return try {
-            sensorManager.registerListener(listener, sensor, periodUs, latencyUs)
+            sensorManager.registerListener(listener, sensor, periodUs, latencyUs).also { success ->
+                DiagnosticLog.event("sensor_registration", "type" to sensor.stringType,
+                    "wake_up" to sensor.isWakeUpSensor, "period_us" to periodUs,
+                    "latency_us" to latencyUs, "success" to success)
+            }
         } catch (e: RuntimeException) {
+            DiagnosticLog.failure("sensor_registration_failed", e)
             Log.w(TAG, "Cannot register ${sensor.name}; trying another monitoring strategy", e)
             false
         }
@@ -141,6 +164,7 @@ class SensorService(context: Context, settingsRepository: SettingsRepository) {
 
     fun stopMonitoring() {
         session.stop()
+        DiagnosticLog.modeChanged(SensorMonitoringSession.Mode.STOPPED.name)
         if (deliveryWakeLock.isHeld) deliveryWakeLock.release()
         detector.reset()
         _orientation.value = PhoneOrientation.UNKNOWN

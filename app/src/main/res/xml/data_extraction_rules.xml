@@ -2,8 +2,10 @@
 <data-extraction-rules>
     <cloud-backup>
         <exclude domain="sharedpref" path="flip_dnd_session.xml" />
+        <exclude domain="sharedpref" path="diagnostics_state.xml" />
     </cloud-backup>
     <device-transfer>
         <exclude domain="sharedpref" path="flip_dnd_session.xml" />
+        <exclude domain="sharedpref" path="diagnostics_state.xml" />
     </device-transfer>
 </data-extraction-rules>

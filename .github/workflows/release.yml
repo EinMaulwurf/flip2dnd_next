@@ -37,7 +37,7 @@ jobs:
       - name: Install Android SDK
         run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
       - name: Test and build release
-        run: ./gradlew --no-daemon :core:testDebugUnitTest :app:assembleRelease
+        run: ./gradlew --no-daemon :core:testDebugUnitTest :app:testDebugUnitTest :app:assembleRelease
       - name: Sign and verify APK
         env:
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
