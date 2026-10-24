@@ -36,6 +36,8 @@ android {
 		abortOnError = false
 	}
 
+	testOptions { unitTests.isIncludeAndroidResources = true }
+
 	buildTypes {
 		release {
 			isMinifyEnabled = true
@@ -73,6 +75,9 @@ android {
 }
 
 dependencies {
+	testImplementation(libs.junit)
+	testImplementation("org.robolectric:robolectric:4.16.1")
+	testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 	implementation("androidx.core:core-ktx:1.17.0")
 	implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.4")
 	implementation("androidx.activity:activity-compose:1.12.0-rc01")

@@ -309,7 +309,7 @@ class MainActivity : ComponentActivity() {
   }
 
   private fun startFlipDetectorService() {
-    ContextCompat.startForegroundService(this, Intent(this, FlipDetectorService::class.java))
+    dev.flip2dnd.next.services.DetectionControl.startIfEnabled(this)
   }
 
 

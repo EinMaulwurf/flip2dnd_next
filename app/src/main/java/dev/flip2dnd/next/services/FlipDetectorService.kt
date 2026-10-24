@@ -82,6 +82,8 @@ class FlipDetectorService : Service() {
     private var turnScreenOff = false
     private var activationDelaySeconds = 0
     private var activatedDuringFaceDown = false
+    private var stopping = false
+    private var stopJob: Job? = null
     private val pendingActivation = dev.flip2dnd.next.core.PendingActivation(serviceScope) { action ->
         withTransitionWakeLock(this) { sensorService.confirm(action) }
     }
@@ -102,6 +104,7 @@ class FlipDetectorService : Service() {
 
     private val screenStateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
+            if (stopping) return
             when (intent?.action) {
                 Intent.ACTION_SCREEN_OFF -> {
                     Log.d(TAG, "Screen turned OFF")
@@ -139,6 +142,7 @@ class FlipDetectorService : Service() {
     }
 
     private fun requestReevaluation() {
+        if (stopping) return
         reevaluations.tryEmit(Unit)
         scheduleNextCheck()
     }
@@ -146,7 +150,7 @@ class FlipDetectorService : Service() {
     private fun scheduleNextCheck() {
         if (!::alarmManager.isInitialized) return
         alarmManager.cancel(scheduleIntent)
-        if (!dndScheduleEnabled) return
+        if (stopping || !dndScheduleEnabled) return
         val next = ScheduleWindow.nextChange(dndScheduleStartTime, dndScheduleEndTime, dndScheduleDays,
             Calendar.getInstance()) ?: return
         // At most actual schedule boundaries wake the CPU; no per-second timer or exact-alarm permission.
@@ -157,6 +161,11 @@ class FlipDetectorService : Service() {
         Log.d(TAG, "onStartCommand: Starting FlipDetectorService")
         val notification = createServiceNotification()
         startForeground(SERVICE_NOTIFICATION_ID, notification)
+        if (!DetectionControl.isEnabled(this)) {
+            pauseDetection()
+            return START_NOT_STICKY
+        }
+        stopping = false
         if (intent?.action == ACTION_REEVALUATE) requestReevaluation()
         return START_STICKY
     }
@@ -164,6 +173,7 @@ class FlipDetectorService : Service() {
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "onCreate: Initializing FlipDetectorService")
+        stopping = !DetectionControl.isEnabled(this)
         
         try {
             createNotificationChannels()
@@ -201,7 +211,7 @@ class FlipDetectorService : Service() {
             
             // Start sensor monitoring regardless of screen state
             Log.d(TAG, "Starting initial sensor monitoring")
-            sensorService.startMonitoring()
+            if (!stopping) sensorService.startMonitoring()
             
             
             // Observe proximity setting
@@ -213,7 +223,7 @@ class FlipDetectorService : Service() {
                     Log.d(TAG, "Settings updated - Proximity detection: $enabled")
                     
                     val detectionManager = dev.flip2dnd.next.core.ServiceLocator.getDetectionManager(this@FlipDetectorService)
-                    if (enabled) {
+                    if (enabled && !stopping) {
                         detectionManager.registerProximityListener { covered ->
                             _isProximityCovered.value = covered
                         }
@@ -235,7 +245,7 @@ class FlipDetectorService : Service() {
                     if (enabled && !isScreenOff.value && !dndService.isAppEnabledDnd.value) {
                         Log.d(TAG, "Stopping sensors because screen is ON and 'onlyWhenScreenOff' was just enabled")
                         sensorService.stopMonitoring()
-                    } else if (!enabled && !sensorService.isRegistered) {
+                    } else if (!stopping && !enabled && !sensorService.isRegistered) {
                         Log.d(TAG, "Starting sensors because 'onlyWhenScreenOff' was just disabled")
                         sensorService.startMonitoring()
                     }
@@ -349,6 +359,7 @@ class FlipDetectorService : Service() {
             }
             serviceScope.launch {
                 sensorService.monitoringMode.collect {
+                    publishState()
                     val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                     notificationManager.notify(SERVICE_NOTIFICATION_ID, createServiceNotification())
                 }
@@ -371,6 +382,7 @@ class FlipDetectorService : Service() {
     }
 
     private suspend fun handleOrientationChange(orientation: PhoneOrientation, screenOff: Boolean) {
+        if (stopping) return
         try {
             dndService.updateDndStatus()
             if (orientation == PhoneOrientation.UNKNOWN) {
@@ -448,9 +460,53 @@ class FlipDetectorService : Service() {
         }
     }
 
+    private fun publishState(error: Int? = null) {
+        DetectionControl.publish(!stopping && ::sensorService.isInitialized, error)
+        dev.flip2dnd.next.widget.FlipDndWidgetProvider.updateWidgetUI(this)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            android.service.quicksettings.TileService.requestListeningState(this,
+                android.content.ComponentName(this,
+                    dev.flip2dnd.next.quicksettings.FlipQuickSettingsTileService::class.java))
+        }
+    }
+
+    private fun pauseDetection() {
+        if (stopJob?.isActive == true) return
+        stopping = true
+        publishState()
+        stopJob = serviceScope.launch {
+            var error: Int? = null
+            try {
+                withTransitionWakeLock(this@FlipDetectorService) {
+                    pendingActivation.cancelAndWait()
+                    legacyMediaRetry?.cancel()
+                    if (::sensorService.isInitialized) sensorService.stopMonitoring()
+                    dndRepository.setActivated(false)
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "Could not restore sound while pausing", e)
+                error = R.string.detection_restore_failed
+            } finally {
+                if (DetectionControl.isEnabled(this@FlipDetectorService)) {
+                    stopping = false
+                    if (::sensorService.isInitialized) sensorService.startMonitoring()
+                    requestReevaluation()
+                    publishState(error)
+                } else {
+                    publishState(error)
+                    stopSelf()
+                }
+            }
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         Log.d(TAG, "onDestroy: Cleaning up FlipDetectorService")
+        stopping = true
+        publishState(DetectionControl.error.value)
         serviceScope.cancel()
         if (::alarmManager.isInitialized) alarmManager.cancel(scheduleIntent)
         if (screenReceiverRegistered) unregisterReceiver(screenStateReceiver)

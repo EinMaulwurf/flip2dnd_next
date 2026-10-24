@@ -60,6 +60,10 @@ fun MainScreen(
                 style = MaterialTheme.typography.titleLarge,
                 textAlign = TextAlign.Center,
             )
+            state.detectionError?.let { message ->
+                Text(stringResource(message), color = MaterialTheme.colorScheme.error,
+                    textAlign = TextAlign.Center)
+            }
             if (state.isServiceRunning) {
                 Text(stringResource(state.dndMode), style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)

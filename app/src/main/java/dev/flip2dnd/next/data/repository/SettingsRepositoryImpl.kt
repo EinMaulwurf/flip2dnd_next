@@ -1,10 +1,7 @@
 package dev.flip2dnd.next.data.repository
 
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
-import android.os.Build
-import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.flip2dnd.next.core.ActivationMode
 import dev.flip2dnd.next.core.DndMode
@@ -13,19 +10,11 @@ import dev.flip2dnd.next.core.SettingsRepository
 import dev.flip2dnd.next.core.FlashlightPattern
 import dev.flip2dnd.next.core.Sound
 import dev.flip2dnd.next.core.VibrationPattern
-import dev.flip2dnd.next.services.FlipDetectorService
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
-private const val TAG = "SettingsRepositoryImpl"
 private const val PREFS_NAME = "flip_2_dnd_settings"
 private const val KEY_SCREEN_OFF_ONLY = "screen_off_only"
 private const val KEY_TURN_SCREEN_OFF = "turn_screen_off"
@@ -91,8 +80,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	private val prefs: SharedPreferences =
 		appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 	
-	private val repositoryScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
-	private var restartJob: Job? = null
 
 	private val screenOffOnlyEnabled = MutableStateFlow(prefs.getBoolean(KEY_SCREEN_OFF_ONLY, true))
 	private val turnScreenOffEnabled = MutableStateFlow(prefs.getBoolean(KEY_TURN_SCREEN_OFF, false))
@@ -214,35 +201,11 @@ class SettingsRepositoryImpl @Inject constructor(
 	private val previousRingerMode = MutableStateFlow(prefs.getInt(KEY_PREVIOUS_RINGER_MODE, 2)) // Default to NORMAL (2)
 	private val flashlightIntensity = MutableStateFlow(prefs.getInt(KEY_FLASHLIGHT_INTENSITY, 1))
 
-	private fun restartFlipDetectorService() {
-		restartJob?.cancel()
-		restartJob = repositoryScope.launch {
-			delay(500) // Debounce restarts
-			try {
-				val serviceIntent = Intent(appContext, FlipDetectorService::class.java)
-				
-				// Force a full restart by stopping first
-				appContext.stopService(serviceIntent)
-				delay(200) // Small delay to allow cleanup
-				
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-					appContext.startForegroundService(serviceIntent)
-				} else {
-					appContext.startService(serviceIntent)
-				}
-				Log.d(TAG, "FlipDetectorService restarted successfully")
-			} catch (e: Exception) {
-				Log.e(TAG, "Error restarting FlipDetectorService: ${e.localizedMessage}", e)
-			}
-		}
-	}
-
 	override fun getScreenOffOnlyEnabled(): Flow<Boolean> = screenOffOnlyEnabled
 
 	override suspend fun setScreenOffOnlyEnabled(enabled: Boolean) {
 		prefs.edit().putBoolean(KEY_SCREEN_OFF_ONLY, enabled).apply()
 		screenOffOnlyEnabled.value = enabled
-		restartFlipDetectorService()
 	}
 
 	override fun getTurnScreenOffEnabled(): Flow<Boolean> = turnScreenOffEnabled
@@ -257,7 +220,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setVibrationEnabled(enabled: Boolean) {
 		prefs.edit().putBoolean(KEY_VIBRATION, enabled).apply()
 		vibrationEnabled.value = enabled
-		restartFlipDetectorService()
 	}
 
 	override fun getSoundEnabled(): Flow<Boolean> = soundEnabled
@@ -265,7 +227,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setSoundEnabled(enabled: Boolean) {
 		prefs.edit().putBoolean(KEY_SOUND, enabled).apply()
 		soundEnabled.value = enabled
-		restartFlipDetectorService()
 	}
 
 	override fun getPriorityDndEnabled(): Flow<Boolean> = priorityDndEnabled
@@ -273,7 +234,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setPriorityDndEnabled(enabled: Boolean) {
 		prefs.edit().putBoolean(KEY_PRIORITY_DND, enabled).apply()
 		priorityDndEnabled.value = enabled
-		restartFlipDetectorService()
 	}
 
 	override fun getDndOnSound(): Flow<Sound> = dndOnSound
@@ -281,7 +241,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setDndOnSound(sound: Sound) {
 		prefs.edit().putString(KEY_DND_ON_SOUND, sound.name).apply()
 		dndOnSound.value = sound
-		restartFlipDetectorService()
 	}
 
 	override fun getDndOffSound(): Flow<Sound> = dndOffSound
@@ -289,7 +248,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setDndOffSound(sound: Sound) {
 		prefs.edit().putString(KEY_DND_OFF_SOUND, sound.name).apply()
 		dndOffSound.value = sound
-		restartFlipDetectorService()
 	}
 
 	override fun getUseCustomVolume(): Flow<Boolean> = useCustomVolume
@@ -297,7 +255,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setUseCustomVolume(enabled: Boolean) {
 		prefs.edit().putBoolean(KEY_USE_CUSTOM_VOLUME, enabled).apply()
 		useCustomVolume.value = enabled
-		restartFlipDetectorService()
 	}
 
 	override fun getCustomVolume(): Flow<Float> = customVolume
@@ -305,7 +262,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setCustomVolume(volume: Float) {
 		prefs.edit().putFloat(KEY_CUSTOM_VOLUME, volume).apply()
 		customVolume.value = volume
-		restartFlipDetectorService()
 	}
 
 	override fun getUseCustomVibration(): Flow<Boolean> = useCustomVibration
@@ -313,7 +269,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setUseCustomVibration(enabled: Boolean) {
 		prefs.edit().putBoolean(KEY_USE_CUSTOM_VIBRATION, enabled).apply()
 		useCustomVibration.value = enabled
-		restartFlipDetectorService()
 	}
 
 	override fun getCustomVibrationStrength(): Flow<Float> = customVibrationStrength
@@ -321,7 +276,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setCustomVibrationStrength(strength: Float) {
 		prefs.edit().putFloat(KEY_CUSTOM_VIBRATION_STRENGTH, strength).apply()
 		customVibrationStrength.value = strength
-		restartFlipDetectorService()
 	}
 
 	override fun getDndOnVibration(): Flow<VibrationPattern> = dndOnVibration
@@ -329,7 +283,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setDndOnVibration(pattern: VibrationPattern) {
 		prefs.edit().putString(KEY_DND_ON_VIBRATION, pattern.name).apply()
 		dndOnVibration.value = pattern
-		restartFlipDetectorService()
 	}
 
 	override fun getDndOffVibration(): Flow<VibrationPattern> = dndOffVibration
@@ -337,7 +290,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setDndOffVibration(pattern: VibrationPattern) {
 		prefs.edit().putString(KEY_DND_OFF_VIBRATION, pattern.name).apply()
 		dndOffVibration.value = pattern
-		restartFlipDetectorService()
 	}
 
 	override fun getFlipSensitivity(): Flow<Float> = flipSensitivity
@@ -345,7 +297,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setFlipSensitivity(sensitivity: Float) {
 		prefs.edit().putFloat(KEY_FLIP_SENSITIVITY, sensitivity).apply()
 		flipSensitivity.value = sensitivity
-		restartFlipDetectorService()
 	}
 
 	override fun getDndOnCustomSoundUri(): Flow<String?> = dndOnCustomSoundUri
@@ -353,7 +304,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setDndOnCustomSoundUri(uri: String?) {
 		prefs.edit().putString(KEY_DND_ON_CUSTOM_SOUND_URI, uri).apply()
 		dndOnCustomSoundUri.value = uri
-		restartFlipDetectorService()
 	}
 
 	override fun getDndOffCustomSoundUri(): Flow<String?> = dndOffCustomSoundUri
@@ -361,7 +311,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setDndOffCustomSoundUri(uri: String?) {
 		prefs.edit().putString(KEY_DND_OFF_CUSTOM_SOUND_URI, uri).apply()
 		dndOffCustomSoundUri.value = uri
-		restartFlipDetectorService()
 	}
 
 	override fun getNotificationsEnabled(): Flow<Boolean> = notificationsEnabled
@@ -369,7 +318,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setNotificationsEnabled(enabled: Boolean) {
 		prefs.edit().putBoolean(KEY_NOTIFICATIONS_ENABLED, enabled).apply()
 		notificationsEnabled.value = enabled
-		restartFlipDetectorService()
 	}
 
 	override fun getHighSensitivityModeEnabled(): Flow<Boolean> = highSensitivityModeEnabled
@@ -377,7 +325,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setHighSensitivityModeEnabled(enabled: Boolean) {
 		prefs.edit().putBoolean(KEY_HIGH_SENSITIVITY_MODE, enabled).apply()
 		highSensitivityModeEnabled.value = enabled
-		restartFlipDetectorService()
 	}
 
 	override fun getBatterySaverOnFlipEnabled(): Flow<Boolean> = batterySaverOnFlipEnabled
@@ -385,7 +332,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setBatterySaverOnFlipEnabled(enabled: Boolean) {
 		prefs.edit().putBoolean(KEY_BATTERY_SAVER_ON_FLIP, enabled).apply()
 		batterySaverOnFlipEnabled.value = enabled
-		restartFlipDetectorService()
 	}
 
 	override fun getActivationDelay(): Flow<Int> = activationDelay
@@ -393,7 +339,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setActivationDelay(seconds: Int) {
 		prefs.edit().putInt(KEY_ACTIVATION_DELAY, seconds).apply()
 		activationDelay.value = seconds
-		restartFlipDetectorService()
 	}
 
 	override fun getFlashlightDetectionEnabled(): Flow<Boolean> = flashlightDetectionEnabled
@@ -401,7 +346,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setFlashlightDetectionEnabled(enabled: Boolean) {
 		prefs.edit().putBoolean(KEY_FLASHLIGHT_DETECTION, enabled).apply()
 		flashlightDetectionEnabled.value = enabled
-		restartFlipDetectorService()
 	}
 
 	override fun getMediaPlaybackDetectionEnabled(): Flow<Boolean> = mediaPlaybackDetectionEnabled
@@ -409,7 +353,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setMediaPlaybackDetectionEnabled(enabled: Boolean) {
 		prefs.edit().putBoolean(KEY_MEDIA_PLAYBACK_DETECTION, enabled).apply()
 		mediaPlaybackDetectionEnabled.value = enabled
-		restartFlipDetectorService()
 	}
 
 	override fun getHeadphoneDetectionEnabled(): Flow<Boolean> = headphoneDetectionEnabled
@@ -417,7 +360,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setHeadphoneDetectionEnabled(enabled: Boolean) {
 		prefs.edit().putBoolean(KEY_HEADPHONE_DETECTION, enabled).apply()
 		headphoneDetectionEnabled.value = enabled
-		restartFlipDetectorService()
 	}
 
 	override fun getProximityDetectionEnabled(): Flow<Boolean> = proximityDetectionEnabled
@@ -425,7 +367,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setProximityDetectionEnabled(enabled: Boolean) {
 		prefs.edit().putBoolean(KEY_PROXIMITY_DETECTION, enabled).apply()
 		proximityDetectionEnabled.value = enabled
-		restartFlipDetectorService()
 	}
 
 	override fun getFlashlightFeedbackEnabled(): Flow<Boolean> = flashlightFeedbackEnabled
@@ -433,7 +374,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setFlashlightFeedbackEnabled(enabled: Boolean) {
 		prefs.edit().putBoolean(KEY_FLASHLIGHT_FEEDBACK_ENABLED, enabled).apply()
 		flashlightFeedbackEnabled.value = enabled
-		restartFlipDetectorService()
 	}
 
 	private val feedbackWithFlashlightOn = MutableStateFlow(prefs.getBoolean(KEY_FEEDBACK_WITH_FLASHLIGHT_ON, true))
@@ -443,7 +383,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setFeedbackWithFlashlightOn(enabled: Boolean) {
 		prefs.edit().putBoolean(KEY_FEEDBACK_WITH_FLASHLIGHT_ON, enabled).apply()
 		feedbackWithFlashlightOn.value = enabled
-		restartFlipDetectorService()
 	}
 
 	override fun getDndOnFlashlightPattern(): Flow<FlashlightPattern> = dndOnFlashlightPattern
@@ -451,7 +390,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setDndOnFlashlightPattern(pattern: FlashlightPattern) {
 		prefs.edit().putString(KEY_DND_ON_FLASHLIGHT_PATTERN, pattern.name).apply()
 		dndOnFlashlightPattern.value = pattern
-		restartFlipDetectorService()
 	}
 
 	override fun getDndOffFlashlightPattern(): Flow<FlashlightPattern> = dndOffFlashlightPattern
@@ -459,7 +397,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setDndOffFlashlightPattern(pattern: FlashlightPattern) {
 		prefs.edit().putString(KEY_DND_OFF_FLASHLIGHT_PATTERN, pattern.name).apply()
 		dndOffFlashlightPattern.value = pattern
-		restartFlipDetectorService()
 	}
 
 	override fun getDndScheduleEnabled(): Flow<Boolean> = dndScheduleEnabled
@@ -467,7 +404,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setDndScheduleEnabled(enabled: Boolean) {
 		prefs.edit().putBoolean(KEY_DND_SCHEDULE_ENABLED, enabled).apply()
 		dndScheduleEnabled.value = enabled
-		restartFlipDetectorService()
 	}
 
 	override fun getDndScheduleStartTime(): Flow<String> = dndScheduleStartTime
@@ -475,7 +411,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setDndScheduleStartTime(startTime: String) {
 		prefs.edit().putString(KEY_DND_SCHEDULE_START_TIME, startTime).apply()
 		dndScheduleStartTime.value = startTime
-		restartFlipDetectorService()
 	}
 
 	override fun getDndScheduleEndTime(): Flow<String> = dndScheduleEndTime
@@ -483,7 +418,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setDndScheduleEndTime(endTime: String) {
 		prefs.edit().putString(KEY_DND_SCHEDULE_END_TIME, endTime).apply()
 		dndScheduleEndTime.value = endTime
-		restartFlipDetectorService()
 	}
 
 	override fun getDndScheduleDays(): Flow<Set<Int>> = dndScheduleDays
@@ -491,7 +425,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setDndScheduleDays(days: Set<Int>) {
 		prefs.edit().putStringSet(KEY_DND_SCHEDULE_DAYS, days.map { it.toString() }.toSet()).apply()
 		dndScheduleDays.value = days
-		restartFlipDetectorService()
 	}
 
 	override fun getSoundScheduleEnabled(): Flow<Boolean> = soundScheduleEnabled
@@ -499,7 +432,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setSoundScheduleEnabled(enabled: Boolean) {
 		prefs.edit().putBoolean(KEY_SOUND_SCHEDULE_ENABLED, enabled).apply()
 		soundScheduleEnabled.value = enabled
-		restartFlipDetectorService()
 	}
 
 	override fun getSoundScheduleStartTime(): Flow<String> = soundScheduleStartTime
@@ -507,7 +439,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setSoundScheduleStartTime(startTime: String) {
 		prefs.edit().putString(KEY_SOUND_SCHEDULE_START_TIME, startTime).apply()
 		soundScheduleStartTime.value = startTime
-		restartFlipDetectorService()
 	}
 
 	override fun getSoundScheduleEndTime(): Flow<String> = soundScheduleEndTime
@@ -515,7 +446,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setSoundScheduleEndTime(endTime: String) {
 		prefs.edit().putString(KEY_SOUND_SCHEDULE_END_TIME, endTime).apply()
 		soundScheduleEndTime.value = endTime
-		restartFlipDetectorService()
 	}
 
 	override fun getSoundScheduleDays(): Flow<Set<Int>> = soundScheduleDays
@@ -523,7 +453,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setSoundScheduleDays(days: Set<Int>) {
 		prefs.edit().putStringSet(KEY_SOUND_SCHEDULE_DAYS, days.map { it.toString() }.toSet()).apply()
 		soundScheduleDays.value = days
-		restartFlipDetectorService()
 	}
 
 	override fun getVibrationScheduleEnabled(): Flow<Boolean> = vibrationScheduleEnabled
@@ -531,7 +460,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setVibrationScheduleEnabled(enabled: Boolean) {
 		prefs.edit().putBoolean(KEY_VIBRATION_SCHEDULE_ENABLED, enabled).apply()
 		vibrationScheduleEnabled.value = enabled
-		restartFlipDetectorService()
 	}
 
 	override fun getVibrationScheduleStartTime(): Flow<String> = vibrationScheduleStartTime
@@ -539,7 +467,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setVibrationScheduleStartTime(startTime: String) {
 		prefs.edit().putString(KEY_VIBRATION_SCHEDULE_START_TIME, startTime).apply()
 		vibrationScheduleStartTime.value = startTime
-		restartFlipDetectorService()
 	}
 
 	override fun getVibrationScheduleEndTime(): Flow<String> = vibrationScheduleEndTime
@@ -547,13 +474,11 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setVibrationScheduleEndTime(endTime: String) {
 		prefs.edit().putString(KEY_VIBRATION_SCHEDULE_END_TIME, endTime).apply()
 		vibrationScheduleEndTime.value = endTime
-		restartFlipDetectorService()
 	}
 
 	override suspend fun setVibrationScheduleDays(days: Set<Int>) {
 		prefs.edit().putStringSet(KEY_VIBRATION_SCHEDULE_DAYS, days.map { it.toString() }.toSet()).apply()
 		vibrationScheduleDays.value = days
-		restartFlipDetectorService()
 	}
 
 	override fun getFlashlightScheduleEnabled(): Flow<Boolean> = flashlightScheduleEnabled
@@ -561,7 +486,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setFlashlightScheduleEnabled(enabled: Boolean) {
 		prefs.edit().putBoolean(KEY_FLASHLIGHT_SCHEDULE_ENABLED, enabled).apply()
 		flashlightScheduleEnabled.value = enabled
-		restartFlipDetectorService()
 	}
 
 	override fun getFlashlightScheduleStartTime(): Flow<String> = flashlightScheduleStartTime
@@ -569,7 +493,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setFlashlightScheduleStartTime(startTime: String) {
 		prefs.edit().putString(KEY_FLASHLIGHT_SCHEDULE_START_TIME, startTime).apply()
 		flashlightScheduleStartTime.value = startTime
-		restartFlipDetectorService()
 	}
 
 	override fun getFlashlightScheduleEndTime(): Flow<String> = flashlightScheduleEndTime
@@ -577,7 +500,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setFlashlightScheduleEndTime(endTime: String) {
 		prefs.edit().putString(KEY_FLASHLIGHT_SCHEDULE_END_TIME, endTime).apply()
 		flashlightScheduleEndTime.value = endTime
-		restartFlipDetectorService()
 	}
 
 	override fun getFlashlightScheduleDays(): Flow<Set<Int>> = flashlightScheduleDays
@@ -585,7 +507,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setFlashlightScheduleDays(days: Set<Int>) {
 		prefs.edit().putStringSet(KEY_FLASHLIGHT_SCHEDULE_DAYS, days.map { it.toString() }.toSet()).apply()
 		flashlightScheduleDays.value = days
-		restartFlipDetectorService()
 	}
 
 	override fun getAutoStartEnabled(): Flow<Boolean> = autoStartEnabled
@@ -601,7 +522,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setHighSensitivityScheduleEnabled(enabled: Boolean) {
 		prefs.edit().putBoolean(KEY_HIGH_SENSITIVITY_SCHEDULE_ENABLED, enabled).apply()
 		highSensitivityScheduleEnabled.value = enabled
-		restartFlipDetectorService()
 	}
 
 	override fun getHighSensitivityScheduleStartTime(): Flow<String> = highSensitivityScheduleStartTime
@@ -609,7 +529,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setHighSensitivityScheduleStartTime(startTime: String) {
 		prefs.edit().putString(KEY_HIGH_SENSITIVITY_SCHEDULE_START_TIME, startTime).apply()
 		highSensitivityScheduleStartTime.value = startTime
-		restartFlipDetectorService()
 	}
 
 	override fun getHighSensitivityScheduleEndTime(): Flow<String> = highSensitivityScheduleEndTime
@@ -617,7 +536,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setHighSensitivityScheduleEndTime(endTime: String) {
 		prefs.edit().putString(KEY_HIGH_SENSITIVITY_SCHEDULE_END_TIME, endTime).apply()
 		highSensitivityScheduleEndTime.value = endTime
-		restartFlipDetectorService()
 	}
 
 	override fun getHighSensitivityScheduleDays(): Flow<Set<Int>> = highSensitivityScheduleDays
@@ -625,7 +543,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setHighSensitivityScheduleDays(days: Set<Int>) {
 		prefs.edit().putStringSet(KEY_HIGH_SENSITIVITY_SCHEDULE_DAYS, days.map { it.toString() }.toSet()).apply()
 		highSensitivityScheduleDays.value = days
-		restartFlipDetectorService()
 	}
 
 	override fun getVibrationScheduleDays(): Flow<Set<Int>> = vibrationScheduleDays
@@ -635,7 +552,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setActivationMode(mode: ActivationMode) {
 		prefs.edit().putString(KEY_ACTIVATION_MODE, mode.name).apply()
 		activationMode.value = mode
-		restartFlipDetectorService()
 	}
 
 	override fun getDndMode(): Flow<DndMode> = dndMode
@@ -643,7 +559,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setDndMode(mode: DndMode) {
 		prefs.edit().putString(KEY_DND_MODE, mode.name).apply()
 		dndMode.value = mode
-		restartFlipDetectorService()
 	}
 
 	override fun getRingerMode(): Flow<RingerMode> = ringerMode
@@ -651,7 +566,6 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setRingerMode(mode: RingerMode) {
 		prefs.edit().putString(KEY_RINGER_MODE, mode.name).apply()
 		ringerMode.value = mode
-		restartFlipDetectorService()
 	}
 
 	override fun getPreviousRingerMode(): Flow<Int> = previousRingerMode
@@ -666,6 +580,5 @@ class SettingsRepositoryImpl @Inject constructor(
 	override suspend fun setFlashlightIntensity(intensity: Int) {
 		prefs.edit().putInt(KEY_FLASHLIGHT_INTENSITY, intensity).apply()
 		flashlightIntensity.value = intensity
-		restartFlipDetectorService()
 	}
 }

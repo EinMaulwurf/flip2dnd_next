@@ -2,6 +2,7 @@ package dev.flip2dnd.next.core
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -21,6 +22,10 @@ class PendingActivation(
                 activate()
             }
         }
+    }
+
+    suspend fun cancelAndWait() {
+        job?.cancelAndJoin()
     }
 
     fun cancel() {

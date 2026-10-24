@@ -16,7 +16,7 @@ class AutoStartService : BroadcastReceiver() {
         val notifications = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (!notifications.isNotificationPolicyAccessGranted) return
         try {
-            ContextCompat.startForegroundService(context, Intent(context, FlipDetectorService::class.java))
+            DetectionControl.startIfEnabled(context)
         } catch (e: IllegalStateException) {
             Log.w("AutoStartService", "Android restricted background startup; open the app to restart detection", e)
         } catch (e: SecurityException) {

@@ -10,6 +10,7 @@ import android.widget.RemoteViews
 import androidx.core.content.ContextCompat
 import dev.flip2dnd.next.R
 import dev.flip2dnd.next.services.FlipDetectorService
+import dev.flip2dnd.next.services.DetectionControl
 
 class FlipDndWidgetProvider : AppWidgetProvider() {
     companion object {
@@ -42,9 +43,9 @@ class FlipDndWidgetProvider : AppWidgetProvider() {
             val isServiceRunning = isServiceRunning(context)
 
             if (isServiceRunning) {
-                context.stopService(serviceIntent)
+                DetectionControl.pause(context)
             } else {
-                ContextCompat.startForegroundService(context, serviceIntent)
+                DetectionControl.resume(context)
             }
 
             // Update all widgets after toggling the service
@@ -78,13 +79,5 @@ class FlipDndWidgetProvider : AppWidgetProvider() {
         appWidgetManager.updateAppWidget(appWidgetId, views)
     }
 
-    private fun isServiceRunning(context: Context): Boolean {
-        val serviceIntent = Intent(context, FlipDetectorService::class.java)
-        val componentName = ComponentName(context, FlipDetectorService::class.java)
-        return context.getSystemService(Context.ACTIVITY_SERVICE)?.let { activityManager ->
-            activityManager as android.app.ActivityManager
-            activityManager.getRunningServices(Integer.MAX_VALUE)
-                .any { it.service == componentName }
-        } ?: false
-    }
+    private fun isServiceRunning(context: Context): Boolean = DetectionControl.running.value
 }

@@ -7,6 +7,21 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PendingActivationTest {
+    @Test fun explicitPauseWaitsForThePendingLeaseToFinishBeforeRestoration() = runTest {
+        var held = false
+        var activated = false
+        val pending = PendingActivation(this) { action ->
+            held = true
+            try { action() } finally { held = false }
+        }
+        pending.startIfIdle(10_000) { activated = true }
+        runCurrent()
+        pending.cancelAndWait()
+        assertEquals(false, held)
+        advanceUntilIdle()
+        assertEquals(false, activated)
+    }
+
     @Test fun activationLeaseCoversDelayAndIsReleasedOnPickup() = runTest {
         var held = false
         val pending = PendingActivation(this) { action ->

@@ -16,7 +16,7 @@ import dev.flip2dnd.next.core.SettingsRepository
 import dev.flip2dnd.next.domain.usecase.GetOrientationUseCase
 import dev.flip2dnd.next.domain.usecase.GetSettingsUseCase
 import dev.flip2dnd.next.domain.usecase.ToggleDndUseCase
-import dev.flip2dnd.next.services.FlipDetectorService
+import dev.flip2dnd.next.services.DetectionControl
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
@@ -48,28 +48,16 @@ class MainViewModel @Inject constructor(
     }
 
     private fun updateServiceState() {
-        val isRunning = isFlipDetectorServiceRunning()
-        _state.update { it.copy(isServiceRunning = isRunning) }
-    }
-
-    private fun isFlipDetectorServiceRunning(): Boolean {
-        val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        return manager.getRunningServices(Integer.MAX_VALUE)
-            .any { it.service.className == FlipDetectorService::class.java.name }
+        viewModelScope.launch {
+            combine(DetectionControl.running, DetectionControl.error) { running, error ->
+                _state.update { it.copy(isServiceRunning = running, detectionError = error) }
+            }.collect()
+        }
     }
 
     fun toggleService() {
-        val serviceIntent = Intent(context, FlipDetectorService::class.java)
-        if (isFlipDetectorServiceRunning()) {
-            context.stopService(serviceIntent)
-        } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(serviceIntent)
-            } else {
-                context.startService(serviceIntent)
-            }
-        }
-        updateServiceState()
+        if (DetectionControl.running.value) DetectionControl.pause(context)
+        else DetectionControl.resume(context)
     }
 
     private fun observeScreenState() {

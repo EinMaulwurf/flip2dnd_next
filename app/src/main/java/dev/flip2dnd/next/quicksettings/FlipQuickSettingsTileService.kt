@@ -12,6 +12,7 @@ import android.service.quicksettings.TileService
 import androidx.annotation.RequiresApi
 import dev.flip2dnd.next.R
 import dev.flip2dnd.next.services.FlipDetectorService
+import dev.flip2dnd.next.services.DetectionControl
 import dev.flip2dnd.next.widget.FlipDndWidgetProvider
 
 private const val ACTION_TOGGLE_SERVICE = "dev.flip2dnd.next.TOGGLE_SERVICE"
@@ -63,9 +64,5 @@ class FlipQuickSettingsTileService : TileService() {
         tile.updateTile()
     }
 
-    private fun isServiceRunning(): Boolean {
-        val manager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        return manager.getRunningServices(Integer.MAX_VALUE)
-            .any { it.service.className == FlipDetectorService::class.java.name }
-    }
+    private fun isServiceRunning(): Boolean = DetectionControl.running.value
 }
