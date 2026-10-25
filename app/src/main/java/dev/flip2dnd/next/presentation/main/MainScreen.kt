@@ -34,9 +34,6 @@ fun MainScreen(
                     IconButton(onClick = onHistoryClick) {
                         Icon(painterResource(R.drawable.ic_history), stringResource(R.string.history))
                     }
-                    IconButton(onClick = onSettingsClick) {
-                        Icon(Icons.Default.Settings, stringResource(R.string.settings))
-                    }
                 },
             )
         },
