@@ -10,6 +10,15 @@ data class ChangelogEntry(
 val changelogEntries =
   listOf(
     ChangelogEntry(
+      version = "v1.2",
+      emoji = "🔔",
+      changes =
+        listOf(
+          "Activation feedback finishes before enabling Do Not Disturb or changing the ringer in every mode",
+          "Allow two extra seconds for activation feedback; picking up the phone during this window cancels activation",
+        ),
+    ),
+    ChangelogEntry(
       version = "v1.1",
       emoji = "💡",
       changes =

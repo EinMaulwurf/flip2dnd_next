@@ -1,0 +1,3 @@
+Flip2DND Next v1.2 (1.2.0).
+- Activation feedback finishes before enabling DND or changing the ringer in every mode.
+- Allow two extra seconds for feedback after the activation delay; picking up the phone during this window cancels activation.
