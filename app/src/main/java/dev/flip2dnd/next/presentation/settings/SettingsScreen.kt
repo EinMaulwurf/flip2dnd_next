@@ -1115,6 +1115,13 @@ fun SettingsContent(
                     SettingsSwitchItem(
                         title = stringResource(id = R.string.auto_start),
                         description = stringResource(id = R.string.auto_start_description),
+                        helpText = if (Build.MANUFACTURER.equals("Xiaomi", ignoreCase = true) ||
+                            Build.MANUFACTURER.equals("Redmi", ignoreCase = true)
+                        ) {
+                            stringResource(R.string.xiaomi_autostart_hint)
+                        } else {
+                            null
+                        },
                         checked = autoStartEnabled,
                         onCheckedChange = {
                             if (ServiceLocator
@@ -1137,13 +1144,6 @@ fun SettingsContent(
                             },
                         isPro = false,
                     )
-                    if (Build.MANUFACTURER.equals("Xiaomi", ignoreCase = true) ||
-                        Build.MANUFACTURER.equals("Redmi", ignoreCase = true)) {
-                        Text(stringResource(R.string.xiaomi_autostart_hint),
-                            modifier = Modifier.padding(16.dp),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
 
 
                     // High sensitivity feature removed from display. Always-on by default.
@@ -1408,6 +1408,7 @@ fun SettingsSwitchItem(
     enabled: Boolean = true,
     alpha: Float = 1f,
     isPro: Boolean = false,
+    helpText: String? = null,
 ) {
     val context = LocalContext.current
     val featureManager = ServiceLocator.getFeatureManager(context)
@@ -1456,6 +1457,9 @@ fun SettingsSwitchItem(
                     )
                     if (isPro && !featureManager.isPro()) {
                         ProBadge(modifier = Modifier.padding(start = 8.dp))
+                    }
+                    if (helpText != null) {
+                        SettingsHelpButton(title = title, text = helpText)
                     }
                 }
                 if (description.isNotEmpty()) {
