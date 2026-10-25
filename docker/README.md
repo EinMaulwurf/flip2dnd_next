@@ -26,7 +26,10 @@ Implemented features:
 - Continuous vibration strength: 0% is silent; low values reduce amplitude and pulse
   length. Hardware determines the quietest usable setting. Choose DND on/off below
   the slider to preview the corresponding saved pattern; selecting a pattern also
-  selects it for strength previews. Exit feedback runs after the DND/ringer change
+  selects it for strength previews. Activation feedback plays before every DND/ringer
+  change, with a two-second completion window (in addition to the activation delay),
+  because priority and alarms-only policies can suppress feedback too. Picking up
+  during this window cancels activation. Exit feedback runs after the DND/ringer change
   and a 250 ms settling delay so the transition does not truncate the waveform.
 - Auto Start is on by default. A one-time migration enables it on upgrade from the
   first Personal APK, as requested; later manual changes are respected. Grant DND

@@ -178,10 +178,6 @@ class DndService(
                 DiagnosticLog.event("activation_failed", "reason" to "dnd_access_missing")
                 return false
             }
-            val totalSilence = enabled &&
-                settingsRepository.getActivationMode().first() == dev.flip2dnd.next.core.ActivationMode.DND &&
-                settingsRepository.getDndMode().first() == dev.flip2dnd.next.core.DndMode.TOTAL_SILENCE
-
             suspend fun feedback() {
                 playSound(enabled)
                 val pattern = if (enabled) settingsRepository.getDndOnVibration().first()
@@ -193,7 +189,9 @@ class DndService(
                 dndRepository.setActivated(enabled)
                 updateDndStatus()
             }
-            if (totalSilence) {
+            if (enabled) {
+                // Priority/alarms-only policies can suppress feedback too, depending on
+                // system settings. Finish feedback before every activation transition.
                 dev.flip2dnd.next.core.ActivationFeedback.transition(true, { applyState() }, { feedback() })
             } else {
                 applyState()

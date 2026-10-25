@@ -7,7 +7,10 @@ import android.media.AudioManager
 import dev.flip2dnd.next.core.*
 import dev.flip2dnd.next.data.repository.DndRepositoryImpl
 import dev.flip2dnd.next.data.repository.SettingsRepositoryImpl
+import dev.flip2dnd.next.services.DndService
 import dev.flip2dnd.next.services.DetectionControl
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -59,6 +62,66 @@ class ReliabilityTest {
     }
 
     private fun repository() = DndRepositoryImpl(context, settings, history).also { repositories += it }
+
+    @Test fun everyDndModePlaysActivationFeedbackBeforeEnablingDnd() = runTest {
+        settings.setVibrationEnabled(true)
+        settings.setDndOnVibration(VibrationPattern.DOUBLE_PULSE)
+        settings.setSoundEnabled(false)
+        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as android.os.Vibrator
+        for (mode in DndMode.entries) {
+            settings.setDndMode(mode)
+            val repository = repository()
+            val service = DndService(context, settings, repository)
+            try {
+                val activation = async { service.setActivated(true) }
+                runCurrent()
+                assertTrue("Activation feedback missing for $mode", shadowOf(vibrator).isVibrating)
+                assertEquals(NotificationManager.INTERRUPTION_FILTER_ALL, notifications.currentInterruptionFilter)
+                advanceTimeBy(1999)
+                runCurrent()
+                assertEquals(NotificationManager.INTERRUPTION_FILTER_ALL, notifications.currentInterruptionFilter)
+                advanceTimeBy(1)
+                runCurrent()
+                assertTrue(activation.await())
+                assertEquals(mode.filter, notifications.currentInterruptionFilter)
+
+                // Restoration still happens immediately; exit feedback waits for settling.
+                assertTrue(service.setActivated(false))
+                assertEquals(NotificationManager.INTERRUPTION_FILTER_ALL, notifications.currentInterruptionFilter)
+                assertFalse(shadowOf(vibrator).isVibrating)
+                advanceTimeBy(250)
+                runCurrent()
+                assertTrue(shadowOf(vibrator).isVibrating)
+            } finally {
+                service.cleanup()
+                repository.onCleared()
+                repositories.remove(repository)
+            }
+        }
+    }
+
+    @Test fun pickupDuringPriorityFeedbackCancelsVibrationAndLeavesDndOff() = runTest {
+        settings.setDndMode(DndMode.PRIORITY)
+        settings.setVibrationEnabled(true)
+        settings.setDndOnVibration(VibrationPattern.DOUBLE_PULSE)
+        settings.setSoundEnabled(false)
+        val service = DndService(context, settings, repository())
+        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as android.os.Vibrator
+        try {
+            val activation = launch { service.setActivated(true) }
+            runCurrent()
+            assertTrue(shadowOf(vibrator).isVibrating)
+            advanceTimeBy(500)
+            activation.cancel()
+            activation.join()
+            advanceUntilIdle()
+            assertFalse(shadowOf(vibrator).isVibrating)
+            assertFalse(service.isAppEnabledDnd.value)
+            assertEquals(NotificationManager.INTERRUPTION_FILTER_ALL, notifications.currentInterruptionFilter)
+        } finally {
+            service.cleanup()
+        }
+    }
 
     @Test fun switchingFromRingerToDndRestoresRingerBeforeClearingOwnership() = runTest {
         settings.setActivationMode(ActivationMode.RINGER)

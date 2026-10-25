@@ -22,7 +22,7 @@ class ActivationFeedbackTest {
         assertEquals(listOf("DND off", "selected off pattern"), events)
         assertEquals(250, testScheduler.currentTime)
     }
-    @Test fun totalSilenceWaitsForFeedbackBeforeMuting() = runTest {
+    @Test fun activationWaitsForFeedbackBeforeChangingState() = runTest {
         val events = mutableListOf<String>()
         launch { ActivationFeedback.transition(true, { events += "mute" }, { events += "feedback" }) }
         runCurrent()
@@ -31,7 +31,7 @@ class ActivationFeedbackTest {
         assertEquals(listOf("feedback", "mute"), events)
         assertEquals(2000, testScheduler.currentTime)
     }
-    @Test fun pickupDuringTotalSilenceFeedbackCancelsActivation() = runTest {
+    @Test fun pickupDuringActivationFeedbackCancelsActivation() = runTest {
         var activated = false
         val job = launch { ActivationFeedback.transition(true, { activated = true }, {}) }
         runCurrent()
