@@ -10,6 +10,16 @@ data class ChangelogEntry(
 val changelogEntries =
   listOf(
     ChangelogEntry(
+      version = "v1.3.1",
+      emoji = "🎨",
+      changes =
+        listOf(
+          "Consistent settings typography and section spacing",
+          "Grouped flip detection controls and clearly labeled activation conditions",
+          "Moved the activation schedule after detection options",
+        ),
+    ),
+    ChangelogEntry(
       version = "v1.2",
       emoji = "🔔",
       changes =
