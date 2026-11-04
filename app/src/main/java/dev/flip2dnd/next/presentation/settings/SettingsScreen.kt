@@ -92,6 +92,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -247,13 +249,7 @@ fun SettingsContent(
         if (section == 0) {
             item {
                 Column {
-                    Text(
-                        text = stringResource(id = R.string.flip_behavior),
-                        color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.ExtraBold,
-                        modifier = Modifier.padding(top = 24.dp, bottom = 8.dp, start = 8.dp),
-                    )
+                    SettingsSectionHeader(title = stringResource(R.string.flip_behavior))
 
                     SettingsSliderItem(
                         title = stringResource(id = R.string.activation_mode),
@@ -420,6 +416,8 @@ fun SettingsContent(
                         )
                     }
 
+                    SettingsSectionHeader(title = stringResource(R.string.flip_detection))
+
                     SettingsSliderItem(
                         title = stringResource(id = R.string.activation_delay),
                         description = stringResource(id = R.string.activation_delay_description),
@@ -514,10 +512,17 @@ fun SettingsContent(
                         checked = requireStillness,
                         onCheckedChange = viewModel::setRequireStillness,
                     )
-                    var showDetectionAdvanced by remember { mutableStateOf(false) }
-                    TextButton(onClick = { showDetectionAdvanced = !showDetectionAdvanced }) {
-                        Text(stringResource(R.string.advanced_detection))
-                    }
+                    var showDetectionAdvanced by rememberSaveable { mutableStateOf(false) }
+                    SettingsClickableItem(
+                        title = stringResource(R.string.detection_tuning),
+                        onClick = { showDetectionAdvanced = !showDetectionAdvanced },
+                        trailingIcon = {
+                            Icon(
+                                imageVector = if (showDetectionAdvanced) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                contentDescription = null,
+                            )
+                        },
+                    )
                     if (showDetectionAdvanced) {
                         val tolerance by viewModel.flipSensitivity.collectAsState()
                         val exitAngle by viewModel.deactivationAngle.collectAsState()
@@ -548,38 +553,6 @@ fun SettingsContent(
                             )
                         }
                     }
-
-                    ScheduleSection(
-                        title = stringResource(id = R.string.dnd_activation_schedule),
-                        enabled = dndScheduleEnabled,
-                        onEnabledChange = {
-                            if (ServiceLocator
-                                    .getFeatureManager(context)
-                                    .scheduleEnabled()
-                            ) {
-                                viewModel.setDndScheduleEnabled(it)
-                            } else {
-                                showUpgradeDialog = true
-                            }
-                        },
-                        description = stringResource(id = R.string.dnd_schedule_description),
-                        startTime = dndScheduleStartTime,
-                        onStartTimeChange = { viewModel.setDndScheduleStartTime(it) },
-                        endTime = dndScheduleEndTime,
-                        onEndTimeChange = { viewModel.setDndScheduleEndTime(it) },
-                        selectedDays = dndScheduleDays,
-                        onDaysChange = { viewModel.setDndScheduleDays(it) },
-                        alpha =
-                            if (ServiceLocator
-                                    .getFeatureManager(context)
-                                    .scheduleEnabled()
-                            ) {
-                                1f
-                            } else {
-                                0.5f
-                            },
-                        isPro = false,
-                    )
                 }
             }
         }
@@ -587,13 +560,7 @@ fun SettingsContent(
         if (section == 0) {
             item {
                 Column {
-                    Text(
-                        text = stringResource(id = R.string.advanced),
-                        color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.ExtraBold,
-                        modifier = Modifier.padding(top = 24.dp, bottom = 8.dp, start = 8.dp),
-                    )
+                    SettingsSectionHeader(title = stringResource(R.string.activation_conditions))
 
                     val flashlightDetectionEnabled by viewModel.flashlightDetectionEnabled.collectAsState()
                     SettingsSwitchItem(
@@ -702,6 +669,38 @@ fun SettingsContent(
                             },
                         isPro = false,
                     )
+
+                    ScheduleSection(
+                        title = stringResource(id = R.string.activation_schedule),
+                        enabled = dndScheduleEnabled,
+                        onEnabledChange = {
+                            if (ServiceLocator
+                                    .getFeatureManager(context)
+                                    .scheduleEnabled()
+                            ) {
+                                viewModel.setDndScheduleEnabled(it)
+                            } else {
+                                showUpgradeDialog = true
+                            }
+                        },
+                        description = stringResource(id = R.string.dnd_schedule_description),
+                        startTime = dndScheduleStartTime,
+                        onStartTimeChange = { viewModel.setDndScheduleStartTime(it) },
+                        endTime = dndScheduleEndTime,
+                        onEndTimeChange = { viewModel.setDndScheduleEndTime(it) },
+                        selectedDays = dndScheduleDays,
+                        onDaysChange = { viewModel.setDndScheduleDays(it) },
+                        alpha =
+                            if (ServiceLocator
+                                    .getFeatureManager(context)
+                                    .scheduleEnabled()
+                            ) {
+                                1f
+                            } else {
+                                0.5f
+                            },
+                        isPro = false,
+                    )
                 }
             }
         }
@@ -709,13 +708,7 @@ fun SettingsContent(
         if (section == 1) {
             item {
                 Column {
-                    Text(
-                        text = stringResource(id = R.string.feedback),
-                        color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.ExtraBold,
-                        modifier = Modifier.padding(top = 24.dp, bottom = 8.dp, start = 8.dp),
-                    )
+                    SettingsSectionHeader(title = stringResource(R.string.feedback))
 
                     SettingsSwitchItem(
                         title = stringResource(id = R.string.notifications_enabled),
@@ -1145,13 +1138,7 @@ fun SettingsContent(
         if (section == 2) {
             item {
                 Column {
-                    Text(
-                        text = stringResource(id = R.string.app_settings),
-                        color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.ExtraBold,
-                        modifier = Modifier.padding(top = 24.dp, bottom = 8.dp, start = 8.dp),
-                    )
+                    SettingsSectionHeader(title = stringResource(R.string.app_settings))
 
                     val autoStartEnabled by viewModel.autoStartEnabled.collectAsState()
                     SettingsSwitchItem(
@@ -1242,13 +1229,7 @@ fun SettingsContent(
         if (section == 3) {
             item {
                 Column {
-                    Text(
-                        text = stringResource(id = R.string.extras),
-                        color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.ExtraBold,
-                        modifier = Modifier.padding(top = 24.dp, bottom = 8.dp, start = 8.dp),
-                    )
+                    SettingsSectionHeader(title = stringResource(R.string.extras))
 
                     SettingsClickableItem(
                         title = "GitHub",
@@ -1279,6 +1260,28 @@ fun SettingsContent(
 }
 
 @Composable
+private fun SettingsSectionHeader(
+    title: String,
+    trailingContent: @Composable () -> Unit = {},
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 24.dp, bottom = 8.dp, start = 16.dp, end = 16.dp)
+            .semantics { heading() },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.weight(1f),
+        )
+        trailingContent()
+    }
+}
+
+@Composable
 fun ScheduleSection(
     title: String? = null,
     enabled: Boolean,
@@ -1298,23 +1301,14 @@ fun ScheduleSection(
 
     Column(modifier = Modifier.alpha(alpha)) {
         if (title != null) {
-            Row(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp, horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = title,
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    modifier = Modifier.weight(1f, fill = false),
-                )
-                if (isPro && !featureManager.isPro()) {
-                    ProBadge(modifier = Modifier.padding(start = 8.dp))
-                }
-            }
+            SettingsSectionHeader(
+                title = title,
+                trailingContent = {
+                    if (isPro && !featureManager.isPro()) {
+                        ProBadge(modifier = Modifier.padding(start = 8.dp))
+                    }
+                },
+            )
         }
 
         SettingsSwitchItem(
@@ -1494,7 +1488,6 @@ fun SettingsSwitchItem(
                     Text(
                         text = title,
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(1f, fill = false),
                     )
                     if (isPro && !featureManager.isPro()) {
@@ -1574,7 +1567,6 @@ fun SettingsSliderItem(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f),
                 )
                 if (isPro && !featureManager.isPro()) {
@@ -1681,7 +1673,6 @@ fun SettingsClickableItem(
                     Text(
                         text = title,
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(1f, fill = false),
                     )
                     if (isPro && !featureManager.isPro()) {
@@ -1747,7 +1738,6 @@ fun SettingsSubsectionHeader(
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
                 color = if (expanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f),
             )

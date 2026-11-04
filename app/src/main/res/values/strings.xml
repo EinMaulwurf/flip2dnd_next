@@ -323,7 +323,10 @@
     <string name="diagnostics_storage_error" translatable="false">Some diagnostic events could not be saved. Check free storage and export the available log.</string>
     <string name="require_stillness">Require stillness</string>
     <string name="require_stillness_description">Movement restarts the activation delay. Requires at least 1 second of stillness, even with no delay.</string>
-    <string name="advanced_detection">Advanced detection settings</string>
+    <string name="flip_detection">Flip detection</string>
+    <string name="detection_tuning">Detection tuning</string>
+    <string name="activation_conditions">Activation conditions</string>
+    <string name="activation_schedule">Activation schedule</string>
     <string name="deactivation_angle">Deactivation angle</string>
     <string name="deactivation_angle_description">Tilt away from flat, screen down, to turn DND off. Always at least 5° above the activation tolerance.</string>
     <string name="motion_sensitivity">Motion sensitivity</string>
