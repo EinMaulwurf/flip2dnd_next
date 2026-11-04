@@ -38,3 +38,51 @@ No physical phone was connected during this change. Before relying on overnight 
 - Compare battery use over matched idle periods with the service on and off. Charging, radio conditions, always-on display and other apps should be comparable. Use Android's battery page or `adb shell dumpsys batterystats` to investigate; a short functional test cannot establish a reliable drain percentage.
 
 References: [Android sensor types and tilt semantics](https://source.android.com/docs/core/interaction/sensors/sensor-types), [sensor registration and batching](https://developer.android.com/reference/android/hardware/SensorManager), [CPU suspend and wake-up sensors](https://source.android.com/docs/core/interaction/sensors/suspend-mode).
+
+## Recovery after process death (November 2026)
+
+The November 4 diagnostic report showed PID 16144 logging until November 3 at
+22:25:15 Europe/Berlin, then PID 23247 starting at 06:04:20 the next morning.
+There was no recorded service shutdown or exception. DND and the saved ownership
+session survived; startup detected face-up and restored normal interruptions at
+06:04:21.323. The report establishes process replacement, but not its exact death
+time or whether a crash, memory pressure, or manufacturer policy caused it.
+Battery optimization exemption was already enabled.
+
+The detector already uses a foreground service and `START_STICKY`. A separate
+15-minute periodic JobScheduler job now checks whether detection is enabled but
+not running, and requests a foreground-service restart. Scheduling is idempotent;
+a healthy detector is left alone. Pause cancels recovery, and a stale job checks
+the saved enabled flag before doing anything. Jobs survive process death but are
+not persisted across reboot: the existing boot receiver remains responsible for
+respecting Auto Start. No extra dependency, exact alarm permission, network work,
+or continuous wake lock is required.
+
+This is best-effort recovery, not a 15-minute maximum outage. Android can defer
+jobs during idle or apply quotas; background foreground-service starts require
+an exemption (such as disabled battery optimization on Android 12+). Rejected
+starts are logged and can be retried at the next periodic execution. Force-stop
+and manufacturer restrictions can prevent recovery. DND is restored through the
+existing ownership and orientation checks, not by unconditionally clearing it
+while the phone is still face-down.
+
+On Android 11+, diagnostic snapshots also include up to five system process-exit
+records: timestamp, PID, numeric reason/status, importance and memory usage.
+Descriptions and traces are excluded because they may contain private data.
+This can distinguish crashes, ANRs and memory kills when Android records a reason.
+
+Device acceptance: with recording enabled, terminate the process without
+force-stopping the package, confirm a recovery request and new detector startup,
+and verify face-up restores app-owned DND. Confirm Pause stays paused through a
+scheduled job, and reboot with Auto Start disabled does not start detection.
+Repeat overnight on the affected Xiaomi; automated tests cannot establish OEM
+scheduling behavior or battery impact.
+
+References: [JobScheduler periodic execution](https://developer.android.com/reference/android/app/job/JobInfo.Builder#setPeriodic(long)),
+[background service start exemptions](https://developer.android.com/develop/background-work/services/fgs/restrictions-bg-start),
+[Android process-exit records](https://developer.android.com/reference/android/app/ApplicationExitInfo).
+
+Validation for this change: `:app:testDebugUnitTest :app:lintDebug
+:app:assembleDebug` passed. All 29 app tests passed, including four recovery tests
+and a process-exit export test. Lint reported warnings/hints but no errors.
+Physical-device recovery and overnight battery impact remain unverified.

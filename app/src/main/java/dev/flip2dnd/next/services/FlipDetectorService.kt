@@ -172,6 +172,7 @@ class FlipDetectorService : Service() {
             return START_NOT_STICKY
         }
         stopping = false
+        DetectionRecoveryService.schedule(this)
         if (::sensorService.isInitialized && !sensorService.isRegistered &&
             (!onlyWhenScreenOff || isScreenOff.value || dndService.isAppEnabledDnd.value)) {
             sensorService.startMonitoring()

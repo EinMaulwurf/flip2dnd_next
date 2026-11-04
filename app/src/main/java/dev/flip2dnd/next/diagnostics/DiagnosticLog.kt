@@ -1,6 +1,7 @@
 package dev.flip2dnd.next.diagnostics
 
 import android.app.NotificationManager
+import android.app.ActivityManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -210,6 +211,20 @@ class DiagnosticRecorder(context: Context) {
             .filterKeys { it in setOf("mode", "previous", "applied") }
             .forEach { (key, value) -> session.put(key, safeValue(value)) }
         result.put("session", session)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            try {
+                val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                result.put("recent_process_exits", JSONArray(
+                    manager.getHistoricalProcessExitReasons(context.packageName, 0, 5).map {
+                        // No descriptions or traces: these can contain private app data.
+                        JSONObject().put("time", dateFormat.format(Date(it.timestamp)))
+                            .put("pid", it.pid).put("reason", it.reason).put("status", it.status)
+                            .put("importance", it.importance).put("pss_kb", it.pss).put("rss_kb", it.rss)
+                    }))
+            } catch (e: RuntimeException) {
+                result.put("process_exit_history_error", e.javaClass.name)
+            }
+        }
         result.put("sensors", JSONArray(sensors.getSensorList(Sensor.TYPE_ALL)
             .filter { it.type == Sensor.TYPE_ACCELEROMETER || it.type == Sensor.TYPE_PROXIMITY ||
                 it.stringType == "android.sensor.tilt_detector" }.map {

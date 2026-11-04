@@ -28,6 +28,23 @@ class DiagnosticRecorderTest {
     }
     @After fun cleanup() = runBlocking { recorder.close() }
 
+    @Test @Config(sdk = [30])
+    fun exportIncludesSystemExitReasonWithoutPrivateDescription() = runBlocking {
+        val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+        val exit = org.robolectric.shadows.ShadowActivityManager.ApplicationExitInfoBuilder.newBuilder()
+            .setPid(123)
+            .setReason(android.app.ApplicationExitInfo.REASON_LOW_MEMORY)
+            .setDescription("private detail")
+            .build()
+        shadowOf(manager).addApplicationExitInfo(exit)
+        val report = recorder.export().readText()
+        val exits = JSONObject(report.lineSequence().first()).getJSONObject("snapshot")
+            .getJSONArray("recent_process_exits")
+        assertEquals(123, exits.getJSONObject(0).getInt("pid"))
+        assertEquals(android.app.ApplicationExitInfo.REASON_LOW_MEMORY, exits.getJSONObject(0).getInt("reason"))
+        assertFalse(report.contains("private detail"))
+    }
+
     @Test fun recordingIsOffByDefaultAndDoesNotPersistEvents() = runBlocking {
         recorder.record("must_not_be_recorded")
         val lines = recorder.export().readLines()

@@ -40,6 +40,7 @@ object DetectionControl {
         DiagnosticLog.event("detection_requested", "enabled" to false)
         preferences(context).edit().putBoolean("detection_enabled", false).apply()
         mutableEnabled.value = false
+        DetectionRecoveryService.cancel(context)
         send(context, ACTION_PAUSE)
     }
 
