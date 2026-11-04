@@ -262,7 +262,7 @@
     <!-- Activation Modes -->
     <string name="flip_behavior">سلوك القلب</string>
     <string name="feedback">الملاحظات</string>
-    <string name="advanced_filters">فلاتر متقدمة</string>
+    <string name="advanced">متقدم</string>
     <string name="app_settings">إعدادات التطبيق</string>
     <string name="activation_mode">وضع التفعيل</string>
     <string name="activation_mode_description">اختر ما يحدث عند قلب الهاتف</string>

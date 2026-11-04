@@ -223,7 +223,7 @@
     <!-- Added missing translations -->
     <string name="activation_mode">செயலாக்க முறை</string>
     <string name="activation_mode_description">போனை புரட்டும் போது என்ன நடக்கும் என்பதைத் தேர்வு செய்யவும்</string>
-    <string name="advanced_filters">மேம்பட்ட வடிப்பான்கள்</string>
+    <string name="advanced">மேம்பட்ட</string>
     <string name="app_settings">ஆப் அமைப்புகள்</string>
     <string name="flip_behavior">புரட்டும் நடத்தை</string>
     <string name="mode_dnd">தொந்தரவு செய்ய வேண்டாம்</string>

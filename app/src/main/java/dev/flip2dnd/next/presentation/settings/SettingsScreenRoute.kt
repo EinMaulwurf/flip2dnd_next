@@ -17,7 +17,7 @@ import dev.flip2dnd.next.R
 @Composable
 fun SettingsScreenRoute(onBack: () -> Unit, onDonateClick: () -> Unit) {
     var section by rememberSaveable { mutableIntStateOf(0) }
-    val sections = listOf(R.string.flip_behavior, R.string.feedback, R.string.advanced_filters,
+    val sections = listOf(R.string.flip_behavior, R.string.feedback,
         R.string.app_settings, R.string.extras)
     Scaffold(topBar = {
         TopAppBar(title = { Text(stringResource(R.string.settings)) }, navigationIcon = {

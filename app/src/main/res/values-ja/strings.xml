@@ -224,7 +224,7 @@
     <!-- Added missing translations -->
     <string name="activation_mode">アクティベーションモード</string>
     <string name="activation_mode_description">電話を裏返したときの動作を選択</string>
-    <string name="advanced_filters">詳細フィルター</string>
+    <string name="advanced">詳細設定</string>
     <string name="app_settings">アプリ設定</string>
     <string name="flip_behavior">反転時の動作</string>
     <string name="mode_dnd">おやすみモード</string>

@@ -584,6 +584,128 @@ fun SettingsContent(
             }
         }
 
+        if (section == 0) {
+            item {
+                Column {
+                    Text(
+                        text = stringResource(id = R.string.advanced),
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.ExtraBold,
+                        modifier = Modifier.padding(top = 24.dp, bottom = 8.dp, start = 8.dp),
+                    )
+
+                    val flashlightDetectionEnabled by viewModel.flashlightDetectionEnabled.collectAsState()
+                    SettingsSwitchItem(
+                        title = stringResource(id = R.string.flashlight_detection),
+                        description = stringResource(id = R.string.flashlight_detection_description),
+                        checked = flashlightDetectionEnabled,
+                        onCheckedChange = {
+                            if (ServiceLocator
+                                    .getFeatureManager(context)
+                                    .detectionFiltersEnabled()
+                            ) {
+                                viewModel.setFlashlightDetectionEnabled(it)
+                            } else {
+                                showUpgradeDialog = true
+                            }
+                        },
+                        alpha =
+                            if (ServiceLocator
+                                    .getFeatureManager(context)
+                                    .detectionFiltersEnabled()
+                            ) {
+                                1f
+                            } else {
+                                0.5f
+                            },
+                        isPro = false,
+                    )
+
+                    val mediaPlaybackDetectionEnabled by viewModel.mediaPlaybackDetectionEnabled.collectAsState()
+                    SettingsSwitchItem(
+                        title = stringResource(id = R.string.media_playback_detection),
+                        description = stringResource(id = R.string.media_playback_detection_description),
+                        checked = mediaPlaybackDetectionEnabled,
+                        onCheckedChange = {
+                            if (ServiceLocator
+                                    .getFeatureManager(context)
+                                    .detectionFiltersEnabled()
+                            ) {
+                                viewModel.setMediaPlaybackDetectionEnabled(it)
+                            } else {
+                                showUpgradeDialog = true
+                            }
+                        },
+                        alpha =
+                            if (ServiceLocator
+                                    .getFeatureManager(context)
+                                    .detectionFiltersEnabled()
+                            ) {
+                                1f
+                            } else {
+                                0.5f
+                            },
+                        isPro = false,
+                    )
+
+                    val headphoneDetectionEnabled by viewModel.headphoneDetectionEnabled.collectAsState()
+                    SettingsSwitchItem(
+                        title = stringResource(id = R.string.headphone_detection),
+                        description = stringResource(id = R.string.headphone_detection_description),
+                        checked = headphoneDetectionEnabled,
+                        onCheckedChange = {
+                            if (ServiceLocator
+                                    .getFeatureManager(context)
+                                    .detectionFiltersEnabled()
+                            ) {
+                                viewModel.setHeadphoneDetectionEnabled(it)
+                            } else {
+                                showUpgradeDialog = true
+                            }
+                        },
+                        alpha =
+                            if (ServiceLocator
+                                    .getFeatureManager(context)
+                                    .detectionFiltersEnabled()
+                            ) {
+                                1f
+                            } else {
+                                0.5f
+                            },
+                        isPro = false,
+                    )
+
+                    SettingsSwitchItem(
+                        title = stringResource(id = R.string.proximity_detection),
+                        description = stringResource(if (hasProximitySensor) R.string.proximity_detection_description else R.string.proximity_unavailable),
+                        enabled = hasProximitySensor || proximityDetectionEnabled,
+                        checked = proximityDetectionEnabled,
+                        onCheckedChange = {
+                            if (ServiceLocator
+                                    .getFeatureManager(context)
+                                    .proximityDetectionEnabled()
+                            ) {
+                                viewModel.setProximityDetectionEnabled(it)
+                            } else {
+                                showUpgradeDialog = true
+                            }
+                        },
+                        alpha =
+                            if (ServiceLocator
+                                    .getFeatureManager(context)
+                                    .proximityDetectionEnabled()
+                            ) {
+                                1f
+                            } else {
+                                0.5f
+                            },
+                        isPro = false,
+                    )
+                }
+            }
+        }
+
         if (section == 1) {
             item {
                 Column {
@@ -1024,128 +1146,6 @@ fun SettingsContent(
             item {
                 Column {
                     Text(
-                        text = stringResource(id = R.string.advanced_filters),
-                        color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.ExtraBold,
-                        modifier = Modifier.padding(top = 24.dp, bottom = 8.dp, start = 8.dp),
-                    )
-
-                    val flashlightDetectionEnabled by viewModel.flashlightDetectionEnabled.collectAsState()
-                    SettingsSwitchItem(
-                        title = stringResource(id = R.string.flashlight_detection),
-                        description = stringResource(id = R.string.flashlight_detection_description),
-                        checked = flashlightDetectionEnabled,
-                        onCheckedChange = {
-                            if (ServiceLocator
-                                    .getFeatureManager(context)
-                                    .detectionFiltersEnabled()
-                            ) {
-                                viewModel.setFlashlightDetectionEnabled(it)
-                            } else {
-                                showUpgradeDialog = true
-                            }
-                        },
-                        alpha =
-                            if (ServiceLocator
-                                    .getFeatureManager(context)
-                                    .detectionFiltersEnabled()
-                            ) {
-                                1f
-                            } else {
-                                0.5f
-                            },
-                        isPro = false,
-                    )
-
-                    val mediaPlaybackDetectionEnabled by viewModel.mediaPlaybackDetectionEnabled.collectAsState()
-                    SettingsSwitchItem(
-                        title = stringResource(id = R.string.media_playback_detection),
-                        description = stringResource(id = R.string.media_playback_detection_description),
-                        checked = mediaPlaybackDetectionEnabled,
-                        onCheckedChange = {
-                            if (ServiceLocator
-                                    .getFeatureManager(context)
-                                    .detectionFiltersEnabled()
-                            ) {
-                                viewModel.setMediaPlaybackDetectionEnabled(it)
-                            } else {
-                                showUpgradeDialog = true
-                            }
-                        },
-                        alpha =
-                            if (ServiceLocator
-                                    .getFeatureManager(context)
-                                    .detectionFiltersEnabled()
-                            ) {
-                                1f
-                            } else {
-                                0.5f
-                            },
-                        isPro = false,
-                    )
-
-                    val headphoneDetectionEnabled by viewModel.headphoneDetectionEnabled.collectAsState()
-                    SettingsSwitchItem(
-                        title = stringResource(id = R.string.headphone_detection),
-                        description = stringResource(id = R.string.headphone_detection_description),
-                        checked = headphoneDetectionEnabled,
-                        onCheckedChange = {
-                            if (ServiceLocator
-                                    .getFeatureManager(context)
-                                    .detectionFiltersEnabled()
-                            ) {
-                                viewModel.setHeadphoneDetectionEnabled(it)
-                            } else {
-                                showUpgradeDialog = true
-                            }
-                        },
-                        alpha =
-                            if (ServiceLocator
-                                    .getFeatureManager(context)
-                                    .detectionFiltersEnabled()
-                            ) {
-                                1f
-                            } else {
-                                0.5f
-                            },
-                        isPro = false,
-                    )
-
-                    SettingsSwitchItem(
-                        title = stringResource(id = R.string.proximity_detection),
-                        description = stringResource(if (hasProximitySensor) R.string.proximity_detection_description else R.string.proximity_unavailable),
-                        enabled = hasProximitySensor || proximityDetectionEnabled,
-                        checked = proximityDetectionEnabled,
-                        onCheckedChange = {
-                            if (ServiceLocator
-                                    .getFeatureManager(context)
-                                    .proximityDetectionEnabled()
-                            ) {
-                                viewModel.setProximityDetectionEnabled(it)
-                            } else {
-                                showUpgradeDialog = true
-                            }
-                        },
-                        alpha =
-                            if (ServiceLocator
-                                    .getFeatureManager(context)
-                                    .proximityDetectionEnabled()
-                            ) {
-                                1f
-                            } else {
-                                0.5f
-                            },
-                        isPro = false,
-                    )
-                }
-            }
-        }
-
-        if (section == 3) {
-            item {
-                Column {
-                    Text(
                         text = stringResource(id = R.string.app_settings),
                         color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.titleMedium,
@@ -1235,11 +1235,11 @@ fun SettingsContent(
             }
         }
 
-        if (section == 3) {
+        if (section == 2) {
             item { DiagnosticsSettings() }
         }
 
-        if (section == 4) {
+        if (section == 3) {
             item {
                 Column {
                     Text(

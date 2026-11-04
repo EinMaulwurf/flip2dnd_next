@@ -261,7 +261,7 @@
     <!-- Activation Modes -->
     <string name="flip_behavior">Flip-Verhalten</string>
     <string name="feedback">Rückmeldung</string>
-    <string name="advanced_filters">Erweiterte Filter</string>
+    <string name="advanced">Erweitert</string>
     <string name="app_settings">App-Einstellungen</string>
     <string name="activation_mode">Aktivierungsmodus</string>
     <string name="activation_mode_description">Wählen Sie, was beim Umdrehen Ihres Telefons passiert</string>

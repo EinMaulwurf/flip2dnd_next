@@ -225,7 +225,7 @@
     <!-- Added missing translations -->
     <string name="activation_mode">Modo de activación</string>
     <string name="activation_mode_description">Elige qué sucede al voltear el teléfono</string>
-    <string name="advanced_filters">Filtros avanzados</string>
+    <string name="advanced">Avanzado</string>
     <string name="app_settings">Ajustes de la aplicación</string>
 	<string name="flip_behavior">Comportamiento de la app</string>
     <string name="mode_dnd">No molestar</string>

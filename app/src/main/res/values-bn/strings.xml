@@ -221,7 +221,7 @@
     <!-- Added missing translations -->
     <string name="activation_mode">সক্রিয়করণ মোড</string>
     <string name="activation_mode_description">ফোন উল্টালে কী হবে তা বেছে নিন</string>
-    <string name="advanced_filters">উন্নত ফিল্টার</string>
+    <string name="advanced">উন্নত</string>
     <string name="app_settings">অ্যাপ সেটিংস</string>
     <string name="flip_behavior">ফ্লিপের আচরণ</string>
     <string name="mode_dnd">ডু নট ডিস্টার্ব</string>

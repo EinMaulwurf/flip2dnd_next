@@ -261,7 +261,7 @@
     <!-- Activation Modes -->
     <string name="flip_behavior">翻转行为</string>
     <string name="feedback">反馈</string>
-    <string name="advanced_filters">高级筛选</string>
+    <string name="advanced">高级</string>
     <string name="app_settings">应用设置</string>
     <string name="activation_mode">激活模式</string>
     <string name="activation_mode_description">选择翻转手机后会发生什么</string>

@@ -226,7 +226,7 @@
     <!-- Added missing translations -->
     <string name="activation_mode">Mode d activation</string>
     <string name="activation_mode_description">Choisissez ce qui se passe quand vous retournez votre telephone</string>
-    <string name="advanced_filters">Filtres avancés</string>
+    <string name="advanced">Avancé</string>
     <string name="app_settings">Parametres de l application</string>
     <string name="flip_behavior">Comportement du retournement</string>
     <string name="mode_dnd">Ne pas déranger</string>

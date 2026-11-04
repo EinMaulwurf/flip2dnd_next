@@ -223,7 +223,7 @@
     <!-- Added missing translations -->
     <string name="activation_mode">सक्रियण मोड</string>
     <string name="activation_mode_description">फोन पलटने पर क्या होगा चुनें</string>
-    <string name="advanced_filters">उन्नत फ़िल्टर</string>
+    <string name="advanced">उन्नत</string>
     <string name="app_settings">ऐप सेटिंग्स</string>
     <string name="flip_behavior">फ्लिप व्यवहार</string>
     <string name="mode_dnd">डू नॉट डिस्टर्ब</string>

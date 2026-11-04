@@ -224,7 +224,7 @@
     <!-- Added missing translations -->
     <string name="activation_mode">Modo de ativação</string>
     <string name="activation_mode_description">Escolha o que acontece ao virar o telefone</string>
-    <string name="advanced_filters">Filtros avançados</string>
+    <string name="advanced">Avançado</string>
     <string name="app_settings">Configurações do aplicativo</string>
     <string name="flip_behavior">Comportamento de virar</string>
     <string name="mode_dnd">Não perturbe</string>

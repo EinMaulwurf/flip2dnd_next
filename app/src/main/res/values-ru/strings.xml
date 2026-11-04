@@ -223,7 +223,7 @@
     <!-- Added missing translations -->
     <string name="activation_mode">Режим активации</string>
     <string name="activation_mode_description">Выберите, что происходит при переворачивании телефона</string>
-    <string name="advanced_filters">Расширенные фильтры</string>
+    <string name="advanced">Дополнительно</string>
     <string name="app_settings">Настройки приложения</string>
     <string name="flip_behavior">Поведение при перевороте</string>
     <string name="mode_dnd">Не беспокоить</string>

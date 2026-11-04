@@ -223,7 +223,7 @@
     <!-- Added missing translations -->
     <string name="activation_mode">Aktivasyon modu</string>
     <string name="activation_mode_description">Telefonu çevirdiğinizde ne olacağını seçin</string>
-    <string name="advanced_filters">Gelişmiş filtreler</string>
+    <string name="advanced">Gelişmiş</string>
     <string name="app_settings">Uygulama ayarları</string>
     <string name="flip_behavior">Çevirme davranışı</string>
     <string name="mode_dnd">Rahatsız etmeyin</string>

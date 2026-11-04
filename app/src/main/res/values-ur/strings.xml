@@ -261,7 +261,7 @@
     <!-- Activation Modes -->
     <string name="flip_behavior">پلٹنے کا برتاؤ</string>
     <string name="feedback">فیڈ بیک</string>
-    <string name="advanced_filters">جدید فلٹرز</string>
+    <string name="advanced">جدید</string>
     <string name="app_settings">ایپ کی ترتیبات</string>
     <string name="activation_mode">ایکٹیویشن موڈ</string>
     <string name="activation_mode_description">فون پلٹنے پر کیا ہو گا منتخب کریں</string>
