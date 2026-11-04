@@ -45,6 +45,12 @@ interface SettingsRepository {
     suspend fun setDndOnVibration(pattern: VibrationPattern)
     fun getDndOffVibration(): Flow<VibrationPattern>
     suspend fun setDndOffVibration(pattern: VibrationPattern)
+    fun getDeactivationAngle(): Flow<Int>
+    suspend fun setDeactivationAngle(value: Int)
+    fun getRequireStillness(): Flow<Boolean>
+    suspend fun setRequireStillness(value: Boolean)
+    fun getMotionSensitivity(): Flow<Float>
+    suspend fun setMotionSensitivity(value: Float)
     fun getFlipSensitivity(): Flow<Float>
     suspend fun setFlipSensitivity(sensitivity: Float)
     fun getDndOnCustomSoundUri(): Flow<String?>

@@ -16,7 +16,7 @@
 	<string name="service_not_running">Service is not running</string>
 	<string name="flip_sensitivity">Flip Sensitivity</string>
     <string name="flip_tolerance">Tolerance</string>
-    <string name="flip_tolerance_description">Allowed tilt from perfectly flat, screen down. Smaller angles require the phone to be flatter.</string>
+    <string name="flip_tolerance_description">Allowed tilt throughout the activation delay, measured from flat, screen down. Smaller angles require the phone to be flatter.</string>
     <string name="flip_tolerance_angle">%1$d°</string>
 	<string name="screen_off_only">Screen Off Only</string>
 	<string name="priority_dnd">Priority DND</string>
@@ -321,4 +321,12 @@
     <string name="diagnostics_cleared" translatable="false">Diagnostic log cleared</string>
     <string name="diagnostics_action_failed" translatable="false">Could not complete the diagnostic action. Check free storage and try again.</string>
     <string name="diagnostics_storage_error" translatable="false">Some diagnostic events could not be saved. Check free storage and export the available log.</string>
+    <string name="require_stillness">Require stillness</string>
+    <string name="require_stillness_description">Movement restarts the activation delay. Requires at least 1 second of stillness, even with no delay.</string>
+    <string name="advanced_detection">Advanced detection settings</string>
+    <string name="deactivation_angle">Deactivation angle</string>
+    <string name="deactivation_angle_description">Tilt away from flat, screen down, to turn DND off. Always at least 5° above the activation tolerance.</string>
+    <string name="motion_sensitivity">Motion sensitivity</string>
+    <string name="motion_sensitivity_description">Higher sensitivity rejects smaller movements. Too high may reject vibrations on a table.</string>
+    <string name="motion_sensitivity_value">%1$d%%</string>
 </resources>

@@ -75,6 +75,23 @@ class FlipOrientationDetectorTest {
         assertEquals(PhoneOrientation.UNKNOWN, sample(time = 1000))
     }
 
+    @Test fun configurableExitAngleAndMinimumGap() {
+        fun tilted(degrees: Int, exit: Int, time: Long): PhoneOrientation {
+            val angle = Math.toRadians(degrees.toDouble())
+            return detector.update((9.81 * sin(angle)).toFloat(), 0f,
+                (-9.81 * cos(angle)).toFloat(), true, FlipTolerance.position(10), time, exit)
+        }
+        tilted(0, 60, 0); tilted(0, 60, 300)
+        assertEquals(PhoneOrientation.FACE_DOWN, tilted(50, 60, 500))
+        tilted(61, 60, 600)
+        assertEquals(PhoneOrientation.FACE_UP, tilted(61, 60, 750))
+        detector.reset()
+        tilted(0, 5, 0); tilted(0, 5, 300)
+        assertEquals(PhoneOrientation.FACE_DOWN, tilted(14, 5, 500))
+        tilted(16, 5, 600)
+        assertEquals(PhoneOrientation.FACE_UP, tilted(16, 5, 750))
+    }
+
     @Test fun invalidReadingsDoNotChangeOrientation() {
         assertEquals(PhoneOrientation.UNKNOWN, sample(z = Float.NaN, time = 0))
         assertEquals(PhoneOrientation.UNKNOWN, sample(z = 0f, time = 300))

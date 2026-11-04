@@ -304,11 +304,36 @@ class SettingsRepositoryImpl @Inject constructor(
 		dndOffVibration.value = pattern
 	}
 
+    private val deactivationAngle = MutableStateFlow(prefs.getInt("deactivation_angle", 41))
+    override fun getDeactivationAngle(): Flow<Int> = deactivationAngle
+    override suspend fun setDeactivationAngle(value: Int) {
+        val bounded = value.coerceIn(dev.flip2dnd.next.core.FlipTolerance.degrees(flipSensitivity.value) + 5, 90)
+        prefs.edit().putInt("deactivation_angle", bounded).apply()
+        deactivationAngle.value = bounded
+    }
+
+    private val requireStillness = MutableStateFlow(prefs.getBoolean("require_stillness", false))
+    override fun getRequireStillness(): Flow<Boolean> = requireStillness
+    override suspend fun setRequireStillness(value: Boolean) {
+        val bounded = value
+        prefs.edit().putBoolean("require_stillness", bounded).apply()
+        requireStillness.value = bounded
+    }
+
+    private val motionSensitivity = MutableStateFlow(prefs.getFloat("motion_sensitivity", 0.5f))
+    override fun getMotionSensitivity(): Flow<Float> = motionSensitivity
+    override suspend fun setMotionSensitivity(value: Float) {
+        val bounded = value.coerceIn(0f, 1f)
+        prefs.edit().putFloat("motion_sensitivity", bounded).apply()
+        motionSensitivity.value = bounded
+    }
+
 	override fun getFlipSensitivity(): Flow<Float> = flipSensitivity
 
 	override suspend fun setFlipSensitivity(sensitivity: Float) {
 		prefs.edit().putFloat(KEY_FLIP_TOLERANCE, sensitivity).apply()
-		flipSensitivity.value = sensitivity
+		flipSensitivity.value = sensitivity.coerceIn(0f, 1f)
+		setDeactivationAngle(deactivationAngle.value)
 	}
 
 	override fun getDndOnCustomSoundUri(): Flow<String?> = dndOnCustomSoundUri

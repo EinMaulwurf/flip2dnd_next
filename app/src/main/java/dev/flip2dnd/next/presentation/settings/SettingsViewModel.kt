@@ -205,7 +205,27 @@ class SettingsViewModel @Inject constructor(
 	private val _flashlightIntensity = MutableStateFlow(1)
 	val flashlightIntensity = _flashlightIntensity.asStateFlow()
 
+    private val _deactivationAngle = MutableStateFlow(41)
+    val deactivationAngle = _deactivationAngle.asStateFlow()
+    fun setDeactivationAngle(value: Int) {
+        viewModelScope.launch { settingsRepository.setDeactivationAngle(value) }
+    }
+    private val _requireStillness = MutableStateFlow(false)
+    val requireStillness = _requireStillness.asStateFlow()
+    fun setRequireStillness(value: Boolean) {
+        viewModelScope.launch { settingsRepository.setRequireStillness(value) }
+    }
+    private val _motionSensitivity = MutableStateFlow(0.5f)
+    val motionSensitivity = _motionSensitivity.asStateFlow()
+    fun setMotionSensitivity(value: Float) {
+        viewModelScope.launch { settingsRepository.setMotionSensitivity(value) }
+    }
+
 	init {
+        viewModelScope.launch { settingsRepository.getDeactivationAngle().collect { _deactivationAngle.value = it } }
+        viewModelScope.launch { settingsRepository.getRequireStillness().collect { _requireStillness.value = it } }
+        viewModelScope.launch { settingsRepository.getMotionSensitivity().collect { _motionSensitivity.value = it } }
+
 		checkSecureSettingsPermission()
 		viewModelScope.launch {
 			settingsRepository.getScreenOffOnlyEnabled().collect { enabled ->

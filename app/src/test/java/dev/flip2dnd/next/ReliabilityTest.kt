@@ -41,6 +41,23 @@ class ReliabilityTest {
         override suspend fun clearHistory() {}
     }
 
+    @Test fun detectionSettingsPersistAndKeepExitAboveEntry() = runTest {
+        assertFalse(settings.getRequireStillness().first())
+        assertEquals(41, settings.getDeactivationAngle().first())
+        settings.setFlipSensitivity(FlipTolerance.position(5))
+        settings.setDeactivationAngle(12)
+        settings.setFlipSensitivity(FlipTolerance.position(30))
+        assertEquals(35, settings.getDeactivationAngle().first())
+        settings.setRequireStillness(true)
+        settings.setMotionSensitivity(0.8f)
+        val reloaded = SettingsRepositoryImpl(context)
+        assertEquals(35, reloaded.getDeactivationAngle().first())
+        assertTrue(reloaded.getRequireStillness().first())
+        assertEquals(0.8f, reloaded.getMotionSensitivity().first(), 0.001f)
+        reloaded.setDeactivationAngle(0)
+        assertEquals(35, reloaded.getDeactivationAngle().first())
+    }
+
     @Before fun setup() {
         Dispatchers.setMain(StandardTestDispatcher())
         context = RuntimeEnvironment.getApplication()

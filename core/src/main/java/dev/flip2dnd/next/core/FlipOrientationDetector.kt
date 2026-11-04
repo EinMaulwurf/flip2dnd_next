@@ -16,14 +16,14 @@ class FlipOrientationDetector {
         candidateSince = 0L
     }
 
-    fun update(x: Float, y: Float, z: Float, stable: Boolean, sensitivity: Float, nowMs: Long): PhoneOrientation {
+    fun update(x: Float, y: Float, z: Float, stable: Boolean, sensitivity: Float, nowMs: Long, deactivationAngle: Int = 41): PhoneOrientation {
         val magnitude = sqrt(x * x + y * y + z * z)
         if (!magnitude.isFinite() || magnitude < 1f) return orientation
         val faceDownFraction = -z / magnitude
-        // Enter within the selected tolerance; leave beyond roughly 41 degrees.
+        // Keep a gap between entry and exit to avoid toggling at the boundary.
         val entryThreshold = cos(Math.toRadians(FlipTolerance.degrees(sensitivity).toDouble())).toFloat()
         val next = when {
-            orientation == PhoneOrientation.FACE_DOWN && faceDownFraction >= 0.75f -> PhoneOrientation.FACE_DOWN
+            orientation == PhoneOrientation.FACE_DOWN && faceDownFraction >= cos(Math.toRadians(deactivationAngle.coerceIn(FlipTolerance.degrees(sensitivity) + 5, 90).toDouble())).toFloat() -> PhoneOrientation.FACE_DOWN
             faceDownFraction >= entryThreshold -> if (stable) PhoneOrientation.FACE_DOWN else orientation
             else -> PhoneOrientation.FACE_UP
         }

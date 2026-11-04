@@ -507,6 +507,48 @@ fun SettingsContent(
                         },
                     )
 
+                    val requireStillness by viewModel.requireStillness.collectAsState()
+                    SettingsSwitchItem(
+                        title = stringResource(R.string.require_stillness),
+                        description = stringResource(R.string.require_stillness_description),
+                        checked = requireStillness,
+                        onCheckedChange = viewModel::setRequireStillness,
+                    )
+                    var showDetectionAdvanced by remember { mutableStateOf(false) }
+                    TextButton(onClick = { showDetectionAdvanced = !showDetectionAdvanced }) {
+                        Text(stringResource(R.string.advanced_detection))
+                    }
+                    if (showDetectionAdvanced) {
+                        val tolerance by viewModel.flipSensitivity.collectAsState()
+                        val exitAngle by viewModel.deactivationAngle.collectAsState()
+                        val minExit = FlipTolerance.degrees(tolerance) + 5
+                        SettingsSliderItem(
+                            title = stringResource(R.string.deactivation_angle),
+                            description = stringResource(R.string.deactivation_angle_description),
+                            sliderContent = {
+                                var angle by remember(exitAngle, minExit) { mutableStateOf(exitAngle.coerceIn(minExit, 90).toFloat()) }
+                                Text(stringResource(R.string.flip_tolerance_angle, angle.roundToInt()))
+                                Slider(value = angle, onValueChange = { angle = it },
+                                    onValueChangeFinished = { viewModel.setDeactivationAngle(angle.roundToInt()) },
+                                    valueRange = minExit.toFloat()..90f, steps = 90 - minExit - 1)
+                            },
+                        )
+                        if (requireStillness) {
+                            val motionSensitivity by viewModel.motionSensitivity.collectAsState()
+                            SettingsSliderItem(
+                                title = stringResource(R.string.motion_sensitivity),
+                                description = stringResource(R.string.motion_sensitivity_description),
+                                sliderContent = {
+                                    var sensitivity by remember(motionSensitivity) { mutableStateOf(motionSensitivity) }
+                                    Text(stringResource(R.string.motion_sensitivity_value, (sensitivity * 100).roundToInt()))
+                                    Slider(value = sensitivity, onValueChange = { sensitivity = it },
+                                        onValueChangeFinished = { viewModel.setMotionSensitivity(sensitivity) },
+                                        valueRange = 0f..1f)
+                                },
+                            )
+                        }
+                    }
+
                     ScheduleSection(
                         title = stringResource(id = R.string.dnd_activation_schedule),
                         enabled = dndScheduleEnabled,

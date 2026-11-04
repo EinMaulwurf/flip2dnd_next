@@ -39,6 +39,20 @@ class SensorService(context: Context, settingsRepository: SettingsRepository) {
         .apply { setReferenceCounted(false) }
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val detector = FlipOrientationDetector()
+    private val stability = dev.flip2dnd.next.core.ActivationStability()
+    private val _activationStability = MutableStateFlow(stability.state)
+    val activationStability = _activationStability.asStateFlow()
+    private var deactivationAngle = 41
+    private var requireStillness = false
+    private var motionSensitivity = 0.5f
+    private var activationDelayMs = 2000L
+    val confirmationDelayMs: Long get() = activationDelayMs.coerceAtLeast(if (requireStillness) 1000L else 0L)
+    fun activationReady(): Boolean = stability.state.ready && stability.isFresh(SystemClock.elapsedRealtime())
+    private fun resetStability() {
+        stability.reset()
+        _activationStability.value = stability.state
+    }
+    private val motionBaseline = FloatArray(3)
     private val filtered = FloatArray(3)
     private var previousTimestamp = 0L
     private var registeredAtNs = 0L
@@ -57,15 +71,24 @@ class SensorService(context: Context, settingsRepository: SettingsRepository) {
             }
             if (event.sensor != registeredAcceleration || event.values.size < 3 ||
                 event.timestamp < registeredAtNs) return
+            if ((0..2).any { !event.values[it].isFinite() }) {
+                resetStability()
+                return
+            }
             // Sensor time, rather than delivery time, is essential when a batch arrives.
             val now = event.timestamp / 1_000_000L
             if (previousTimestamp != 0L && now <= previousTimestamp) return
             val dt = (now - previousTimestamp).coerceAtLeast(0)
             val alpha = if (previousTimestamp == 0L) 1f else (1 - exp(-dt / 120.0)).toFloat()
+            val motionAlpha = if (previousTimestamp == 0L) 1f else (1 - exp(-dt / 750.0)).toFloat()
             previousTimestamp = now
             var differenceSquared = 0f
             var magnitudeSquared = 0f
+            var motionSquared = 0f
             for (i in 0..2) {
+                motionBaseline[i] += motionAlpha * (event.values[i] - motionBaseline[i])
+                val movement = event.values[i] - motionBaseline[i]
+                motionSquared += movement * movement
                 filtered[i] += alpha * (event.values[i] - filtered[i])
                 val difference = event.values[i] - filtered[i]
                 differenceSquared += difference * difference
@@ -74,10 +97,16 @@ class SensorService(context: Context, settingsRepository: SettingsRepository) {
             // Acceleration and direction must settle; a continuously running gyro is unnecessary.
             val stable = abs(sqrt(magnitudeSquared) - SensorManager.GRAVITY_EARTH) < 1.5f &&
                 differenceSquared < 1.5f
-            val next = detector.update(filtered[0], filtered[1], filtered[2], stable, sensitivity, now)
-            if (next != _orientation.value) {
-                // Hand the wake-up event to the coroutine that owns the longer transition lease.
+            val next = detector.update(filtered[0], filtered[1], filtered[2], stable, sensitivity, now, deactivationAngle)
+            val motion = maxOf(sqrt(motionSquared), abs(sqrt(magnitudeSquared) - SensorManager.GRAVITY_EARTH))
+            val nextStability = stability.update(event.values[0], event.values[1], event.values[2],
+                motion, motionSensitivity, sensitivity, requireStillness, activationDelayMs, now)
+            if (nextStability != _activationStability.value || next != _orientation.value) {
+                // A new quiet interval can arrive without a new orientation event.
                 if (!powerManager.isInteractive) deliveryWakeLock.acquire(2000)
+            }
+            _activationStability.value = nextStability
+            if (next != _orientation.value) {
                 DiagnosticLog.event("orientation_confirmed", "orientation" to next.name,
                     "delivery_delay_ms" to (SystemClock.elapsedRealtime() - now).coerceAtLeast(0),
                     "screen_off" to !powerManager.isInteractive, "monitoring_mode" to monitoringMode.value.name)
@@ -97,6 +126,7 @@ class SensorService(context: Context, settingsRepository: SettingsRepository) {
             if (sensor == null) return false
             if (registeredAcceleration == sensor) return true
             stopAcceleration()
+            resetStability()
             previousTimestamp = 0L
             registeredAtNs = SystemClock.elapsedRealtimeNanos()
             filtered.fill(0f)
@@ -132,7 +162,11 @@ class SensorService(context: Context, settingsRepository: SettingsRepository) {
 
     init {
         scope.launch { monitoringMode.collect { DiagnosticLog.modeChanged(it.name) } }
-        scope.launch { settingsRepository.getFlipSensitivity().collect { sensitivity = it.coerceIn(0f, 1f) } }
+        scope.launch { settingsRepository.getFlipSensitivity().collect { sensitivity = it.coerceIn(0f, 1f); resetStability() } }
+        scope.launch { settingsRepository.getDeactivationAngle().collect { deactivationAngle = it; resetStability() } }
+        scope.launch { settingsRepository.getRequireStillness().collect { requireStillness = it; resetStability() } }
+        scope.launch { settingsRepository.getMotionSensitivity().collect { motionSensitivity = it; resetStability() } }
+        scope.launch { settingsRepository.getActivationDelay().collect { activationDelayMs = it.coerceAtLeast(0) * 1000L; resetStability() } }
     }
 
     private fun register(sensor: Sensor?, periodUs: Int, latencyUs: Int): Boolean {
@@ -164,6 +198,7 @@ class SensorService(context: Context, settingsRepository: SettingsRepository) {
 
     fun stopMonitoring() {
         session.stop()
+        resetStability()
         DiagnosticLog.modeChanged(SensorMonitoringSession.Mode.STOPPED.name)
         if (deliveryWakeLock.isHeld) deliveryWakeLock.release()
         detector.reset()

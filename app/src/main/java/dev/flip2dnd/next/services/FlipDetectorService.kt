@@ -81,6 +81,7 @@ class FlipDetectorService : Service() {
     private val isProximityCovered = _isProximityCovered.asStateFlow()
     private var onlyWhenScreenOff = false
     private var turnScreenOff = false
+    private var activationInterval: Long? = null
     private var activationDelaySeconds = 0
     private var activatedDuringFaceDown = false
     private var stopping = false
@@ -360,6 +361,7 @@ class FlipDetectorService : Service() {
                 initialSettings.forEach { it.await() }
                 merge(
                     sensorService.orientation.map { Unit },
+                    sensorService.activationStability.map { Unit },
                     isScreenOff.map { Unit },
                     isProximityCovered.map { Unit },
                     dndRepository.isActivated().map { Unit },
@@ -401,6 +403,7 @@ class FlipDetectorService : Service() {
     private fun canActivate(screenOff: Boolean): Boolean {
         val detection = dev.flip2dnd.next.core.ServiceLocator.getDetectionManager(this)
         val blocker = when {
+            sensorService.activationStability.value.sinceMs == null -> "not_flat_or_moving"
             !sensorService.isRegistered -> "motion_sensor_unavailable"
             proximityUnavailable -> "proximity_unavailable"
             onlyWhenScreenOff && !screenOff -> "screen_on"
@@ -460,15 +463,21 @@ class FlipDetectorService : Service() {
                 }
                 // Repeated screen/proximity events and filter checks must not restart the delay
                 // or cancel feedback for a transition that has already completed.
+                val interval = sensorService.activationStability.value.sinceMs
+                if (interval != activationInterval) {
+                    pendingActivation.cancel()
+                    activationInterval = interval
+                }
                 pendingActivation.startIfIdle(
-                    activationDelaySeconds.coerceAtLeast(0) * 1000L,
+                    sensorService.confirmationDelayMs,
                     onStarted = {
                         DiagnosticLog.event("activation_pending", "delay_seconds" to activationDelaySeconds)
                         showFlipDetectedNotification()
                     }
                 ) {
-                    if (sensorService.orientation.value != PhoneOrientation.FACE_DOWN ||
-                        !canActivate(isScreenOff.value)) return@startIfIdle
+                    if (sensorService.activationStability.value.sinceMs != interval ||
+                        sensorService.orientation.value != PhoneOrientation.FACE_DOWN ||
+                        !canActivate(isScreenOff.value) || !sensorService.activationReady()) return@startIfIdle
                     if (dndService.setActivated(true)) {
                         activatedDuringFaceDown = true
                         showDndStateNotification(true)

@@ -86,3 +86,30 @@ Validation for this change: `:app:testDebugUnitTest :app:lintDebug
 :app:assembleDebug` passed. All 29 app tests passed, including four recovery tests
 and a process-exit export test. Lint reported warnings/hints but no errors.
 Physical-device recovery and overnight battery impact remain unverified.
+
+## Pocket activation controls
+
+Activation tolerance must now hold throughout the activation delay. The separate
+**Deactivation angle**, under **Advanced detection settings**, defaults to 41° and
+can be adjusted up to 90°. It stays at least 5° above activation tolerance; raising
+activation tolerance raises the exit angle when necessary. The exit angle applies
+to confirmed face-down orientation, while the stricter activation gate prevents a
+pending activation from using that wider margin.
+
+**Require stillness** is opt-in. It resets the activation countdown when motion
+exceeds the selected sensitivity. **Motion sensitivity** appears in advanced
+settings when enabled; higher values reject smaller movements. Stillness requires
+at least one second of observation even with a zero activation delay. Motion does
+not itself deactivate DND once activated. A flat, motionless pocket can still pass.
+
+The filter reuses accelerometer readings, tracking deviation from a smoothed
+acceleration vector and from gravity magnitude. No gyro or new permission is
+required. Sensor timestamps, sample gaps, and freshness checks prevent stale or
+batched samples from fabricating a quiet interval. Moving or excessively tilted
+samples cancel the pending confirmation lease; normal snapshot monitoring then
+resumes. Repeated attempts can extend sensor activity, so battery impact and the
+sensitivity thresholds still need physical-device measurement.
+
+Device checks: compare a flat table, a vibrating table, walking with the phone in
+a pocket, and a seated train journey. Check 0- and 10-second activation delays,
+screen-off operation, both angle sliders, and pickup after successful activation.
