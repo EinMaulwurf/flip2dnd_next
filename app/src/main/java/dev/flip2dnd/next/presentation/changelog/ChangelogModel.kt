@@ -10,6 +10,14 @@ data class ChangelogEntry(
 val changelogEntries =
   listOf(
     ChangelogEntry(
+      version = "v1.4",
+      emoji = "🔕",
+      changes =
+        listOf(
+          "Silenced the persistent monitoring notification and its updates to prevent unexpected notification vibration",
+        ),
+    ),
+    ChangelogEntry(
       version = "v1.3.1",
       emoji = "🎨",
       changes =

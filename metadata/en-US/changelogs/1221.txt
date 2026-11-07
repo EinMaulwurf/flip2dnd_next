@@ -1,0 +1,1 @@
+Silenced the persistent monitoring notification and its updates to prevent unexpected notification vibration during normal phone use.
