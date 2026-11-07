@@ -625,6 +625,9 @@ class FlipDetectorService : Service() {
             NotificationManager.IMPORTANCE_LOW
         ).apply {
             description = getString(R.string.notification_service_channel_desc)
+            setSound(null, null)
+            enableVibration(false)
+            enableLights(false)
         }
 
         // Flip state channel
@@ -704,6 +707,10 @@ class FlipDetectorService : Service() {
         }
 
         return NotificationCompat.Builder(this, SERVICE_CHANNEL_ID)
+            // Monitoring changes also update this notification while the phone is in use.
+            // Silence each instance, including installs with an existing alerting channel.
+            .setSilent(true)
+            .setOnlyAlertOnce(true)
             .setContentTitle(getString(R.string.app_name))
             .setContentText(getString(when {
                 hardwareError() != null -> hardwareError()!!
